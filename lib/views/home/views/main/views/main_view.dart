@@ -92,14 +92,12 @@ class MainViewState extends State<MainView> {
       Map<String, dynamic> postData =
           postSnapshot.data() as Map<String, dynamic>? ?? {};
 
-  
       List<dynamic> likes = postData['likes'] ?? [];
 
-    
       return likes.contains(currentUserId);
     } catch (e) {
       print('Error checking like: $e');
-      return false; 
+      return false;
     }
   }
 
@@ -140,245 +138,273 @@ class MainViewState extends State<MainView> {
         backgroundColor: Colors.grey[400],
         context: context,
         builder: (context) {
-          return Padding(
-            padding: EdgeInsets.only(top: 20.h, right: 30.w),
-            child: StreamBuilder(
-                stream: FirebaseFirestore.instance
-                    .collection('Users')
-                    .doc(userId)
-                    .collection('Posts')
-                    .snapshots(),
-                builder: (context, snapshot) {
-                  if (!snapshot.hasData) {
-                    return CircularProgressIndicator();
-                  }
-                  final documents = snapshot.data!.docs;
-                  return Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Padding(
-                            padding: EdgeInsets.only(left: 30.w),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  children: [
-                                    ClipRRect(
-                                      borderRadius: BorderRadius.circular(16.w),
-                                      child: SizedBox(
-                                        height: 30.sp,
-                                        width: 30.sp,
-                                        child: (profilePhoto != "")
-                                            ? CachedNetworkImage(
-                                                placeholder: (context, val) {
-                                                  return Container(
-                                                    width: 31.w,
-                                                    child: Center(
-                                                      child: Text(
-                                                        "Loading",
-                                                        style: TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          fontSize: 15.sp,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  );
-                                                },
-                                                imageUrl: profilePhoto,
-                                                fit: BoxFit.fill,
-                                              )
-                                            : Container(
-                                                decoration: BoxDecoration(
-                                                    color: CustomColors
-                                                        .backgroundColor),
-                                                child: Icon(
-                                                  Icons.person,
-                                                  color: CustomColors.textColor,
-                                                )),
-                                      ),
-                                    ),
-                                    Padding(
-                                      padding: EdgeInsets.only(left: 18.w),
-                                      child: Text(
-                                        name,
-                                        style: CustomTexts.font24.copyWith(
-                                            color: CustomColors.textColor2,
-                                            fontWeight: FontWeight.bold),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                StreamBuilder<QuerySnapshot>(
-                                  stream: FirebaseFirestore.instance
-                                      .collection('Users')
-                                      .snapshots(),
-                                  builder: (context, snapshot) {
-                                    if (snapshot.hasData) {
-                                      for (final doc in snapshot.data!.docs) {
-                                        if (doc.id == userId) {
-                                          final follower = doc
-                                              .get('followers')
-                                              .length; 
-                                          return Text(
-                                            '$follower Followers',
-                                            style: CustomTexts.font14.copyWith(
-                                                color: CustomColors.textColor2),
-                                          );
-                                        }
-                                      }
-                                    }
-                                    return const SizedBox();
-                                  },
-                                ),
-                              ],
-                            ),
-                          ),
-                          SizedBox(
-                            height: 10.h,
-                          ),
-                          Padding(
-                            padding: EdgeInsets.only(left: 20.w),
-                            child: Align(
-                              alignment: Alignment.bottomLeft,
-                              child: SizedBox(
-                                height: 200.h,
-                                width: 200.w,
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(38.w),
-                                  child: SizedBox(
-                                    height: 200.h,
-                                    width: 200.w,
-                                    child: CachedNetworkImage(
-                                      placeholder: (context, val) {
-                                        return SizedBox(
-                                          width: 31.w,
-                                          child: Center(
-                                            child: Text(
-                                              "Loading",
-                                              style: TextStyle(
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 15.sp,
-                                              ),
-                                            ),
-                                          ),
-                                        );
-                                      },
-                                      imageUrl: documents[postIndex]
-                                          ['post_photo'],
-                                      fit: BoxFit.fill,
-                                    ),
+          return StreamBuilder(
+              stream: FirebaseFirestore.instance
+                  .collection('Users')
+                  .doc(userId)
+                  .collection('Posts')
+                  .snapshots(),
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) {
+                  return CircularProgressIndicator();
+                }
+                final documents = snapshot.data!.docs;
+                return Stack(
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(110.w),
+                          topRight: Radius.circular(110.w)),
+                      child: SizedBox(
+                        height: 1937.h,
+                        width: 1.sw,
+                        child: CachedNetworkImage(
+                          placeholder: (context, val) {
+                            return SizedBox(
+                              width: 31.w,
+                              child: Center(
+                                child: Text(
+                                  "Loading",
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 15.sp,
                                   ),
                                 ),
                               ),
-                            ),
-                          ),
-                          SizedBox(
-                            height: 20.h,
-                          ),
-                          Padding(
-                            padding: EdgeInsets.only(left: 30.w),
-                            child: Text(
-                              documents[postIndex]['description'],
-                              style: CustomTexts.font14.copyWith(
-                                  color: CustomColors.backgroundColor),
-                            ),
-                          ),
-                        ],
+                            );
+                          },
+                          imageUrl: documents[postIndex]['post_photo'],
+                          fit: BoxFit.fill,
+                        ),
                       ),
-                      Column(
-                        children: [
-                          SizedBox(
-                            height: 40.h,
-                          ),
-                          ZoomTapAnimation(
-                            onTap: () async {
-                              await isUserIdInPostLikes(
-                                      userId, documents[postIndex].id)
-                                  ? await removeUserIdFromPostLikes(
-                                      userId, documents[postIndex].id)
-                                  : await addUserIdToPostLikes(
-                                      userId, documents[postIndex].id);
-                            },
-                            child: Icon(
-                              CupertinoIcons.heart_fill,
-                              size: 48.sp,
-                              color: CustomColors.activeColor,
-                            ),
-                          ),
-                          SizedBox(
-                            height: 8.h,
-                          ),
-                          Text(
-                            (documents[postIndex]['likes'].length).toString(),
-                            style: CustomTexts.font18
-                                .copyWith(color: CustomColors.inactiveColor),
-                          ),
-                          SizedBox(
-                            height: 10.h,
-                          ),
-                          ZoomTapAnimation(
-                            onTap: () async {
-                              isFollowButtonLoading.value = true;
-                              await controller.isUserIdInFollowers(
-                                userId,
-                              )
-                                  ? await controller
-                                      .removeUserIdFromFollowers(userId)
-                                  : await controller
-                                      .addUserIdToFollowers(userId);
-                              isFollowButtonLoading.value = false;
-                            },
-                            child: Obx(
-                              () => Container(
-                                width: 110.w,
-                                height: 40.h,
-                                decoration: BoxDecoration(
-                                    color: CustomColors.activeColor,
-                                    borderRadius: BorderRadius.circular(12.w)),
-                                child: Padding(
-                                  padding: EdgeInsets.symmetric(
-                                      vertical: 10.h, horizontal: 20.w),
-                                  child: Center(
-                                      child: isFollowButtonLoading.value
-                                          ? SizedBox(
-                                              height: 40.h,
-                                              width: 20.h,
-                                              child:
-                                                  const CircularProgressIndicator())
-                                          : StreamBuilder(
-                                              stream: controller
-                                                  .isUserIdInFollowers(userId)
-                                                  .asStream(),
-                                              builder: (context, snapshot) {
-                                                if (!snapshot.hasData) {
-                                                  return SizedBox(
-                                                      height: 40.h,
-                                                      width: 20.h,
-                                                      child:
-                                                          const CircularProgressIndicator());
-                                                }
+                    ),
+                  ],
+                );
+                // Row(
+                //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                //   children: [
+                //     Column(
+                //       crossAxisAlignment: CrossAxisAlignment.start,
+                //       children: [
+                //         Padding(
+                //           padding: EdgeInsets.only(left: 30.w),
+                //           child: Column(
+                //             crossAxisAlignment: CrossAxisAlignment.start,
+                //             children: [
+                //               Row(
+                //                 children: [
+                //                   ClipRRect(
+                //                     borderRadius: BorderRadius.circular(16.w),
+                //                     child: SizedBox(
+                //                       height: 30.sp,
+                //                       width: 30.sp,
+                //                       child: (profilePhoto != "")
+                //                           ? CachedNetworkImage(
+                //                               placeholder: (context, val) {
+                //                                 return Container(
+                //                                   width: 31.w,
+                //                                   child: Center(
+                //                                     child: Text(
+                //                                       "Loading",
+                //                                       style: TextStyle(
+                //                                         fontWeight:
+                //                                             FontWeight.bold,
+                //                                         fontSize: 15.sp,
+                //                                       ),
+                //                                     ),
+                //                                   ),
+                //                                 );
+                //                               },
+                //                               imageUrl: profilePhoto,
+                //                               fit: BoxFit.fill,
+                //                             )
+                //                           : Container(
+                //                               decoration: BoxDecoration(
+                //                                   color: CustomColors
+                //                                       .backgroundColor),
+                //                               child: Icon(
+                //                                 Icons.person,
+                //                                 color: CustomColors.textColor,
+                //                               )),
+                //                     ),
+                //                   ),
+                //                   Padding(
+                //                     padding: EdgeInsets.only(left: 18.w),
+                //                     child: Text(
+                //                       name,
+                //                       style: CustomTexts.font24.copyWith(
+                //                           color: CustomColors.textColor2,
+                //                           fontWeight: FontWeight.bold),
+                //                     ),
+                //                   ),
+                //                 ],
+                //               ),
+                //               StreamBuilder<QuerySnapshot>(
+                //                 stream: FirebaseFirestore.instance
+                //                     .collection('Users')
+                //                     .snapshots(),
+                //                 builder: (context, snapshot) {
+                //                   if (snapshot.hasData) {
+                //                     for (final doc in snapshot.data!.docs) {
+                //                       if (doc.id == userId) {
+                //                         final follower = doc
+                //                             .get('followers')
+                //                             .length;
+                //                         return Text(
+                //                           '$follower Followers',
+                //                           style: CustomTexts.font14.copyWith(
+                //                               color: CustomColors.textColor2),
+                //                         );
+                //                       }
+                //                     }
+                //                   }
+                //                   return const SizedBox();
+                //                 },
+                //               ),
+                //             ],
+                //           ),
+                //         ),
+                //         SizedBox(
+                //           height: 10.h,
+                //         ),
+                //         Padding(
+                //           padding: EdgeInsets.only(left: 20.w),
+                //           child: Align(
+                //             alignment: Alignment.bottomLeft,
+                //             child: SizedBox(
+                //               height: 200.h,
+                //               width: 200.w,
+                //               child: ClipRRect(
+                //                 borderRadius: BorderRadius.circular(38.w),
+                //                 child: SizedBox(
+                //                   height: 200.h,
+                //                   width: 200.w,
+                //                   child: CachedNetworkImage(
+                //                     placeholder: (context, val) {
+                //                       return SizedBox(
+                //                         width: 31.w,
+                //                         child: Center(
+                //                           child: Text(
+                //                             "Loading",
+                //                             style: TextStyle(
+                //                               fontWeight: FontWeight.bold,
+                //                               fontSize: 15.sp,
+                //                             ),
+                //                           ),
+                //                         ),
+                //                       );
+                //                     },
+                //                     imageUrl: documents[postIndex]
+                //                         ['post_photo'],
+                //                     fit: BoxFit.fill,
+                //                   ),
+                //                 ),
+                //               ),
+                //             ),
+                //           ),
+                //         ),
+                //         SizedBox(
+                //           height: 20.h,
+                //         ),
+                //         Padding(
+                //           padding: EdgeInsets.only(left: 30.w),
+                //           child: Text(
+                //             documents[postIndex]['description'],
+                //             style: CustomTexts.font14.copyWith(
+                //                 color: CustomColors.backgroundColor),
+                //           ),
+                //         ),
+                //       ],
+                //     ),
+                //     Column(
+                //       children: [
+                //         SizedBox(
+                //           height: 40.h,
+                //         ),
+                //         ZoomTapAnimation(
+                //           onTap: () async {
+                //             await isUserIdInPostLikes(
+                //                     userId, documents[postIndex].id)
+                //                 ? await removeUserIdFromPostLikes(
+                //                     userId, documents[postIndex].id)
+                //                 : await addUserIdToPostLikes(
+                //                     userId, documents[postIndex].id);
+                //           },
+                //           child: Icon(
+                //             CupertinoIcons.heart_fill,
+                //             size: 48.sp,
+                //             color: CustomColors.activeColor,
+                //           ),
+                //         ),
+                //         SizedBox(
+                //           height: 8.h,
+                //         ),
+                //         Text(
+                //           (documents[postIndex]['likes'].length).toString(),
+                //           style: CustomTexts.font18
+                //               .copyWith(color: CustomColors.inactiveColor),
+                //         ),
+                //         SizedBox(
+                //           height: 10.h,
+                //         ),
+                //         ZoomTapAnimation(
+                //           onTap: () async {
+                //             isFollowButtonLoading.value = true;
+                //             await controller.isUserIdInFollowers(
+                //               userId,
+                //             )
+                //                 ? await controller
+                //                     .removeUserIdFromFollowers(userId)
+                //                 : await controller
+                //                     .addUserIdToFollowers(userId);
+                //             isFollowButtonLoading.value = false;
+                //           },
+                //           child: Obx(
+                //             () => Container(
+                //               width: 110.w,
+                //               height: 40.h,
+                //               decoration: BoxDecoration(
+                //                   color: CustomColors.activeColor,
+                //                   borderRadius: BorderRadius.circular(12.w)),
+                //               child: Padding(
+                //                 padding: EdgeInsets.symmetric(
+                //                     vertical: 10.h, horizontal: 20.w),
+                //                 child: Center(
+                //                     child: isFollowButtonLoading.value
+                //                         ? SizedBox(
+                //                             height: 40.h,
+                //                             width: 20.h,
+                //                             child:
+                //                                 const CircularProgressIndicator())
+                //                         : StreamBuilder(
+                //                             stream: controller
+                //                                 .isUserIdInFollowers(userId)
+                //                                 .asStream(),
+                //                             builder: (context, snapshot) {
+                //                               if (!snapshot.hasData) {
+                //                                 return SizedBox(
+                //                                     height: 40.h,
+                //                                     width: 20.h,
+                //                                     child:
+                //                                         const CircularProgressIndicator());
+                //                               }
 
-                                                if (snapshot.data!) {
-                                                  return const Text("Unfollow");
-                                                } else {
-                                                  return const Text("Follow");
-                                                }
-                                              })
-                                      ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  );
-                }),
-          );
+                //                               if (snapshot.data!) {
+                //                                 return const Text("Unfollow");
+                //                               } else {
+                //                                 return const Text("Follow");
+                //                               }
+                //                             })
+                //                     ),
+                //               ),
+                //             ),
+                //           ),
+                //         ),
+                //       ],
+                //     ),
+                //   ],
+                // );
+              });
         });
   }
 
@@ -540,7 +566,6 @@ class MainViewState extends State<MainView> {
                   color: CustomColors.backgroundColor,
                 ),
               ),
-
               StreamBuilder<QuerySnapshot>(
                 stream: userCollection.snapshots(),
                 builder: (context, snapshot) {

@@ -106,7 +106,8 @@ class AuthService {
           Get.offAll(() => const HomeView());
         } else if (userExists == 0) {
           authController.isGoogleLoading.value = false;
-          Get.offAll(GoogleSignUpView());
+          // Get.offAll(GoogleSignUpView());
+          authController.isGoogleSignupPage.value = true;
         }
       });
     } catch (e) {

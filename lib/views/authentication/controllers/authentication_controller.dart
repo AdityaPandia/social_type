@@ -3,6 +3,12 @@ import 'package:get/get.dart';
 
 
 class AuthenticationController extends GetxController {
+  TextEditingController googleNameController = TextEditingController();
+
+   RxBool isGoogleSignupNext = false.obs;
+  RxBool isGoogleSignupLoading = false.obs;
+  RxBool isLoginPage=true.obs;
+  RxBool isGoogleSignupPage=false.obs;
   TextEditingController emailController = TextEditingController();
   TextEditingController passController = TextEditingController();
   TextEditingController nameController = TextEditingController();
@@ -28,6 +34,9 @@ class AuthenticationController extends GetxController {
 
   @override
   void onInit() {
+     googleNameController.addListener(() {
+      isGoogleSignupNext.value = googleNameController.text.isNotEmpty;
+    });
     passController.addListener(() {
       isPassDone.value = passController.text.isNotEmpty;
     });

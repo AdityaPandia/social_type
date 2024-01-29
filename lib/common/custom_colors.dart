@@ -10,5 +10,6 @@ abstract class CustomColors {
   static Color inactiveColor = const Color(0xFF1D2029);
   static Color textColor2 = const Color(0xFF656763);
   static Color greyColor = const Color(0xFF807e7c);
+  static Color splashBackgroundColor=const Color(0xFF0D0D24);
   // static Color activeColor2=c
 }
