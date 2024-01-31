@@ -42,14 +42,40 @@ class ProfileView extends StatelessWidget {
                   ),
                   Row(
                     children: [
-                      Text(
-                        "Frank A",
-                        style: GoogleFonts.poppins(
-                          fontSize: 90.sp,
-                          fontWeight: FontWeight.w600,
-                          color: Color(0xFFF5F5F5),
-                        ),
-                      ),
+                      // Text(
+                      //   "Frank A",
+                      //   style: GoogleFonts.poppins(
+                      //     fontSize: 90.sp,
+                      //     fontWeight: FontWeight.w600,
+                      //     color: Color(0xFFF5F5F5),
+                      //   ),
+                      // ),
+                      FutureBuilder(
+                          future: appController.getUserName(),
+                          builder: (context, snapshot) {
+                            if (snapshot.connectionState ==
+                                ConnectionState.done) {
+                              return SizedBox(
+                                width: 350.w,
+                                child: Text(
+                                  "${snapshot.data!}",
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 90.sp,
+                                    fontWeight: FontWeight.w600,
+                                    color: Color(0xFFF5F5F5),
+                                  ),
+                                ),
+                              );
+                            } else {
+                              return SizedBox(
+                                width: 12.sp,
+                                height: 12.sp,
+                                child: CircularProgressIndicator(
+                                  color: CustomColors.textColor2,
+                                ),
+                              );
+                            }
+                          }),
                       SizedBox(
                         width: 9.w,
                       ),

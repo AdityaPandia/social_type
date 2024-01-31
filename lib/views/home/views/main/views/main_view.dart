@@ -34,6 +34,7 @@ class MainViewState extends State<MainView> {
   }
 
   RxBool isFollowButtonLoading = false.obs;
+  RxBool isLiked = false.obs;
   Widget checkUrl(String url) {
     try {
       return Image.network(url, height: 70.0, width: 70.0, fit: BoxFit.cover);
@@ -206,7 +207,7 @@ class MainViewState extends State<MainView> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  "Frank A",
+                                  name,
                                   style: GoogleFonts.poppins(
                                       fontSize: 90.sp,
                                       fontWeight: FontWeight.w600,
@@ -227,19 +228,20 @@ class MainViewState extends State<MainView> {
                                       SizedBox(
                                         width: 60.w,
                                       ),
-                                      Text(
-                                        "Khé ",
-                                        style: GoogleFonts.poppins(
-                                            fontSize: 64.sp,
-                                            fontWeight: FontWeight.w600,
-                                            color: Color(0xFFD5F600)),
-                                      ),
+                                      // Text(
+                                      //   "Khé ",
+                                      //   style: GoogleFonts.poppins(
+                                      //       fontSize: 64.sp,
+                                      //       fontWeight: FontWeight.w600,
+                                      //       color: Color(0xFFD5F600)),
+                                      // ),
                                       SizedBox(
                                           width: 348.w,
                                           child: TextField(
                                             decoration: InputDecoration(
                                                 border: InputBorder.none,
-                                                hintText: "Type Here",
+                                                hintText: documents[postIndex]
+                                                    ['description'],
                                                 hintStyle: GoogleFonts.poppins(
                                                     fontSize: 64.sp,
                                                     fontWeight: FontWeight.w600,
@@ -278,17 +280,42 @@ class MainViewState extends State<MainView> {
                                 SizedBox(
                                   height: 66.h,
                                 ),
-                                Container(
-                                  height: 150.sp,
-                                  width: 150.sp,
-                                  decoration: const BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: Color(0xFF9EA2A3),
+                                ZoomTapAnimation(
+                                  onTap: () async {
+                                    // await isUserIdInPostLikes(
+                                    //         userId, documents[postIndex].id)
+                                    //     ? await removeUserIdFromPostLikes(
+                                    //         userId, documents[postIndex].id)
+                                    //     : await addUserIdToPostLikes(
+                                    //         userId, documents[postIndex].id);
+                                    if (await isUserIdInPostLikes(
+                                        userId, documents[postIndex].id)) {
+                                      await removeUserIdFromPostLikes(
+                                          userId, documents[postIndex].id);
+                                    } else {
+                                      await addUserIdToPostLikes(
+                                          userId, documents[postIndex].id);
+                                    }
+                                  },
+                                  child: Container(
+                                    height: 150.sp,
+                                    width: 150.sp,
+                                    decoration: const BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: Color(0xFF9EA2A3),
+                                    ),
+                                    child: Center(
+                                      child: Icon(CupertinoIcons.heart_fill,
+                                          size: 90.sp,
+                                          color: Color(0xFFD5F600)),
+                                    ),
                                   ),
-                                  child: Center(
-                                    child: Icon(CupertinoIcons.heart_fill,
-                                        size: 90.sp, color: Color(0xFFD5F600)),
-                                  ),
+                                ),
+                                Text(
+                                  (documents[postIndex]['likes'].length)
+                                      .toString(),
+                                  style: GoogleFonts.poppins(
+                                      fontSize: 40.sp, color: Colors.white),
                                 ),
                                 SizedBox(
                                   height: 66.h,
@@ -556,78 +583,178 @@ class MainViewState extends State<MainView> {
         backgroundColor: Colors.grey[400],
         context: context,
         builder: (context) {
-          return Column(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          return Stack(
             children: [
-              Row(
+              ClipRRect(
+                borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(80.w),
+                    topRight: Radius.circular(80.w)),
+                child: SizedBox(
+                    height: 1937.h,
+                    width: 1.sw,
+                    child: Image.file(
+                      File(_imageFile!.path),
+                      fit: BoxFit.fill,
+                    )),
+              ),
+              Align(
+                alignment: Alignment.topCenter,
+                child: Container(
+                  margin: EdgeInsets.only(top: 28.h),
+                  height: 25.h,
+                  width: 419.w,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(100.w),
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+              Column(
                 children: [
-                  SizedBox(
-                    width: 30.w,
-                  ),
-                  Padding(
-                    padding: EdgeInsets.only(bottom: 10.h),
-                    child: Text("Khé",
-                        style: CustomTexts.font14
-                            .copyWith(color: CustomColors.textColor2)),
-                  ),
-                  SizedBox(
-                    width: 10.w,
-                  ),
-                  Padding(
-                    padding: EdgeInsets.only(right: 30.w, top: 30.w),
-                    child: SizedBox(
-                      width: 180.w,
-                      child: TextField(
-                        maxLength: 20,
-                        controller: descriptionController,
-                        maxLines: 2,
-                        decoration: InputDecoration(
-                            hintText: "Enter Description",
-                            hintStyle: CustomTexts.font14
-                                .copyWith(color: CustomColors.textColor2)),
+                  Row(
+                    children: [
+                      SizedBox(
+                        width: 30.w,
                       ),
-                    ),
-                  ),
-                  ZoomTapAnimation(
-                    onTap: () async {
-                      isModalSheetLoading.value = true;
-                      await controller.uploadPost(
-                          pickedFile, "Khé " + descriptionController.text);
-                      isModalSheetLoading.value = false;
-                      Navigator.pop(context);
-                    },
-                    child: Obx(
-                      () => Container(
-                        decoration: BoxDecoration(
-                            color: CustomColors.activeColor,
-                            borderRadius: BorderRadius.circular(12.w)),
-                        child: Padding(
-                          padding: EdgeInsets.symmetric(
-                              vertical: 10.h, horizontal: 20.w),
-                          child: Center(
-                              child: isModalSheetLoading.value
-                                  ? CircularProgressIndicator()
-                                  : Text(
-                                      "Post",
-                                      style: CustomTexts.font14,
-                                    )),
+                      Padding(
+                        padding: EdgeInsets.only(bottom: 10.h),
+                        child: Text("Khé",
+                            style: GoogleFonts.poppins(
+                                fontSize: 48.sp,
+                                fontWeight: FontWeight.w600,
+                                color: Color(0xFFD5F600))),
+                      ),
+                      SizedBox(
+                        width: 10.w,
+                      ),
+                      Padding(
+                        padding: EdgeInsets.only(right: 30.w, top: 60.w),
+                        child: SizedBox(
+                          width: 700.w,
+                          child: TextField(
+                            style: GoogleFonts.poppins(
+                                fontSize: 24.sp,
+                                fontWeight: FontWeight.w600,
+                                color: Color(0xFFD5F600)),
+                            maxLength: 20,
+                            controller: descriptionController,
+                            maxLines: 2,
+                            decoration: InputDecoration(
+                                hintText: "Enter Description",
+                                hintStyle: GoogleFonts.poppins(
+                                    fontSize: 48.sp,
+                                    fontWeight: FontWeight.w600,
+                                    color: Color(0xFFD5F600))),
+                          ),
                         ),
                       ),
-                    ),
+                      ZoomTapAnimation(
+                        onTap: () async {
+                          isModalSheetLoading.value = true;
+                          await controller.uploadPost(
+                              pickedFile, "Khé " + descriptionController.text);
+                          isModalSheetLoading.value = false;
+                          Navigator.pop(context);
+                        },
+                        child: Obx(
+                          () => Container(
+                            decoration: BoxDecoration(
+                                color: CustomColors.activeColor,
+                                borderRadius: BorderRadius.circular(12.w)),
+                            child: Padding(
+                              padding: EdgeInsets.symmetric(
+                                  vertical: 10.h, horizontal: 60.w),
+                              child: Center(
+                                  child: isModalSheetLoading.value
+                                      ? CircularProgressIndicator()
+                                      : Text(
+                                          "Post",
+                                          style: GoogleFonts.poppins(
+                                              fontSize: 48.sp,
+                                              color: Colors.white),
+                                        )),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
-              ClipRRect(
-                  borderRadius: BorderRadius.circular(26.w),
-                  child: SizedBox(
-                      height: 250.h,
-                      width: double.infinity,
-                      child: Image.file(
-                        File(_imageFile!.path),
-                        fit: BoxFit.fill,
-                      ))),
             ],
           );
+          // return Column(
+          //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          //   children: [
+          //     Row(
+          //       children: [
+          //         SizedBox(
+          //           width: 30.w,
+          //         ),
+          //         Padding(
+          //           padding: EdgeInsets.only(bottom: 10.h),
+          //           child: Text("Khé",
+          //               style: CustomTexts.font14
+          //                   .copyWith(color: CustomColors.textColor2)),
+          //         ),
+          //         SizedBox(
+          //           width: 10.w,
+          //         ),
+          //         Padding(
+          //           padding: EdgeInsets.only(right: 30.w, top: 30.w),
+          //           child: SizedBox(
+          //             width: 180.w,
+          //             child: TextField(
+          //               maxLength: 20,
+          //               controller: descriptionController,
+          //               maxLines: 2,
+          //               decoration: InputDecoration(
+          //                   hintText: "Enter Description",
+          //                   hintStyle: CustomTexts.font14
+          //                       .copyWith(color: CustomColors.textColor2)),
+          //             ),
+          //           ),
+          //         ),
+          //         ZoomTapAnimation(
+          //           onTap: () async {
+          //             isModalSheetLoading.value = true;
+          //             await controller.uploadPost(
+          //                 pickedFile, "Khé " + descriptionController.text);
+          //             isModalSheetLoading.value = false;
+          //             Navigator.pop(context);
+          //           },
+          //           child: Obx(
+          //             () => Container(
+          //               decoration: BoxDecoration(
+          //                   color: CustomColors.activeColor,
+          //                   borderRadius: BorderRadius.circular(12.w)),
+          //               child: Padding(
+          //                 padding: EdgeInsets.symmetric(
+          //                     vertical: 10.h, horizontal: 20.w),
+          //                 child: Center(
+          //                     child: isModalSheetLoading.value
+          //                         ? CircularProgressIndicator()
+          //                         : Text(
+          //                             "Post",
+          //                             style: CustomTexts.font14,
+          //                           )),
+          //               ),
+          //             ),
+          //           ),
+          //         ),
+          //       ],
+          //     ),
+          //     ClipRRect(
+          //         borderRadius: BorderRadius.circular(26.w),
+          //         child: SizedBox(
+          //             height: 250.h,
+          //             width: double.infinity,
+          //             child: Image.file(
+          //               File(_imageFile!.path),
+          //               fit: BoxFit.fill,
+          //             ))),
+          //   ],
+          // );
         },
       );
     }
