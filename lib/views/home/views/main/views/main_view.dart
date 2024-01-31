@@ -6,6 +6,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
@@ -647,44 +648,42 @@ class MainViewState extends State<MainView> {
     }
   }
 
+  final usersRef = FirebaseFirestore.instance.collection('Users');
+  List<double> leftPosition = [65.0, 450.0, 800.0, 600.0, 242.0];
+  List<double> bottomPosition = [444.0, 753.0, 444.0, 80.0, 80.0];
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      floatingActionButton: Align(
-        alignment: Alignment.bottomCenter,
-        child: Padding(
-          padding: EdgeInsets.only(bottom: 20.h, left: 20.w),
-          child: ZoomTapAnimation(
-            onTap: () async {
-              isUploadPostLoading.value = true;
-              _pickImage();
-              isUploadPostLoading.value = false;
-            },
-            child: Obx(
-              () => Container(
-                height: 50.w,
-                width: 100.w,
-                decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(40.w),
-                    color: CustomColors.textColor2),
-                child: Center(
-                  child: isUploadPostLoading.value
-                      ? SizedBox(
-                          height: 16.sp,
-                          width: 16.sp,
-                          child: CircularProgressIndicator())
-                      : Text(
-                          "Upload Post",
-                          style: CustomTexts.font12
-                              .copyWith(fontWeight: FontWeight.bold),
-                        ),
-                ),
+      floatingActionButton: Padding(
+        padding: EdgeInsets.only(bottom: 20.h, left: 20.w),
+        child: ZoomTapAnimation(
+          onTap: () async {
+            isUploadPostLoading.value = true;
+            _pickImage();
+            isUploadPostLoading.value = false;
+          },
+          child: Obx(
+            () => Container(
+              height: 150.sp,
+              width: 150.sp,
+              decoration: BoxDecoration(
+                  shape: BoxShape.circle, color: Color(0xFFD5F600)),
+              child: Center(
+                child: isUploadPostLoading.value
+                    ? SizedBox(
+                        height: 50.sp,
+                        width: 50.sp,
+                        child: const CircularProgressIndicator())
+                    : Icon(
+                        Icons.add,
+                        color: Colors.white,
+                      ),
               ),
             ),
           ),
         ),
       ),
-      backgroundColor: Colors.grey[300],
+      backgroundColor: const Color(0XFF101010),
       body: SafeArea(
           child: SingleChildScrollView(
         child: Padding(
@@ -692,14 +691,31 @@ class MainViewState extends State<MainView> {
           child: Column(
             children: [
               SizedBox(
-                height: 20.h,
+                height: 40.h,
               ),
-              Text(
-                "APP LOGO",
-                style: CustomTexts.font16.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: CustomColors.backgroundColor,
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 65.w),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Icon(
+                      Icons.search_outlined,
+                      color: Colors.white,
+                    ),
+                    Image.asset(
+                      "assets/images/png/intro_logo.png",
+                      height: 90.h,
+                      width: 219.w,
+                    ),
+                    const Icon(
+                      Icons.person,
+                      color: Colors.white,
+                    ),
+                  ],
                 ),
+              ),
+              SizedBox(
+                height: 74.h,
               ),
               StreamBuilder<QuerySnapshot>(
                 stream: userCollection.snapshots(),
@@ -714,123 +730,414 @@ class MainViewState extends State<MainView> {
                         (documents1[i].id !=
                                     FirebaseAuth.instance.currentUser!.uid) &&
                                 (documents1[i]['has_posted'])
-                            ? Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceEvenly,
-                                children: [
-                                  ClipRRect(
-                                    borderRadius: BorderRadius.circular(38.w),
-                                    child: SizedBox(
-                                      height: 100.sp,
-                                      width: 100.sp,
-                                      child: documents1[i]['profile_photo'] ==
-                                              ""
-                                          ? Container(
-                                              decoration: BoxDecoration(
-                                                color: CustomColors
-                                                    .backgroundColor,
-                                              ),
-                                              child: Icon(
-                                                Icons.person,
-                                                size: 64.sp,
-                                                color: CustomColors.textColor,
-                                              ),
-                                            )
-                                          : CachedNetworkImage(
-                                              placeholder: (context, val) {
-                                                return Container(
-                                                  width: 31.w,
-                                                  child: Center(
-                                                    child: Text(
-                                                      "Loading",
-                                                      style: TextStyle(
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                        fontSize: 15.sp,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                );
-                                              },
-                                              imageUrl: documents1[i]
-                                                  ['profile_photo'],
-                                              fit: BoxFit.fill,
-                                            ),
-                                    ),
-                                  ),
-                                  StreamBuilder(
-                                      stream: FirebaseFirestore.instance
-                                          .collection('Users')
-                                          .doc(documents1[i].id)
-                                          .collection('Posts')
-                                          .snapshots(),
-                                      builder: (context, snapshot) {
-                                        if (!snapshot.hasData) {
-                                          return CircularProgressIndicator();
-                                        }
-                                        final documents2 = snapshot.data!.docs;
-                                        return Column(
-                                          children: [
-                                            for (int j = 0;
-                                                j < documents2.length;
-                                                j++) ...[
-                                              documents2[j].id != "init"
-                                                  ? Padding(
-                                                      padding:
-                                                          EdgeInsets.symmetric(
-                                                              vertical: 5.h),
-                                                      child: ZoomTapAnimation(
-                                                        onTap: () async {
-                                                          await viewPost(
-                                                              documents1[i].id,
-                                                              j,
-                                                              context);
+                            ? SizedBox(
+                                height: 1000.h,
+                                child: Stack(
+                                  children: [
+                                    Align(
+                                      alignment: Alignment.center,
+                                      child: Stack(
+                                        children: [
+                                          Center(
+                                            child: ClipRRect(
+                                              borderRadius:
+                                                  BorderRadius.circular(200.w),
+                                              child: SizedBox(
+                                                height: 365.sp,
+                                                width: 365.sp,
+                                                child: documents1[i]
+                                                            ['profile_photo'] ==
+                                                        ""
+                                                    ? Container(
+                                                        decoration:
+                                                            BoxDecoration(
+                                                          color: CustomColors
+                                                              .backgroundColor,
+                                                        ),
+                                                        child: Icon(
+                                                          Icons.person,
+                                                          size: 64.sp,
+                                                          color: CustomColors
+                                                              .textColor,
+                                                        ),
+                                                      )
+                                                    : CachedNetworkImage(
+                                                        placeholder:
+                                                            (context, val) {
+                                                          return Container(
+                                                            width: 31.w,
+                                                            child: Center(
+                                                              child: Text(
+                                                                "Loading",
+                                                                style:
+                                                                    TextStyle(
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .bold,
+                                                                  fontSize:
+                                                                      15.sp,
+                                                                ),
+                                                              ),
+                                                            ),
+                                                          );
                                                         },
-                                                        child: ClipRRect(
-                                                          borderRadius:
-                                                              BorderRadius
-                                                                  .circular(
-                                                                      200.w),
-                                                          child: SizedBox(
-                                                            height: 60.sp,
-                                                            width: 60.sp,
-                                                            child:
-                                                                CachedNetworkImage(
-                                                              placeholder:
-                                                                  (context,
-                                                                      val) {
-                                                                return SizedBox(
-                                                                  width: 31.w,
-                                                                  child: Center(
-                                                                    child: Text(
-                                                                      "Loading",
-                                                                      style:
-                                                                          TextStyle(
-                                                                        fontWeight:
-                                                                            FontWeight.bold,
-                                                                        fontSize:
-                                                                            15.sp,
-                                                                      ),
+                                                        imageUrl: documents1[i]
+                                                            ['profile_photo'],
+                                                        fit: BoxFit.fill,
+                                                      ),
+                                              ),
+                                            ),
+                                          ),
+                                          Center(
+                                            child: Image.asset(
+                                              "assets/images/png/profile_photo_border.png",
+                                              height: 420.sp,
+                                              width: 420.sp,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+
+                                    //it was center photo
+
+                                    SizedBox(
+                                      height: 980.h,
+                                      child: StreamBuilder(
+                                          stream: FirebaseFirestore.instance
+                                              .collection('Users')
+                                              .doc(documents1[i].id)
+                                              .collection('Posts')
+                                              .snapshots(),
+                                          builder: (context, snapshot) {
+                                            if (!snapshot.hasData) {
+                                              return CircularProgressIndicator();
+                                            }
+                                            final documents2 =
+                                                snapshot.data!.docs;
+                                            return Stack(
+                                              children: [
+                                                Center(
+                                                  child: Image.asset(
+                                                    "assets/images/png/post_photo_border.png",
+                                                    height: 803.sp,
+                                                    width: 803.sp,
+                                                  ),
+                                                ),
+                                                Stack(
+                                                  children: [
+                                                    for (int j = 0;
+                                                        j < documents2.length;
+                                                        j++) ...[
+                                                      // documents2[j].id != 'init'
+                                                      //     ?
+                                                      Positioned(
+                                                        left: leftPosition[j].w,
+                                                        bottom:
+                                                            bottomPosition[j].h,
+                                                        child: documents2[j]
+                                                                    .id ==
+                                                                'init'
+                                                            ? SizedBox()
+                                                            : ZoomTapAnimation(
+                                                                onTap:
+                                                                    () async {
+                                                                  await viewPost(
+                                                                      documents1[
+                                                                              i]
+                                                                          .id,
+                                                                      j,
+                                                                      context);
+                                                                },
+                                                                child:
+                                                                    ClipRRect(
+                                                                  borderRadius:
+                                                                      BorderRadius
+                                                                          .circular(
+                                                                              200.w),
+                                                                  child:
+                                                                      SizedBox(
+                                                                    height:
+                                                                        220.sp,
+                                                                    width:
+                                                                        220.sp,
+                                                                    child:
+                                                                        CachedNetworkImage(
+                                                                      placeholder:
+                                                                          (context,
+                                                                              val) {
+                                                                        return SizedBox(
+                                                                          width:
+                                                                              31.w,
+                                                                          child:
+                                                                              Center(
+                                                                            child:
+                                                                                Text(
+                                                                              "Loading",
+                                                                              style: TextStyle(
+                                                                                fontWeight: FontWeight.bold,
+                                                                                fontSize: 15.sp,
+                                                                              ),
+                                                                            ),
+                                                                          ),
+                                                                        );
+                                                                      },
+                                                                      imageUrl:
+                                                                          documents2[j]
+                                                                              [
+                                                                              'post_photo'],
+                                                                      fit: BoxFit
+                                                                          .fill,
                                                                     ),
                                                                   ),
-                                                                );
-                                                              },
-                                                              imageUrl: documents2[
-                                                                      j][
-                                                                  'post_photo'],
-                                                              fit: BoxFit.fill,
-                                                            ),
-                                                          ),
-                                                        ),
+                                                                ),
+                                                              ),
                                                       ),
-                                                    )
-                                                  : const SizedBox(),
-                                            ]
-                                          ],
-                                        );
-                                      })
-                                ],
+                                                    ]
+                                                    // for (int j = 0; j < 5; j++) ...[
+                                                    //   Positioned(
+                                                    //       left: leftPosition[j].w,
+                                                    //       bottom:
+                                                    //           bottomPosition[j].h,
+                                                    //       child: Container(
+                                                    //         height: 220.sp,
+                                                    //         width: 220.sp,
+                                                    //         color: Colors.red,
+                                                    //       )),
+                                                    // ]
+                                                  ],
+                                                ),
+                                              ],
+                                            );
+                                          }),
+                                    ),
+                                    // return Column(
+                                    //   children: [
+                                    //     for (int j = 0;
+                                    //         j < documents2.length;
+                                    //         j++) ...[
+                                    //       documents2[j].id != "init"
+                                    //           ? ZoomTapAnimation(
+                                    //             onTap: () async {
+                                    //               await viewPost(
+                                    //                   documents1[i].id,
+                                    //                   j,
+                                    //                   context);
+                                    //             },
+                                    //             child: ClipRRect(
+                                    //               borderRadius:
+                                    //                   BorderRadius
+                                    //                       .circular(
+                                    //                           200.w),
+                                    //               child: SizedBox(
+                                    //                 height: 220.sp,
+                                    //                 width: 220.sp,
+                                    //                 child:
+                                    //                     CachedNetworkImage(
+                                    //                   placeholder:
+                                    //                       (context,
+                                    //                           val) {
+                                    //                     return SizedBox(
+                                    //                       width: 31.w,
+                                    //                       child: Center(
+                                    //                         child: Text(
+                                    //                           "Loading",
+                                    //                           style:
+                                    //                               TextStyle(
+                                    //                             fontWeight:
+                                    //                                 FontWeight.bold,
+                                    //                             fontSize:
+                                    //                                 15.sp,
+                                    //                           ),
+                                    //                         ),
+                                    //                       ),
+                                    //                     );
+                                    //                   },
+                                    //                   imageUrl: documents2[
+                                    //                           j][
+                                    //                       'post_photo'],
+                                    //                   fit: BoxFit.fill,
+                                    //                 ),
+                                    //               ),
+                                    //             ),
+                                    //           )
+                                    //           : const SizedBox(),
+
+                                    // Positioned(
+                                    //     left: 65.w,
+                                    //     bottom: 444.h,
+                                    //     child: Container(
+                                    //       decoration: BoxDecoration(
+                                    //         shape: BoxShape.circle,
+                                    //         color: Colors.red,
+                                    //       ),
+                                    //       height: 220.sp,
+                                    //       width: 220.sp,
+                                    //     )),
+                                    // Positioned(
+                                    //     left: 450.w,
+                                    //     bottom: 753.h,
+                                    //     child: Container(
+                                    //       decoration: BoxDecoration(
+                                    //         shape: BoxShape.circle,
+                                    //         color: Colors.blue,
+                                    //       ),
+                                    //       height: 220.sp,
+                                    //       width: 220.sp,
+                                    //     )),
+                                    // Positioned(
+                                    //     left: 800.w,
+                                    //     bottom: 444.h,
+                                    //     child: Container(
+                                    //       decoration: BoxDecoration(
+                                    //         shape: BoxShape.circle,
+                                    //         color: Colors.green,
+                                    //       ),
+                                    //       height: 220.sp,
+                                    //       width: 220.sp,
+                                    //     )),
+                                    // Positioned(
+                                    //     left: 600.w,
+                                    //     bottom: 80.h,
+                                    //     child: Container(
+                                    //       decoration: BoxDecoration(
+                                    //         shape: BoxShape.circle,
+                                    //         color: Colors.white,
+                                    //       ),
+                                    //       height: 220.sp,
+                                    //       width: 220.sp,
+                                    //     )),
+                                    // Positioned(
+                                    //     left: 242.w,
+                                    //     bottom: 80.h,
+                                    //     child: Container(
+                                    //       decoration: BoxDecoration(
+                                    //         shape: BoxShape.circle,
+                                    //         color: Colors.white,
+                                    //       ),
+                                    //       height: 220.sp,
+                                    //       width: 220.sp,
+                                    //     )),
+                                  ],
+                                ),
                               )
+                            // Row(
+                            //     mainAxisAlignment:
+                            //         MainAxisAlignment.spaceEvenly,
+                            //     children: [
+                            //       ClipRRect(
+                            //         borderRadius: BorderRadius.circular(38.w),
+                            //         child: SizedBox(
+                            //           height: 100.sp,
+                            //           width: 100.sp,
+                            //           child: documents1[i]['profile_photo'] ==
+                            //                   ""
+                            //               ? Container(
+                            //                   decoration: BoxDecoration(
+                            //                     color: CustomColors
+                            //                         .backgroundColor,
+                            //                   ),
+                            //                   child: Icon(
+                            //                     Icons.person,
+                            //                     size: 64.sp,
+                            //                     color: CustomColors.textColor,
+                            //                   ),
+                            //                 )
+                            //               : CachedNetworkImage(
+                            //                   placeholder: (context, val) {
+                            //                     return Container(
+                            //                       width: 31.w,
+                            //                       child: Center(
+                            //                         child: Text(
+                            //                           "Loading",
+                            //                           style: TextStyle(
+                            //                             fontWeight:
+                            //                                 FontWeight.bold,
+                            //                             fontSize: 15.sp,
+                            //                           ),
+                            //                         ),
+                            //                       ),
+                            //                     );
+                            //                   },
+                            //                   imageUrl: documents1[i]
+                            //                       ['profile_photo'],
+                            //                   fit: BoxFit.fill,
+                            //                 ),
+                            //         ),
+                            //       ),
+                            //       StreamBuilder(
+                            //           stream: FirebaseFirestore.instance
+                            //               .collection('Users')
+                            //               .doc(documents1[i].id)
+                            //               .collection('Posts')
+                            //               .snapshots(),
+                            //           builder: (context, snapshot) {
+                            //             if (!snapshot.hasData) {
+                            //               return CircularProgressIndicator();
+                            //             }
+                            //             final documents2 = snapshot.data!.docs;
+                            //             return Column(
+                            //               children: [
+                            //                 for (int j = 0;
+                            //                     j < documents2.length;
+                            //                     j++) ...[
+                            //                   documents2[j].id != "init"
+                            //                       ? Padding(
+                            //                           padding:
+                            //                               EdgeInsets.symmetric(
+                            //                                   vertical: 5.h),
+                            //                           child: ZoomTapAnimation(
+                            //                             onTap: () async {
+                            //                               await viewPost(
+                            //                                   documents1[i].id,
+                            //                                   j,
+                            //                                   context);
+                            //                             },
+                            //                             child: ClipRRect(
+                            //                               borderRadius:
+                            //                                   BorderRadius
+                            //                                       .circular(
+                            //                                           200.w),
+                            //                               child: SizedBox(
+                            //                                 height: 60.sp,
+                            //                                 width: 60.sp,
+                            //                                 child:
+                            //                                     CachedNetworkImage(
+                            //                                   placeholder:
+                            //                                       (context,
+                            //                                           val) {
+                            //                                     return SizedBox(
+                            //                                       width: 31.w,
+                            //                                       child: Center(
+                            //                                         child: Text(
+                            //                                           "Loading",
+                            //                                           style:
+                            //                                               TextStyle(
+                            //                                             fontWeight:
+                            //                                                 FontWeight.bold,
+                            //                                             fontSize:
+                            //                                                 15.sp,
+                            //                                           ),
+                            //                                         ),
+                            //                                       ),
+                            //                                     );
+                            //                                   },
+                            //                                   imageUrl: documents2[
+                            //                                           j][
+                            //                                       'post_photo'],
+                            //                                   fit: BoxFit.fill,
+                            //                                 ),
+                            //                               ),
+                            //                             ),
+                            //                           ),
+                            //                         )
+                            //                       : const SizedBox(),
+                            //                 ]
+                            //               ],
+                            //             );
+                            //           })
+                            //     ],
+                            //   )
                             : SizedBox(),
                         SizedBox(
                           height: 30.h,
@@ -838,10 +1145,13 @@ class MainViewState extends State<MainView> {
                         documents1[i]['has_posted'] &&
                                 documents1[i].id !=
                                     FirebaseAuth.instance.currentUser!.uid
-                            ? Container(
-                                decoration:
-                                    BoxDecoration(color: Colors.grey[400]),
-                                height: 2.sp,
+                            ? Center(
+                                child: Container(
+                                  decoration:
+                                      BoxDecoration(color: Color(0xFFD9D9D9)),
+                                  height: 2.sp,
+                                  width: 350.w,
+                                ),
                               )
                             : SizedBox(),
                         SizedBox(
@@ -856,6 +1166,55 @@ class MainViewState extends State<MainView> {
           ),
         ),
       )),
+    );
+  }
+}
+
+class ProfileAndPostPhoto extends StatelessWidget {
+  final DocumentSnapshot user;
+  ProfileAndPostPhoto({required this.user});
+
+  // const ProfileAndPostPhoto({Key key, this.user}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<QuerySnapshot>(
+      stream: user.reference.collection('Posts').snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.hasData) {
+          final posts = snapshot.data!.docs;
+          return Stack(
+            alignment: Alignment.center,
+            children: [
+              CircleAvatar(
+                backgroundImage: CachedNetworkImageProvider(
+                  user['profile_photo'],
+                ),
+                radius: 80,
+              ),
+              ...posts.map((post) {
+                if (post.id != 'init') {
+                  return ClipOval(
+                    child: Transform.rotate(
+                      angle: posts.indexOf(post) * 2 * 3.14 / posts.length,
+                      child: CachedNetworkImage(
+                        imageUrl: post['post_photo'],
+                        width: 40,
+                        height: 40,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  );
+                } else {
+                  return SizedBox();
+                }
+              }).toList(),
+            ],
+          );
+        } else {
+          return Center(child: CircularProgressIndicator());
+        }
+      },
     );
   }
 }
