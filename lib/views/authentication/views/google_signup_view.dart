@@ -84,7 +84,6 @@ class GoogleSignUpView extends StatelessWidget {
               padding: EdgeInsets.symmetric(horizontal: 48.w),
               child: TextField(
                 controller: controller.googleNameController,
-                obscureText: true,
                 style: GoogleFonts.archivo(
                     fontSize: 40.sp,
                     fontWeight: FontWeight.w400,

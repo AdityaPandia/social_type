@@ -7,8 +7,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:social_type/common/custom_colors.dart';
 import 'package:social_type/common/custom_texts.dart';
@@ -153,8 +155,8 @@ class MainViewState extends State<MainView> {
                   children: [
                     ClipRRect(
                       borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(110.w),
-                          topRight: Radius.circular(110.w)),
+                          topLeft: Radius.circular(80.w),
+                          topRight: Radius.circular(80.w)),
                       child: SizedBox(
                         height: 1937.h,
                         width: 1.sw,
@@ -176,6 +178,139 @@ class MainViewState extends State<MainView> {
                           imageUrl: documents[postIndex]['post_photo'],
                           fit: BoxFit.fill,
                         ),
+                      ),
+                    ),
+                    Align(
+                      alignment: Alignment.topCenter,
+                      child: Container(
+                        margin: EdgeInsets.only(top: 28.h),
+                        height: 25.h,
+                        width: 419.w,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(100.w),
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.only(bottom: 233.h),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Padding(
+                            padding: EdgeInsets.only(left: 68.w),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  "Frank A",
+                                  style: GoogleFonts.poppins(
+                                      fontSize: 90.sp,
+                                      fontWeight: FontWeight.w600,
+                                      color: Color(0xFFF5F5F5)),
+                                ),
+                                SizedBox(
+                                  height: 43.h,
+                                ),
+                                Container(
+                                  width: 636.w,
+                                  height: 150.h,
+                                  decoration: BoxDecoration(
+                                      borderRadius:
+                                          BorderRadius.circular(200.w),
+                                      color: Color(0xFF9EA2A3)),
+                                  child: Row(
+                                    children: [
+                                      SizedBox(
+                                        width: 60.w,
+                                      ),
+                                      Text(
+                                        "Khé ",
+                                        style: GoogleFonts.poppins(
+                                            fontSize: 64.sp,
+                                            fontWeight: FontWeight.w600,
+                                            color: Color(0xFFD5F600)),
+                                      ),
+                                      SizedBox(
+                                          width: 348.w,
+                                          child: TextField(
+                                            decoration: InputDecoration(
+                                                border: InputBorder.none,
+                                                hintText: "Type Here",
+                                                hintStyle: GoogleFonts.poppins(
+                                                    fontSize: 64.sp,
+                                                    fontWeight: FontWeight.w600,
+                                                    color: Color(0xFFD5F600))),
+                                            style: GoogleFonts.poppins(
+                                                fontSize: 64.sp,
+                                                fontWeight: FontWeight.w600,
+                                                color: Color(0xFFD5F600)),
+                                          )),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Padding(
+                            padding: EdgeInsets.only(right: 68.w),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                Container(
+                                  height: 150.sp,
+                                  width: 150.sp,
+                                  decoration: const BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: Color(0xFF9EA2A3),
+                                  ),
+                                  child: Center(
+                                    child: Image.asset(
+                                      "assets/images/png/follow_icon.png",
+                                      height: 70.sp,
+                                      width: 70.sp,
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(
+                                  height: 66.h,
+                                ),
+                                Container(
+                                  height: 150.sp,
+                                  width: 150.sp,
+                                  decoration: const BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: Color(0xFF9EA2A3),
+                                  ),
+                                  child: Center(
+                                    child: Icon(CupertinoIcons.heart_fill,
+                                        size: 90.sp, color: Color(0xFFD5F600)),
+                                  ),
+                                ),
+                                SizedBox(
+                                  height: 66.h,
+                                ),
+                                Container(
+                                  height: 150.sp,
+                                  width: 150.sp,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: Color(0xFF9EA2A3),
+                                  ),
+                                  child: Center(
+                                    child: Image.asset(
+                                      "assets/images/png/comment_icon.png",
+                                      height: 80.sp,
+                                      width: 80.sp,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
