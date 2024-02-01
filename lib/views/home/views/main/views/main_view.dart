@@ -228,29 +228,32 @@ class MainViewState extends State<MainView> {
                                       SizedBox(
                                         width: 60.w,
                                       ),
-                                      // Text(
-                                      //   "Khé ",
-                                      //   style: GoogleFonts.poppins(
-                                      //       fontSize: 64.sp,
-                                      //       fontWeight: FontWeight.w600,
-                                      //       color: Color(0xFFD5F600)),
-                                      // ),
+
+                                      // SizedBox(
+                                      //     width: 348.w,
+                                      //     child: TextField(
+                                      //       decoration: InputDecoration(
+                                      //           border: InputBorder.none,
+                                      //           hintText:
+                                      //           hintStyle: GoogleFonts.poppins(
+                                      //               fontSize: 64.sp,
+                                      //               fontWeight: FontWeight.w600,
+                                      //               color: Color(0xFFD5F600))),
+                                      //       style: GoogleFonts.poppins(
+                                      //           fontSize: 64.sp,
+                                      //           fontWeight: FontWeight.w600,
+                                      //           color: Color(0xFFD5F600)),
+                                      //     )),
                                       SizedBox(
-                                          width: 348.w,
-                                          child: TextField(
-                                            decoration: InputDecoration(
-                                                border: InputBorder.none,
-                                                hintText: documents[postIndex]
-                                                    ['description'],
-                                                hintStyle: GoogleFonts.poppins(
-                                                    fontSize: 64.sp,
-                                                    fontWeight: FontWeight.w600,
-                                                    color: Color(0xFFD5F600))),
-                                            style: GoogleFonts.poppins(
-                                                fontSize: 64.sp,
-                                                fontWeight: FontWeight.w600,
-                                                color: Color(0xFFD5F600)),
-                                          )),
+                                        width: 348.w,
+                                        child: Text(
+                                          documents[postIndex]['description'],
+                                          style: GoogleFonts.poppins(
+                                              fontSize: 48.sp,
+                                              fontWeight: FontWeight.w600,
+                                              color: Color(0xFFD5F600)),
+                                        ),
+                                      ),
                                     ],
                                   ),
                                 ),
@@ -262,18 +265,69 @@ class MainViewState extends State<MainView> {
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.end,
                               children: [
-                                Container(
-                                  height: 150.sp,
-                                  width: 150.sp,
-                                  decoration: const BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: Color(0xFF9EA2A3),
-                                  ),
-                                  child: Center(
-                                    child: Image.asset(
-                                      "assets/images/png/follow_icon.png",
-                                      height: 70.sp,
-                                      width: 70.sp,
+                                ZoomTapAnimation(
+                                  onTap: () async {
+                                    isFollowButtonLoading.value = true;
+                                    await controller.isUserIdInFollowers(
+                                      userId,
+                                    )
+                                        ? await controller
+                                            .removeUserIdFromFollowers(userId)
+                                        : await controller
+                                            .addUserIdToFollowers(userId);
+                                    isFollowButtonLoading.value = false;
+                                  },
+                                  child: Obx(
+                                    () => Container(
+                                      height: 150.sp,
+                                      width: 150.sp,
+                                      decoration: const BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: Color(0xFF9EA2A3),
+                                      ),
+                                      child: Center(
+                                          child: isFollowButtonLoading.value
+                                              ? SizedBox(
+                                                  height: 40.h,
+                                                  width: 20.h,
+                                                  child:
+                                                      const CircularProgressIndicator())
+                                              : StreamBuilder(
+                                                  stream: controller
+                                                      .isUserIdInFollowers(
+                                                          userId)
+                                                      .asStream(),
+                                                  builder: (context, snapshot) {
+                                                    if (!snapshot.hasData) {
+                                                      return SizedBox(
+                                                          height: 40.h,
+                                                          width: 20.h,
+                                                          child:
+                                                              const CircularProgressIndicator());
+                                                    }
+
+                                                    if (snapshot.data!) {
+                                                      // return const Text("Unfollow",);
+                                                      return Text(
+                                                        "Unfollow",
+                                                        style:
+                                                            GoogleFonts.poppins(
+                                                                color: Colors
+                                                                    .white,
+                                                                fontSize:
+                                                                    20.sp),
+                                                      );
+                                                    } else {
+                                                      // return const Text("Follow");
+                                                      return Center(
+                                                        child: Image.asset(
+                                                          "assets/images/png/follow_icon.png",
+                                                          height: 70.sp,
+                                                          width: 70.sp,
+                                                        ),
+                                                      );
+                                                    }
+                                                  })),
                                     ),
                                   ),
                                 ),

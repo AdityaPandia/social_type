@@ -13,6 +13,7 @@ import 'package:social_type/controllers/app_controller.dart';
 import 'package:social_type/views/authentication/views/login_view.dart';
 import 'package:social_type/views/home/views/main/views/main_view.dart';
 import 'package:social_type/views/home/views/profile/controllers/profile_controller.dart';
+import 'package:social_type/views/home/views/profile/views/follower_view.dart';
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
 
 class ProfileView extends StatelessWidget {
@@ -79,14 +80,21 @@ class ProfileView extends StatelessWidget {
                       SizedBox(
                         width: 9.w,
                       ),
-                      SizedBox(
-                        width: 329.w,
-                        child: Text(
-                          "(@username)",
-                          style: GoogleFonts.poppins(
-                              fontSize: 36.sp,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.white),
+                      ZoomTapAnimation(
+                        onTap: () async {
+                          await GetStorage().write('isSignInDone', false);
+                          await GoogleSignIn().signOut();
+                          Get.offAll(() => LoginView());
+                        },
+                        child: SizedBox(
+                          width: 329.w,
+                          child: Text(
+                            "(@username)",
+                            style: GoogleFonts.poppins(
+                                fontSize: 36.sp,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white),
+                          ),
                         ),
                       ),
                       SizedBox(
@@ -114,20 +122,76 @@ class ProfileView extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        "530 Followers",
-                        style: GoogleFonts.poppins(
-                            fontSize: 56.sp,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white),
+                      StreamBuilder<QuerySnapshot>(
+                        stream: FirebaseFirestore.instance
+                            .collection('Users')
+                            .snapshots(),
+                        builder: (context, snapshot) {
+                          if (snapshot.hasData) {
+                            for (final doc in snapshot.data!.docs) {
+                              if (doc.id ==
+                                  FirebaseAuth.instance.currentUser!.uid) {
+                                final follower = doc.get('followers').length;
+                                return ZoomTapAnimation(
+                                  onTap: () {
+                                    Get.to(FollowerView());
+                                  },
+                                  child: Text(
+                                    '$follower Followers',
+                                    style: GoogleFonts.poppins(
+                                        fontSize: 56.sp,
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.white),
+                                  ),
+                                );
+                              }
+                            }
+                          }
+                          return const SizedBox();
+                        },
                       ),
-                      Text(
-                        "89 Following",
-                        style: GoogleFonts.poppins(
-                            fontSize: 56.sp,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white),
+                      // Text(
+                      //   "530 Followers",
+                      //   style: GoogleFonts.poppins(
+                      //       fontSize: 56.sp,
+                      //       fontWeight: FontWeight.w600,
+                      //       color: Colors.white),
+                      // ),
+                      StreamBuilder<QuerySnapshot>(
+                        stream: FirebaseFirestore.instance
+                            .collection('Users')
+                            .snapshots(),
+                        builder: (context, snapshot) {
+                          if (snapshot.hasData) {
+                            for (final doc in snapshot.data!.docs) {
+                              if (doc.id ==
+                                  FirebaseAuth.instance.currentUser!.uid) {
+                                final following = doc.get('following').length;
+                                return ZoomTapAnimation(
+                                  onTap: () {
+                                    Get.to(FollowerView());
+                                  },
+                                  child: Text(
+                                    '$following Following',
+                                    style: GoogleFonts.poppins(
+                                        fontSize: 56.sp,
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.white),
+                                  ),
+                                );
+                              }
+                            }
+                          }
+                          return const SizedBox();
+                        },
                       ),
+                      // Text(
+                      //   "89 Following",
+                      //   style: GoogleFonts.poppins(
+                      //       fontSize: 56.sp,
+                      //       fontWeight: FontWeight.w600,
+                      //       color: Colors.white),
+                      // ),
                     ],
                   ),
                   SizedBox(
@@ -138,307 +202,310 @@ class ProfileView extends StatelessWidget {
             ),
 
             //old
-            Row(
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(100.w),
-                  child: Container(
-                    color: CustomColors.textColor2,
-                    height: 100.sp,
-                    width: 100.sp,
-                    child: StreamBuilder<DocumentSnapshot>(
-                      stream: FirebaseFirestore.instance
-                          .collection('Users')
-                          .doc(GetStorage().read('uid'))
-                          .snapshots(),
-                      builder: (context, snapshot) {
-                        if (snapshot.hasData) {
-                          final user = snapshot.data!;
-                          final imageUrl = user['profile_photo'];
-                          print("image url is");
-                          print(imageUrl);
-                          if (imageUrl != '') {
-                            return Image.network(imageUrl);
-                          } else if (imageUrl == '') {
-                            return Obx(
-                              () => ZoomTapAnimation(
-                                onTap: () async {
-                                  await controller.uploadProfilePhoto();
-                                },
-                                child: controller.isLoading.value
-                                    ? const CircularProgressIndicator(
-                                        color: Colors.white,
-                                      )
-                                    : Stack(
-                                        children: [
-                                          Align(
-                                            alignment: Alignment.topCenter,
-                                            child: Icon(
-                                              Icons.person,
-                                              color: Colors.white,
-                                              size: 60.sp,
-                                            ),
-                                          ),
-                                          Align(
-                                            alignment: Alignment.center,
-                                            child: Padding(
-                                              padding:
-                                                  EdgeInsets.only(top: 30.h),
-                                              child: Text(
-                                                'Upload Photo',
-                                                style: CustomTexts.font12
-                                                    .copyWith(
-                                                        color: Colors.white),
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                              ),
-                            ); // Placeholder if no image
-                          } else {
-                            return const Text("Something Wrong");
-                          }
-                        } else if (!snapshot.hasData) {
-                          return const Icon(Icons.person);
-                        } else if (snapshot.hasError) {
-                          return Text('Error: ${snapshot.error}');
-                        } else {
-                          return const CircularProgressIndicator();
-                        }
-                      },
-                    ),
-                  ),
-                ),
-                SizedBox(
-                  width: 20.w,
-                ),
-                Column(
-                  children: [
-                    ZoomTapAnimation(
-                      onTap: () {
-                        Get.defaultDialog(
-                            middleText: "",
-                            title: "",
-                            content: FutureBuilder<List<Map<String, dynamic>>>(
-                              future: FirebaseFirestore.instance
-                                  .collection('Users')
-                                  .doc(FirebaseAuth.instance.currentUser!.uid)
-                                  .get()
-                                  .then((snapshot) => snapshot.data()!)
-                                  .then((userDocument) {
-                                final followersIds =
-                                    (userDocument['followers'] as List<dynamic>)
-                                        .cast<String>();
+            // Row(
+            //   children: [
+            //     ClipRRect(
+            //       borderRadius: BorderRadius.circular(100.w),
+            //       child: Container(
+            //         color: CustomColors.textColor2,
+            //         height: 100.sp,
+            //         width: 100.sp,
+            //         child: StreamBuilder<DocumentSnapshot>(
+            //           stream: FirebaseFirestore.instance
+            //               .collection('Users')
+            //               .doc(GetStorage().read('uid'))
+            //               .snapshots(),
+            //           builder: (context, snapshot) {
+            //             if (snapshot.hasData) {
+            //               final user = snapshot.data!;
+            //               final imageUrl = user['profile_photo'];
+            //               print("image url is");
+            //               print(imageUrl);
+            //               if (imageUrl != '') {
+            //                 return Image.network(imageUrl);
+            //               } else if (imageUrl == '') {
+            //                 return Obx(
+            //                   () => ZoomTapAnimation(
+            //                     onTap: () async {
+            //                       await controller.uploadProfilePhoto();
+            //                     },
+            //                     child: controller.isLoading.value
+            //                         ? const CircularProgressIndicator(
+            //                             color: Colors.white,
+            //                           )
+            //                         : Stack(
+            //                             children: [
+            //                               Align(
+            //                                 alignment: Alignment.topCenter,
+            //                                 child: Icon(
+            //                                   Icons.person,
+            //                                   color: Colors.white,
+            //                                   size: 60.sp,
+            //                                 ),
+            //                               ),
+            //                               Align(
+            //                                 alignment: Alignment.center,
+            //                                 child: Padding(
+            //                                   padding:
+            //                                       EdgeInsets.only(top: 30.h),
+            //                                   child: Text(
+            //                                     'Upload Photo',
+            //                                     style: CustomTexts.font12
+            //                                         .copyWith(
+            //                                             color: Colors.white),
+            //                                   ),
+            //                                 ),
+            //                               ),
+            //                             ],
+            //                           ),
+            //                   ),
+            //                 ); // Placeholder if no image
+            //               } else {
+            //                 return const Text("Something Wrong");
+            //               }
+            //             } else if (!snapshot.hasData) {
+            //               return const Icon(Icons.person);
+            //             } else if (snapshot.hasError) {
+            //               return Text('Error: ${snapshot.error}');
+            //             } else {
+            //               return const CircularProgressIndicator();
+            //             }
+            //           },
+            //         ),
+            //       ),
+            //     ),
+            //     SizedBox(
+            //       width: 20.w,
+            //     ),
+            //     Column(
+            //       children: [
+            //         ZoomTapAnimation(
+            //           onTap: () {
+            //             Get.defaultDialog(
+            //                 middleText: "",
+            //                 title: "",
+            //                 content: FutureBuilder<List<Map<String, dynamic>>>(
+            //                   future: FirebaseFirestore.instance
+            //                       .collection('Users')
+            //                       .doc(FirebaseAuth.instance.currentUser!.uid)
+            //                       .get()
+            //                       .then((snapshot) => snapshot.data()!)
+            //                       .then((userDocument) {
+            //                     final followersIds =
+            //                         (userDocument['followers'] as List<dynamic>)
+            //                             .cast<String>();
 
-                                return Future.wait(followersIds.map((id) =>
-                                    FirebaseFirestore.instance
-                                        .collection('Users')
-                                        .doc(id)
-                                        .get()
-                                        .then((doc) => doc.data())));
-                              }).then((listOfFollowerData) => listOfFollowerData
-                                      .map((data) => data!)
-                                      .toList()),
-                              builder: (context, snapshot) {
-                                if (snapshot.connectionState ==
-                                    ConnectionState.waiting) {
-                                  return const CircularProgressIndicator();
-                                } else if (snapshot.hasError) {
-                                  return Text(
-                                      'Error loading followers: ${snapshot.error}');
-                                } else {
-                                  final followers = snapshot.data!;
-                                  return SizedBox(
-                                    height: 300.h,
-                                    width: 200.w,
-                                    child: ListView.builder(
-                                      itemCount: followers.length,
-                                      itemBuilder: (context, index) {
-                                        final followerData = followers[index];
-                                        final followerName =
-                                            followerData['name'] as String;
-                                        return Text(followerName);
-                                      },
-                                    ),
-                                  );
-                                }
-                              },
-                            ));
-                      },
-                      child: Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(12.w),
-                          color: CustomColors.greyColor,
-                        ),
-                        child: Padding(
-                          padding: EdgeInsets.symmetric(
-                              horizontal: 20.w, vertical: 6.h),
-                          child: Text(
-                            "Followers",
-                            style: CustomTexts.font12,
-                          ),
-                        ),
-                      ),
-                    ),
-                    SizedBox(
-                      height: 6.h,
-                    ),
-                    ZoomTapAnimation(
-                      onTap: () {
-                        Get.defaultDialog(
-                            middleText: "",
-                            title: "",
-                            content: Container(
-                              child: FutureBuilder<List<Map<String, dynamic>>>(
-                                future: FirebaseFirestore.instance
-                                    .collection('Users')
-                                    .doc(FirebaseAuth.instance.currentUser!.uid)
-                                    .get()
-                                    .then((snapshot) => snapshot.data()!)
-                                    .then((userDocument) {
-                                  final followingsIds =
-                                      (userDocument['following']
-                                              as List<dynamic>)
-                                          .cast<String>();
+            //                     return Future.wait(followersIds.map((id) =>
+            //                         FirebaseFirestore.instance
+            //                             .collection('Users')
+            //                             .doc(id)
+            //                             .get()
+            //                             .then((doc) => doc.data())));
+            //                   }).then((listOfFollowerData) => listOfFollowerData
+            //                           .map((data) => data!)
+            //                           .toList()),
+            //                   builder: (context, snapshot) {
+            //                     if (snapshot.connectionState ==
+            //                         ConnectionState.waiting) {
+            //                       return const CircularProgressIndicator();
+            //                     } else if (snapshot.hasError) {
+            //                       return Text(
+            //                           'Error loading followers: ${snapshot.error}');
+            //                     } else {
+            //                       final followers = snapshot.data!;
+            //                       return SizedBox(
+            //                         height: 300.h,
+            //                         width: 200.w,
+            //                         child: ListView.builder(
+            //                           itemCount: followers.length,
+            //                           itemBuilder: (context, index) {
+            //                             final followerData = followers[index];
+            //                             final followerName =
+            //                                 followerData['name'] as String;
+            //                             return Text(followerName);
+            //                           },
+            //                         ),
+            //                       );
+            //                     }
+            //                   },
+            //                 ));
+            //           },
+            //           child: Container(
+            //             decoration: BoxDecoration(
+            //               borderRadius: BorderRadius.circular(12.w),
+            //               color: CustomColors.greyColor,
+            //             ),
+            //             child: Padding(
+            //               padding: EdgeInsets.symmetric(
+            //                   horizontal: 20.w, vertical: 6.h),
+            //               child: Text(
+            //                 "Followers",
+            //                 style: CustomTexts.font12,
+            //               ),
+            //             ),
+            //           ),
+            //         ),
+            //         SizedBox(
+            //           height: 6.h,
+            //         ),
+            //         ZoomTapAnimation(
+            //           onTap: () {
+            //             Get.defaultDialog(
+            //                 middleText: "",
+            //                 title: "",
+            //                 content: Container(
+            //                   child: FutureBuilder<List<Map<String, dynamic>>>(
+            //                     future: FirebaseFirestore.instance
+            //                         .collection('Users')
+            //                         .doc(FirebaseAuth.instance.currentUser!.uid)
+            //                         .get()
+            //                         .then((snapshot) => snapshot.data()!)
+            //                         .then((userDocument) {
+            //                       final followingsIds =
+            //                           (userDocument['following']
+            //                                   as List<dynamic>)
+            //                               .cast<String>();
 
-                                  return Future.wait(followingsIds.map((id) =>
-                                      FirebaseFirestore.instance
-                                          .collection('Users')
-                                          .doc(id)
-                                          .get()
-                                          .then((doc) => doc.data())));
-                                }).then((listOfFollowingData) =>
-                                        listOfFollowingData
-                                            .map((data) => data!)
-                                            .toList()),
-                                builder: (context, snapshot) {
-                                  if (snapshot.connectionState ==
-                                      ConnectionState.waiting) {
-                                    return const CircularProgressIndicator();
-                                  } else if (snapshot.hasError) {
-                                    return Text(
-                                        'Error loading followings: ${snapshot.error}');
-                                  } else {
-                                    final followings = snapshot.data!;
-                                    return SizedBox(
-                                      height: 300.h,
-                                      width: 200.w,
-                                      child: ListView.builder(
-                                        itemCount: followings.length,
-                                        itemBuilder: (context, index) {
-                                          final followingData =
-                                              followings[index];
-                                          final followingName =
-                                              followingData['name'] as String;
-                                          // Use followingData and followingName to build your FollowingWidget
-                                          return Text(followingName);
-                                        },
-                                      ),
-                                    );
-                                  }
-                                },
-                              ),
-                            ));
-                      },
-                      child: Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(12.w),
-                          color: CustomColors.greyColor,
-                        ),
-                        child: Padding(
-                          padding: EdgeInsets.symmetric(
-                              horizontal: 20.w, vertical: 6.h),
-                          child: Text(
-                            "Following",
-                            style: CustomTexts.font12,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(
-                  width: 30.w,
-                ),
-                ZoomTapAnimation(
-                  onTap: () async {
-                    await GetStorage().write('isSignInDone', false);
-                    await GoogleSignIn().signOut();
-                    Get.offAll(() => LoginView());
-                  },
-                  child: Column(
-                    children: [
-                      Text(
-                        "Sign Out",
-                        style: CustomTexts.font12
-                            .copyWith(color: CustomColors.textColor2),
-                      ),
-                      Icon(
-                        Icons.logout_rounded,
-                        color: CustomColors.backgroundColor,
-                      ),
-                    ],
-                  ),
-                )
-              ],
-            ),
+            //                       return Future.wait(followingsIds.map((id) =>
+            //                           FirebaseFirestore.instance
+            //                               .collection('Users')
+            //                               .doc(id)
+            //                               .get()
+            //                               .then((doc) => doc.data())));
+            //                     }).then((listOfFollowingData) =>
+            //                             listOfFollowingData
+            //                                 .map((data) => data!)
+            //                                 .toList()),
+            //                     builder: (context, snapshot) {
+            //                       if (snapshot.connectionState ==
+            //                           ConnectionState.waiting) {
+            //                         return const CircularProgressIndicator();
+            //                       } else if (snapshot.hasError) {
+            //                         return Text(
+            //                             'Error loading followings: ${snapshot.error}');
+            //                       } else {
+            //                         final followings = snapshot.data!;
+            //                         return SizedBox(
+            //                           height: 300.h,
+            //                           width: 200.w,
+            //                           child: ListView.builder(
+            //                             itemCount: followings.length,
+            //                             itemBuilder: (context, index) {
+            //                               final followingData =
+            //                                   followings[index];
+            //                               final followingName =
+            //                                   followingData['name'] as String;
+            //                               // Use followingData and followingName to build your FollowingWidget
+            //                               return Text(followingName);
+            //                             },
+            //                           ),
+            //                         );
+            //                       }
+            //                     },
+            //                   ),
+            //                 ));
+            //           },
+            //           child: Container(
+            //             decoration: BoxDecoration(
+            //               borderRadius: BorderRadius.circular(12.w),
+            //               color: CustomColors.greyColor,
+            //             ),
+            //             child: Padding(
+            //               padding: EdgeInsets.symmetric(
+            //                   horizontal: 20.w, vertical: 6.h),
+            //               child: Text(
+            //                 "Following",
+            //                 style: CustomTexts.font12,
+            //               ),
+            //             ),
+            //           ),
+            //         ),
+            //       ],
+            //     ),
+            //     SizedBox(
+            //       width: 30.w,
+            //     ),
+            //     ZoomTapAnimation(
+            //       onTap: () async {
+            //         await GetStorage().write('isSignInDone', false);
+            //         await GoogleSignIn().signOut();
+            //         Get.offAll(() => LoginView());
+            //       },
+            //       child: Column(
+            //         children: [
+            //           Text(
+            //             "Sign Out",
+            //             style: CustomTexts.font12
+            //                 .copyWith(color: CustomColors.textColor2),
+            //           ),
+            //           Icon(
+            //             Icons.logout_rounded,
+            //             color: CustomColors.backgroundColor,
+            //           ),
+            //         ],
+            //       ),
+            //     )
+            //   ],
+            // ),
+            // SizedBox(
+            //   height: 20.h,
+            // ),
+            // FutureBuilder(
+            //     future: appController.getUserName(),
+            //     builder: (context, snapshot) {
+            //       if (snapshot.connectionState == ConnectionState.done) {
+            //         return Text(
+            //           "${snapshot.data!}",
+            //           style: CustomTexts.font12.copyWith(
+            //               fontWeight: FontWeight.bold,
+            //               color: CustomColors.textColor2),
+            //         );
+            //       } else {
+            //         return SizedBox(
+            //           width: 12.sp,
+            //           height: 12.sp,
+            //           child: CircularProgressIndicator(
+            //             color: CustomColors.textColor2,
+            //           ),
+            //         );
+            //       }
+            //     }),
+            // SizedBox(
+            //   height: 8.h,
+            // ),
+            // FutureBuilder(
+            //     future: appController.getUserEmail(),
+            //     builder: (context, snapshot) {
+            //       if (snapshot.connectionState == ConnectionState.done) {
+            //         return Text(
+            //           "${snapshot.data!}",
+            //           style: CustomTexts.font12.copyWith(
+            //               fontWeight: FontWeight.bold,
+            //               color: CustomColors.textColor2),
+            //         );
+            //       } else {
+            //         return SizedBox(
+            //           width: 12.sp,
+            //           height: 12.sp,
+            //           child: CircularProgressIndicator(
+            //             color: CustomColors.textColor2,
+            //           ),
+            //         );
+            //       }
+            //     }),
+            // SizedBox(
+            //   height: 30.h,
+            // ),
+            // Text(
+            //   "Your Posts",
+            //   style: CustomTexts.font18.copyWith(
+            //       fontWeight: FontWeight.bold, color: CustomColors.textColor),
+            // ),
+            // SizedBox(
+            //   height: 30.h,
+            // ),
             SizedBox(
-              height: 20.h,
-            ),
-            FutureBuilder(
-                future: appController.getUserName(),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.done) {
-                    return Text(
-                      "${snapshot.data!}",
-                      style: CustomTexts.font12.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: CustomColors.textColor2),
-                    );
-                  } else {
-                    return SizedBox(
-                      width: 12.sp,
-                      height: 12.sp,
-                      child: CircularProgressIndicator(
-                        color: CustomColors.textColor2,
-                      ),
-                    );
-                  }
-                }),
-            SizedBox(
-              height: 8.h,
-            ),
-            FutureBuilder(
-                future: appController.getUserEmail(),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.done) {
-                    return Text(
-                      "${snapshot.data!}",
-                      style: CustomTexts.font12.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: CustomColors.textColor2),
-                    );
-                  } else {
-                    return SizedBox(
-                      width: 12.sp,
-                      height: 12.sp,
-                      child: CircularProgressIndicator(
-                        color: CustomColors.textColor2,
-                      ),
-                    );
-                  }
-                }),
-            SizedBox(
-              height: 30.h,
-            ),
-            Text(
-              "Your Posts",
-              style: CustomTexts.font18.copyWith(
-                  fontWeight: FontWeight.bold, color: CustomColors.textColor),
-            ),
-            SizedBox(
-              height: 30.h,
+              height: 42.h,
             ),
             StreamBuilder(
                 stream: FirebaseFirestore.instance
@@ -451,27 +518,26 @@ class ProfileView extends StatelessWidget {
                     return CircularProgressIndicator();
                   }
                   final documents = snapshot.data!.docs;
-                  return SizedBox(
-                    height: 300.h,
-                    child: GridView.count(
-                      crossAxisCount: 2,
-                      mainAxisSpacing: 15.w,
-                      crossAxisSpacing: 15.w,
-                      children: List.generate(documents.length, (index) {
-                        return documents[index].id != "init"
-                            ? ZoomTapAnimation(
-                                onTap: () async {
-                                  // await _MainViewState().viewPos
-                                  await MainViewState().viewPost(
-                                      FirebaseAuth.instance.currentUser!.uid,
-                                      index,
-                                      context);
-                                },
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(16.w),
-                                  child: SizedBox(
-                                    height: 120.h,
-                                    width: 120.w,
+                  return Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 58.w),
+                    child: SizedBox(
+                      height: 5000.h,
+                      child: GridView.count(
+                        crossAxisCount: 3,
+                        mainAxisSpacing: 77.w,
+                        crossAxisSpacing: 77.w,
+                        children: List.generate(documents.length, (index) {
+                          return documents[index].id != "init"
+                              ? ZoomTapAnimation(
+                                  onTap: () async {
+                                    // await _MainViewState().viewPos
+                                    await MainViewState().viewPost(
+                                        FirebaseAuth.instance.currentUser!.uid,
+                                        index,
+                                        context);
+                                  },
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(80.w),
                                     child: CachedNetworkImage(
                                       placeholder: (context, val) {
                                         return Container(
@@ -491,10 +557,10 @@ class ProfileView extends StatelessWidget {
                                       fit: BoxFit.fill,
                                     ),
                                   ),
-                                ),
-                              )
-                            : SizedBox();
-                      }),
+                                )
+                              : SizedBox();
+                        }),
+                      ),
                     ),
                   );
                 }))

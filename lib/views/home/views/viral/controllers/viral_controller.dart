@@ -1,7 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class ViralController extends GetxController {
+
+
   RxBool isViralLoading = false.obs;
   List<List<String>> viralList = [];
   String name = "";
