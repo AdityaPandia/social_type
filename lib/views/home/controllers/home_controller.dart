@@ -4,5 +4,5 @@ import 'package:persistent_bottom_nav_bar/persistent_tab_view.dart';
 
 class HomeController extends GetxController{
   PersistentTabController bottomNavController=PersistentTabController(initialIndex: 0);
-    RxInt appView = 0.obs;
+    // RxInt appView = 0.obs;
 }
