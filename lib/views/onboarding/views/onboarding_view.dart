@@ -5,11 +5,8 @@ import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:social_type/common/custom_colors.dart';
-import 'package:social_type/common/custom_texts.dart';
 import 'package:social_type/views/authentication/views/login_view.dart';
-
 import 'package:social_type/views/onboarding/controllers/onboarding_controller.dart';
-import 'package:social_type/views/onboarding/views/widgets/build_page.dart';
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
 
 class OnboardingView extends StatelessWidget {
@@ -108,8 +105,3 @@ class OnboardingView extends StatelessWidget {
 
 
 
-
-/*
-   await storage.write('isOnboardingDone', true);
-                    Get.offAll(() => LoginView());
-                    */

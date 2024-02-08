@@ -9,10 +9,13 @@ import 'package:social_type/common/custom_colors.dart';
 import 'package:social_type/controllers/app_controller.dart';
 import 'package:social_type/views/home/views/main/controllers/main_controller.dart';
 import 'package:social_type/views/home/views/profile/controllers/profile_controller.dart';
+import 'package:social_type/views/home/views/profile/views/profile_view.dart';
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
 
 class FollowerView extends StatelessWidget {
-  FollowerView({super.key});
+  FollowerView({required this.userUid});
+
+  final String userUid;
   final appController = Get.put(AppController());
 
   Future<String?> getUidByUsername(String username) async {
@@ -50,7 +53,7 @@ class FollowerView extends StatelessWidget {
             height: 50.h,
           ),
           FutureBuilder(
-              future: appController.getUserName(),
+              future: appController.getUserName(userUid),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.done) {
                   return Text(
@@ -77,7 +80,7 @@ class FollowerView extends StatelessWidget {
           FutureBuilder<List<Map<String, dynamic>>>(
             future: FirebaseFirestore.instance
                 .collection('Users')
-                .doc(FirebaseAuth.instance.currentUser!.uid)
+                .doc(userUid)
                 .get()
                 .then((snapshot) => snapshot.data()!)
                 .then((userDocument) {
@@ -107,9 +110,11 @@ class FollowerView extends StatelessWidget {
                       itemCount: followers.length,
                       itemBuilder: (context, index) {
                         final followerData = followers[index];
+               
                         final followerName = followerData['name'] as String;
                         final followerPhoto =
                             followerData['profile_photo'] as String;
+           
                         RxBool isF = false.obs;
                         return Padding(
                           padding: EdgeInsets.only(bottom: 50.h),
@@ -120,37 +125,37 @@ class FollowerView extends StatelessWidget {
                                 children: [
                                   (followerPhoto == "")
                                       ? SizedBox(
-                                          width: 100.w,
-                                          child: Icon(
-                                            Icons.person,
-                                            color: Colors.white,
-                                          ),
-                                        )
+                                        width: 100.w,
+                                        child: Icon(
+                                          Icons.person,
+                                          color: Colors.white,
+                                        ),
+                                      )
                                       : ClipRRect(
-                                          borderRadius:
-                                              BorderRadius.circular(2000.w),
-                                          child: CachedNetworkImage(
-                                            height: 100.h,
-                                            width: 100.w,
-                                            placeholder: (context, val) {
-                                              return Container(
-                                                width: 31.w,
-                                                child: Center(
-                                                  child: Text(
-                                                    "Loading",
-                                                    style: TextStyle(
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      fontSize: 15.sp,
-                                                    ),
+                                        borderRadius:
+                                            BorderRadius.circular(2000.w),
+                                        child: CachedNetworkImage(
+                                          height: 100.h,
+                                          width: 100.w,
+                                          placeholder: (context, val) {
+                                            return Container(
+                                              width: 31.w,
+                                              child: Center(
+                                                child: Text(
+                                                  "Loading",
+                                                  style: TextStyle(
+                                                    fontWeight:
+                                                        FontWeight.bold,
+                                                    fontSize: 15.sp,
                                                   ),
                                                 ),
-                                              );
-                                            },
-                                            imageUrl: followerPhoto,
-                                            fit: BoxFit.fill,
-                                          ),
+                                              ),
+                                            );
+                                          },
+                                          imageUrl: followerPhoto,
+                                          fit: BoxFit.fill,
                                         ),
+                                      ),
                                   SizedBox(
                                     width: 58.w,
                                   ),
@@ -166,7 +171,7 @@ class FollowerView extends StatelessWidget {
                                       ),
                                       Text(
                                         "@${followerData['username']}",
-                                        style: GoogleFonts.poppins( 
+                                        style: GoogleFonts.poppins(
                                             fontSize: 32.sp,
                                             color: Colors.white),
                                       ),

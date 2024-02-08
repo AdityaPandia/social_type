@@ -16,7 +16,11 @@ import 'package:image_picker/image_picker.dart';
 import 'package:social_type/common/custom_colors.dart';
 import 'package:social_type/common/custom_texts.dart';
 import 'package:social_type/views/home/controllers/home_controller.dart';
+import 'package:social_type/views/home/views/home_view.dart';
 import 'package:social_type/views/home/views/main/controllers/main_controller.dart';
+
+import 'package:social_type/views/home/views/profile/views/profile_view.dart';
+import 'package:social_type/views/home/views/viral/controllers/viral_controller.dart';
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
 
 class MainView extends StatefulWidget {
@@ -52,8 +56,30 @@ class MainViewState extends State<MainView> {
   RxBool isUploadPostLoading = false.obs;
   RxBool isModalSheetLoading = false.obs;
   XFile? _imageFile; // Stores the picked image file
+  int totalPosts = 0;
+  getNumberOfPosts() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      print('error 1 '); // Handle or throw an error if no user is signed in
+    }
 
-  Future<void> removeUserIdFromPostLikes(String userId, String postId) async {
+    final uid = user!.uid;
+
+    try {
+      final snapshot = await FirebaseFirestore.instance
+          .collection('Users')
+          .doc(uid)
+          .collection('Posts')
+          .get();
+      totalPosts = snapshot.size;
+    } on FirebaseException catch (e) {
+      // Handle errors gracefully, e.g., log, display user-friendly message
+      print('Error getting number of posts: $e');
+// Indicate an error occurred
+    }
+  }
+
+  Future<void> removeUserIdFromPostLikes(String? userId, String postId) async {
     try {
       String currentUserId = await FirebaseAuth.instance.currentUser!.uid;
       // Reference to the user's post document
@@ -87,7 +113,7 @@ class MainViewState extends State<MainView> {
     }
   }
 
-  Future<bool> isUserIdInPostLikes(String userId, String postId) async {
+  Future<bool> isUserIdInPostLikes(String? userId, String postId) async {
     try {
       String currentUserId = await FirebaseAuth.instance.currentUser!.uid;
       DocumentReference postReference = FirebaseFirestore.instance
@@ -108,7 +134,7 @@ class MainViewState extends State<MainView> {
     }
   }
 
-  Widget buildCommentsStreamBuilder(String userId, int postIndex) {
+  Widget buildCommentsStreamBuilder(String? userId, int postIndex) {
     return StreamBuilder<QuerySnapshot>(
       // Change to QuerySnapshot
       stream: FirebaseFirestore.instance
@@ -161,7 +187,7 @@ class MainViewState extends State<MainView> {
     );
   }
 
-  Future<void> addUserIdToPostLikes(String userId, String postId) async {
+  Future<void> addUserIdToPostLikes(String? userId, String postId) async {
     try {
       String currentUserId = await FirebaseAuth.instance.currentUser!.uid;
 
@@ -189,7 +215,7 @@ class MainViewState extends State<MainView> {
   }
 
   Future<void> addCommentToPost(
-      String userId, int postIndex, String comment) async {
+      String? userId, int postIndex, String comment) async {
     try {
       // Get the Posts collection reference
       QuerySnapshot postsSnapshot = await FirebaseFirestore.instance
@@ -210,7 +236,7 @@ class MainViewState extends State<MainView> {
     }
   }
 
-  commentModalSheet(String userId, int postIndex, BuildContext context) {
+  commentModalSheet(String? userId, int postIndex, BuildContext context) {
     showModalBottomSheet(
         backgroundColor: Color(0xFF101010),
         isScrollControlled: true,
@@ -287,7 +313,7 @@ class MainViewState extends State<MainView> {
         });
   }
 
-  viewPost(String userId, int postIndex, BuildContext context) async {
+  viewPost(String? userId, int postIndex, BuildContext context) async {
     final userDoc =
         await FirebaseFirestore.instance.collection('Users').doc(userId).get();
     final name = userDoc.data()!['name'];
@@ -373,45 +399,52 @@ class MainViewState extends State<MainView> {
                                 SizedBox(
                                   height: 43.h,
                                 ),
-                                Container(
-                                  width: 636.w,
-                                  height: 150.h,
-                                  decoration: BoxDecoration(
+                                Opacity(
+                                  opacity: 0.6,
+                                  child: Container(
+                                    width: 636.w,
+                                    height: 150.h,
+                                    decoration: BoxDecoration(
                                       borderRadius:
                                           BorderRadius.circular(200.w),
-                                      color: Color(0xFF9EA2A3)),
-                                  child: Row(
-                                    children: [
-                                      SizedBox(
-                                        width: 60.w,
-                                      ),
-
-                                      // SizedBox(
-                                      //     width: 348.w,
-                                      //     child: TextField(
-                                      //       decoration: InputDecoration(
-                                      //           border: InputBorder.none,
-                                      //           hintText:
-                                      //           hintStyle: GoogleFonts.poppins(
-                                      //               fontSize: 64.sp,
-                                      //               fontWeight: FontWeight.w600,
-                                      //               color: Color(0xFFD5F600))),
-                                      //       style: GoogleFonts.poppins(
-                                      //           fontSize: 64.sp,
-                                      //           fontWeight: FontWeight.w600,
-                                      //           color: Color(0xFFD5F600)),
-                                      //     )),
-                                      SizedBox(
-                                        width: 348.w,
-                                        child: Text(
-                                          documents[postIndex]['description'],
-                                          style: GoogleFonts.poppins(
-                                              fontSize: 48.sp,
-                                              fontWeight: FontWeight.w600,
-                                              color: Color(0xFFD5F600)),
+                                      color: Color(0xFF9EA2A3),
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        SizedBox(
+                                          width: 60.w,
                                         ),
-                                      ),
-                                    ],
+
+                                        // SizedBox(
+                                        //     width: 348.w,
+                                        //     child: TextField(
+                                        //       decoration: InputDecoration(
+                                        //           border: InputBorder.none,
+                                        //           hintText:
+                                        //           hintStyle: GoogleFonts.poppins(
+                                        //               fontSize: 64.sp,
+                                        //               fontWeight: FontWeight.w600,
+                                        //               color: Color(0xFFD5F600))),
+                                        //       style: GoogleFonts.poppins(
+                                        //           fontSize: 64.sp,
+                                        //           fontWeight: FontWeight.w600,
+                                        //           color: Color(0xFFD5F600)),
+                                        //     )),
+                                        SizedBox(
+                                          width: 348.w,
+                                          child: Center(
+                                            child: Text(
+                                              documents[postIndex]
+                                                  ['description'],
+                                              style: GoogleFonts.poppins(
+                                                  fontSize: 48.sp,
+                                                  fontWeight: FontWeight.w600,
+                                                  color: Color(0xFFD5F600)),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ),
                               ],
@@ -435,55 +468,60 @@ class MainViewState extends State<MainView> {
                                     isFollowButtonLoading.value = false;
                                   },
                                   child: Obx(
-                                    () => Container(
-                                      height: 150.sp,
-                                      width: 150.sp,
-                                      decoration: const BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        color: Color(0xFF9EA2A3),
-                                      ),
-                                      child: Center(
-                                        child: isFollowButtonLoading.value
-                                            ? SizedBox(
-                                                height: 40.h,
-                                                width: 20.h,
-                                                child:
-                                                    const CircularProgressIndicator())
-                                            : StreamBuilder(
-                                                stream: controller
-                                                    .isUserIdInFollowers(userId)
-                                                    .asStream(),
-                                                builder: (context, snapshot) {
-                                                  if (!snapshot.hasData) {
-                                                    return SizedBox(
-                                                        height: 40.h,
-                                                        width: 20.h,
-                                                        child:
-                                                            const CircularProgressIndicator());
-                                                  }
+                                    () => Opacity(
+                                      opacity: 0.6,
+                                      child: Container(
+                                        height: 150.sp,
+                                        width: 150.sp,
+                                        decoration: const BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          color: Color(0xFF9EA2A3),
+                                        ),
+                                        child: Center(
+                                          child: isFollowButtonLoading.value
+                                              ? SizedBox(
+                                                  height: 40.h,
+                                                  width: 20.h,
+                                                  child:
+                                                      const CircularProgressIndicator())
+                                              : StreamBuilder(
+                                                  stream: controller
+                                                      .isUserIdInFollowers(
+                                                          userId)
+                                                      .asStream(),
+                                                  builder: (context, snapshot) {
+                                                    if (!snapshot.hasData) {
+                                                      return SizedBox(
+                                                          height: 40.h,
+                                                          width: 20.h,
+                                                          child:
+                                                              const CircularProgressIndicator());
+                                                    }
 
-                                                  if (snapshot.data!) {
-                                                    // return const Text("Unfollow",);
-                                                    return Text(
-                                                      "Unfollow",
-                                                      style:
-                                                          GoogleFonts.poppins(
-                                                              color:
-                                                                  Colors.white,
-                                                              fontSize: 20.sp),
-                                                    );
-                                                  } else {
-                                                    // return const Text("Follow");
-                                                    return Center(
-                                                      child: Image.asset(
-                                                        "assets/images/png/follow_icon.png",
-                                                        height: 70.sp,
-                                                        width: 70.sp,
-                                                      ),
-                                                    );
-                                                  }
-                                                },
-                                              ),
+                                                    if (snapshot.data!) {
+                                                      // return const Text("Unfollow",);
+                                                      return Text(
+                                                        "Unfollow",
+                                                        style:
+                                                            GoogleFonts.poppins(
+                                                                color: Colors
+                                                                    .white,
+                                                                fontSize:
+                                                                    20.sp),
+                                                      );
+                                                    } else {
+                                                      // return const Text("Follow");
+                                                      return Center(
+                                                        child: Image.asset(
+                                                          "assets/images/png/follow_icon.png",
+                                                          height: 70.sp,
+                                                          width: 70.sp,
+                                                        ),
+                                                      );
+                                                    }
+                                                  },
+                                                ),
+                                        ),
                                       ),
                                     ),
                                   ),
@@ -508,17 +546,20 @@ class MainViewState extends State<MainView> {
                                           userId, documents[postIndex].id);
                                     }
                                   },
-                                  child: Container(
-                                    height: 150.sp,
-                                    width: 150.sp,
-                                    decoration: const BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      color: Color(0xFF9EA2A3),
-                                    ),
-                                    child: Center(
-                                      child: Icon(CupertinoIcons.heart_fill,
-                                          size: 90.sp,
-                                          color: Color(0xFFD5F600)),
+                                  child: Opacity(
+                                    opacity: 0.6,
+                                    child: Container(
+                                      height: 150.sp,
+                                      width: 150.sp,
+                                      decoration: const BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: Color(0xFF9EA2A3),
+                                      ),
+                                      child: Center(
+                                        child: Icon(CupertinoIcons.heart_fill,
+                                            size: 90.sp,
+                                            color: Color(0xFFD5F600)),
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -537,18 +578,21 @@ class MainViewState extends State<MainView> {
                                     commentModalSheet(
                                         userId, postIndex, context);
                                   },
-                                  child: Container(
-                                    height: 150.sp,
-                                    width: 150.sp,
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      color: Color(0xFF9EA2A3),
-                                    ),
-                                    child: Center(
-                                      child: Image.asset(
-                                        "assets/images/png/comment_icon.png",
-                                        height: 80.sp,
-                                        width: 80.sp,
+                                  child: Opacity(
+                                    opacity: 0.6,
+                                    child: Container(
+                                      height: 150.sp,
+                                      width: 150.sp,
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: Color(0xFF9EA2A3),
+                                      ),
+                                      child: Center(
+                                        child: Image.asset(
+                                          "assets/images/png/comment_icon.png",
+                                          height: 80.sp,
+                                          width: 80.sp,
+                                        ),
                                       ),
                                     ),
                                   ),
@@ -561,230 +605,7 @@ class MainViewState extends State<MainView> {
                     ),
                   ],
                 );
-                // Row(
-                //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                //   children: [
-                //     Column(
-                //       crossAxisAlignment: CrossAxisAlignment.start,
-                //       children: [
-                //         Padding(
-                //           padding: EdgeInsets.only(left: 30.w),
-                //           child: Column(
-                //             crossAxisAlignment: CrossAxisAlignment.start,
-                //             children: [
-                //               Row(
-                //                 children: [
-                //                   ClipRRect(
-                //                     borderRadius: BorderRadius.circular(16.w),
-                //                     child: SizedBox(
-                //                       height: 30.sp,
-                //                       width: 30.sp,
-                //                       child: (profilePhoto != "")
-                //                           ? CachedNetworkImage(
-                //                               placeholder: (context, val) {
-                //                                 return Container(
-                //                                   width: 31.w,
-                //                                   child: Center(
-                //                                     child: Text(
-                //                                       "Loading",
-                //                                       style: TextStyle(
-                //                                         fontWeight:
-                //                                             FontWeight.bold,
-                //                                         fontSize: 15.sp,
-                //                                       ),
-                //                                     ),
-                //                                   ),
-                //                                 );
-                //                               },
-                //                               imageUrl: profilePhoto,
-                //                               fit: BoxFit.fill,
-                //                             )
-                //                           : Container(
-                //                               decoration: BoxDecoration(
-                //                                   color: CustomColors
-                //                                       .backgroundColor),
-                //                               child: Icon(
-                //                                 Icons.person,
-                //                                 color: CustomColors.textColor,
-                //                               )),
-                //                     ),
-                //                   ),
-                //                   Padding(
-                //                     padding: EdgeInsets.only(left: 18.w),
-                //                     child: Text(
-                //                       name,
-                //                       style: CustomTexts.font24.copyWith(
-                //                           color: CustomColors.textColor2,
-                //                           fontWeight: FontWeight.bold),
-                //                     ),
-                //                   ),
-                //                 ],
-                //               ),
-                //               StreamBuilder<QuerySnapshot>(
-                //                 stream: FirebaseFirestore.instance
-                //                     .collection('Users')
-                //                     .snapshots(),
-                //                 builder: (context, snapshot) {
-                //                   if (snapshot.hasData) {
-                //                     for (final doc in snapshot.data!.docs) {
-                //                       if (doc.id == userId) {
-                //                         final follower = doc
-                //                             .get('followers')
-                //                             .length;
-                //                         return Text(
-                //                           '$follower Followers',
-                //                           style: CustomTexts.font14.copyWith(
-                //                               color: CustomColors.textColor2),
-                //                         );
-                //                       }
-                //                     }
-                //                   }
-                //                   return const SizedBox();
-                //                 },
-                //               ),
-                //             ],
-                //           ),
-                //         ),
-                //         SizedBox(
-                //           height: 10.h,
-                //         ),
-                //         Padding(
-                //           padding: EdgeInsets.only(left: 20.w),
-                //           child: Align(
-                //             alignment: Alignment.bottomLeft,
-                //             child: SizedBox(
-                //               height: 200.h,
-                //               width: 200.w,
-                //               child: ClipRRect(
-                //                 borderRadius: BorderRadius.circular(38.w),
-                //                 child: SizedBox(
-                //                   height: 200.h,
-                //                   width: 200.w,
-                //                   child: CachedNetworkImage(
-                //                     placeholder: (context, val) {
-                //                       return SizedBox(
-                //                         width: 31.w,
-                //                         child: Center(
-                //                           child: Text(
-                //                             "Loading",
-                //                             style: TextStyle(
-                //                               fontWeight: FontWeight.bold,
-                //                               fontSize: 15.sp,
-                //                             ),
-                //                           ),
-                //                         ),
-                //                       );
-                //                     },
-                //                     imageUrl: documents[postIndex]
-                //                         ['post_photo'],
-                //                     fit: BoxFit.fill,
-                //                   ),
-                //                 ),
-                //               ),
-                //             ),
-                //           ),
-                //         ),
-                //         SizedBox(
-                //           height: 20.h,
-                //         ),
-                //         Padding(
-                //           padding: EdgeInsets.only(left: 30.w),
-                //           child: Text(
-                //             documents[postIndex]['description'],
-                //             style: CustomTexts.font14.copyWith(
-                //                 color: CustomColors.backgroundColor),
-                //           ),
-                //         ),
-                //       ],
-                //     ),
-                //     Column(
-                //       children: [
-                //         SizedBox(
-                //           height: 40.h,
-                //         ),
-                //         ZoomTapAnimation(
-                //           onTap: () async {
-                //             await isUserIdInPostLikes(
-                //                     userId, documents[postIndex].id)
-                //                 ? await removeUserIdFromPostLikes(
-                //                     userId, documents[postIndex].id)
-                //                 : await addUserIdToPostLikes(
-                //                     userId, documents[postIndex].id);
-                //           },
-                //           child: Icon(
-                //             CupertinoIcons.heart_fill,
-                //             size: 48.sp,
-                //             color: CustomColors.activeColor,
-                //           ),
-                //         ),
-                //         SizedBox(
-                //           height: 8.h,
-                //         ),
-                //         Text(
-                //           (documents[postIndex]['likes'].length).toString(),
-                //           style: CustomTexts.font18
-                //               .copyWith(color: CustomColors.inactiveColor),
-                //         ),
-                //         SizedBox(
-                //           height: 10.h,
-                //         ),
-                //         ZoomTapAnimation(
-                //           onTap: () async {
-                //             isFollowButtonLoading.value = true;
-                //             await controller.isUserIdInFollowers(
-                //               userId,
-                //             )
-                //                 ? await controller
-                //                     .removeUserIdFromFollowers(userId)
-                //                 : await controller
-                //                     .addUserIdToFollowers(userId);
-                //             isFollowButtonLoading.value = false;
-                //           },
-                //           child: Obx(
-                //             () => Container(
-                //               width: 110.w,
-                //               height: 40.h,
-                //               decoration: BoxDecoration(
-                //                   color: CustomColors.activeColor,
-                //                   borderRadius: BorderRadius.circular(12.w)),
-                //               child: Padding(
-                //                 padding: EdgeInsets.symmetric(
-                //                     vertical: 10.h, horizontal: 20.w),
-                //                 child: Center(
-                //                     child: isFollowButtonLoading.value
-                //                         ? SizedBox(
-                //                             height: 40.h,
-                //                             width: 20.h,
-                //                             child:
-                //                                 const CircularProgressIndicator())
-                //                         : StreamBuilder(
-                //                             stream: controller
-                //                                 .isUserIdInFollowers(userId)
-                //                                 .asStream(),
-                //                             builder: (context, snapshot) {
-                //                               if (!snapshot.hasData) {
-                //                                 return SizedBox(
-                //                                     height: 40.h,
-                //                                     width: 20.h,
-                //                                     child:
-                //                                         const CircularProgressIndicator());
-                //                               }
-
-                //                               if (snapshot.data!) {
-                //                                 return const Text("Unfollow");
-                //                               } else {
-                //                                 return const Text("Follow");
-                //                               }
-                //                             })
-                //                     ),
-                //               ),
-                //             ),
-                //           ),
-                //         ),
-                //       ],
-                //     ),
-                //   ],
-                // );
+              
               });
         });
   }
@@ -827,152 +648,87 @@ class MainViewState extends State<MainView> {
                   ),
                 ),
               ),
-              Column(
-                children: [
-                  Row(
-                    children: [
-                      SizedBox(
-                        width: 30.w,
-                      ),
-                      Padding(
-                        padding: EdgeInsets.only(bottom: 10.h),
-                        child: Text("Khé",
-                            style: GoogleFonts.poppins(
-                                fontSize: 48.sp,
-                                fontWeight: FontWeight.w600,
-                                color: Color(0xFFD5F600))),
-                      ),
-                      SizedBox(
-                        width: 10.w,
-                      ),
-                      Padding(
-                        padding: EdgeInsets.only(right: 30.w, top: 60.w),
-                        child: SizedBox(
-                          width: 700.w,
-                          child: TextField(
-                            style: GoogleFonts.poppins(
-                                fontSize: 24.sp,
-                                fontWeight: FontWeight.w600,
-                                color: Color(0xFFD5F600)),
-                            maxLength: 20,
-                            controller: descriptionController,
-                            maxLines: 2,
-                            decoration: InputDecoration(
-                                hintText: "Enter Description",
-                                hintStyle: GoogleFonts.poppins(
-                                    fontSize: 48.sp,
-                                    fontWeight: FontWeight.w600,
-                                    color: Color(0xFFD5F600))),
-                          ),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 10.w),
+                child: Column(
+                  children: [
+                    Row(
+                      children: [
+                        SizedBox(
+                          width: 30.w,
                         ),
-                      ),
-                      ZoomTapAnimation(
-                        onTap: () async {
-                          isModalSheetLoading.value = true;
-                          await controller.uploadPost(
-                              pickedFile, "Khé " + descriptionController.text);
-                          isModalSheetLoading.value = false;
-                          Navigator.pop(context);
-                        },
-                        child: Obx(
-                          () => Container(
-                            decoration: BoxDecoration(
-                                color: CustomColors.activeColor,
-                                borderRadius: BorderRadius.circular(12.w)),
-                            child: Padding(
-                              padding: EdgeInsets.symmetric(
-                                  vertical: 10.h, horizontal: 60.w),
-                              child: Center(
-                                  child: isModalSheetLoading.value
-                                      ? CircularProgressIndicator()
-                                      : Text(
-                                          "Post",
-                                          style: GoogleFonts.poppins(
-                                              fontSize: 48.sp,
-                                              color: Colors.white),
-                                        )),
+                        Padding(
+                          padding: EdgeInsets.only(bottom: 10.h),
+                          child: Text("Khé",
+                              style: GoogleFonts.poppins(
+                                  fontSize: 48.sp,
+                                  fontWeight: FontWeight.w600,
+                                  color: Color(0xFFD5F600))),
+                        ),
+                        SizedBox(
+                          width: 10.w,
+                        ),
+                        Padding(
+                          padding: EdgeInsets.only(right: 30.w, top: 60.w),
+                          child: SizedBox(
+                            width: 650.w,
+                            child: TextField(
+                              style: GoogleFonts.poppins(
+                                  fontSize: 24.sp,
+                                  fontWeight: FontWeight.w600,
+                                  color: Color(0xFFD5F600)),
+                              maxLength: 20,
+                              controller: descriptionController,
+                              maxLines: 2,
+                              decoration: InputDecoration(
+                                  hintText: "Enter Description",
+                                  hintStyle: GoogleFonts.poppins(
+                                      fontSize: 48.sp,
+                                      fontWeight: FontWeight.w600,
+                                      color: Color(0xFFD5F600))),
                             ),
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                ],
+                        ZoomTapAnimation(
+                          onTap: () async {
+                            isModalSheetLoading.value = true;
+                            await controller.uploadPost(pickedFile,
+                                "Khé " + descriptionController.text);
+                            isModalSheetLoading.value = false;
+                            Navigator.pop(context);
+                          },
+                          child: Obx(
+                            () => Container(
+                              decoration: BoxDecoration(
+                                  color: CustomColors.activeColor,
+                                  borderRadius: BorderRadius.circular(12.w)),
+                              child: SizedBox(
+                                width: 250.w,
+                                child: Padding(
+                                  padding: EdgeInsets.symmetric(
+                                      vertical: 10.h, horizontal: 60.w),
+                                  child: Center(
+                                      child: isModalSheetLoading.value
+                                          ? CircularProgressIndicator()
+                                          : Text(
+                                              "Post",
+                                              style: GoogleFonts.poppins(
+                                                  fontSize: 48.sp,
+                                                  color: Colors.white),
+                                            )),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ],
           );
-          // return Column(
-          //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          //   children: [
-          //     Row(
-          //       children: [
-          //         SizedBox(
-          //           width: 30.w,
-          //         ),
-          //         Padding(
-          //           padding: EdgeInsets.only(bottom: 10.h),
-          //           child: Text("Khé",
-          //               style: CustomTexts.font14
-          //                   .copyWith(color: CustomColors.textColor2)),
-          //         ),
-          //         SizedBox(
-          //           width: 10.w,
-          //         ),
-          //         Padding(
-          //           padding: EdgeInsets.only(right: 30.w, top: 30.w),
-          //           child: SizedBox(
-          //             width: 180.w,
-          //             child: TextField(
-          //               maxLength: 20,
-          //               controller: descriptionController,
-          //               maxLines: 2,
-          //               decoration: InputDecoration(
-          //                   hintText: "Enter Description",
-          //                   hintStyle: CustomTexts.font14
-          //                       .copyWith(color: CustomColors.textColor2)),
-          //             ),
-          //           ),
-          //         ),
-          //         ZoomTapAnimation(
-          //           onTap: () async {
-          //             isModalSheetLoading.value = true;
-          //             await controller.uploadPost(
-          //                 pickedFile, "Khé " + descriptionController.text);
-          //             isModalSheetLoading.value = false;
-          //             Navigator.pop(context);
-          //           },
-          //           child: Obx(
-          //             () => Container(
-          //               decoration: BoxDecoration(
-          //                   color: CustomColors.activeColor,
-          //                   borderRadius: BorderRadius.circular(12.w)),
-          //               child: Padding(
-          //                 padding: EdgeInsets.symmetric(
-          //                     vertical: 10.h, horizontal: 20.w),
-          //                 child: Center(
-          //                     child: isModalSheetLoading.value
-          //                         ? CircularProgressIndicator()
-          //                         : Text(
-          //                             "Post",
-          //                             style: CustomTexts.font14,
-          //                           )),
-          //               ),
-          //             ),
-          //           ),
-          //         ),
-          //       ],
-          //     ),
-          //     ClipRRect(
-          //         borderRadius: BorderRadius.circular(26.w),
-          //         child: SizedBox(
-          //             height: 250.h,
-          //             width: double.infinity,
-          //             child: Image.file(
-          //               File(_imageFile!.path),
-          //               fit: BoxFit.fill,
-          //             ))),
-          //   ],
-          // );
+          
         },
       );
     }
@@ -993,536 +749,364 @@ class MainViewState extends State<MainView> {
     }
   }
 
+  Future<void> _refreshData() async {
+    // Fetch new data, update state variables, etc.
+    setState(() {
+      // Update state variables here
+    });
+    await Future.delayed(Duration(seconds: 1));
+  }
+
   final usersRef = FirebaseFirestore.instance.collection('Users');
-  List<double> leftPosition = [65.0, 450.0, 800.0, 600.0, 242.0];
+  List<double> leftPosition = [65.0, 420.0, 800.0, 600.0, 242.0];
   List<double> bottomPosition = [444.0, 753.0, 444.0, 80.0, 80.0];
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      floatingActionButton: Padding(
-        padding: EdgeInsets.only(bottom: 20.h, left: 20.w),
-        child: ZoomTapAnimation(
-          onTap: () async {
-            isUploadPostLoading.value = true;
-            _pickImage();
-            isUploadPostLoading.value = false;
-          },
-          child: Obx(
-            () => Container(
-              height: 150.sp,
-              width: 150.sp,
-              decoration: BoxDecoration(
-                  shape: BoxShape.circle, color: Color(0xFFD5F600)),
-              child: Center(
-                child: isUploadPostLoading.value
-                    ? SizedBox(
-                        height: 50.sp,
-                        width: 50.sp,
-                        child: const CircularProgressIndicator())
-                    : Icon(
-                        Icons.add,
-                        color: Colors.white,
-                      ),
+    return RefreshIndicator(
+      onRefresh: _refreshData,
+      child: Scaffold(
+        floatingActionButton: Padding(
+          padding: EdgeInsets.only(bottom: 20.h, left: 20.w),
+          child: ZoomTapAnimation(
+            onTap: () async {
+              isUploadPostLoading.value = true;
+              await getNumberOfPosts();
+              print(totalPosts);
+              totalPosts > 4
+                  ? Get.defaultDialog(
+                      title: 'You already have 5 posts', middleText: "")
+                  : _pickImage();
+
+              isUploadPostLoading.value = false;
+            },
+            child: Obx(
+              () => Container(
+                height: 150.sp,
+                width: 150.sp,
+                decoration: BoxDecoration(
+                    shape: BoxShape.circle, color: Color(0xFFD5F600)),
+                child: Center(
+                  child: isUploadPostLoading.value
+                      ? SizedBox(
+                          height: 50.sp,
+                          width: 50.sp,
+                          child: const CircularProgressIndicator())
+                      : Icon(
+                          Icons.add,
+                          color: Colors.white,
+                        ),
+                ),
               ),
             ),
           ),
         ),
-      ),
-      backgroundColor: const Color(0XFF101010),
-      body: SafeArea(
-          child: SingleChildScrollView(
-        child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 30.w),
-          child: Column(
-            children: [
-              SizedBox(
-                height: 40.h,
-              ),
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 65.w),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Icon(
-                      Icons.search_outlined,
-                      color: Colors.white,
-                    ),
-                    Image.asset(
-                      "assets/images/png/intro_logo.png",
-                      height: 90.h,
-                      width: 219.w,
-                    ),
-                    ZoomTapAnimation(
-                      onTap: () {
-                        Get.put(HomeController())
-                            .bottomNavController
-                            .jumpToTab(3);
-                      },
-                      child: const Icon(
-                        Icons.person,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ],
+        backgroundColor: const Color(0XFF101010),
+        body: SafeArea(
+            child: SingleChildScrollView(
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 30.w),
+            child: Column(
+              children: [
+                SizedBox(
+                  height: 40.h,
                 ),
-              ),
-              SizedBox(
-                height: 74.h,
-              ),
-              StreamBuilder<QuerySnapshot>(
-                stream: userCollection.snapshots(),
-                builder: (context, snapshot) {
-                  if (!snapshot.hasData) {
-                    return CircularProgressIndicator();
-                  }
-                  final documents1 = snapshot.data!.docs;
-                  return Column(
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 65.w),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      for (int i = 0; i < documents1.length; i++) ...[
-                        (documents1[i].id !=
-                                    FirebaseAuth.instance.currentUser!.uid) &&
-                                (documents1[i]['has_posted'] &&
-                                    (documents1[i]['followers'].contains(
-                                        FirebaseAuth
-                                            .instance.currentUser!.uid)))
-                            ? SizedBox(
-                                height: 1000.h,
-                                child: Stack(
-                                  children: [
-                                    Align(
-                                      alignment: Alignment.center,
-                                      child: Stack(
-                                        children: [
-                                          Center(
-                                            child: ClipRRect(
-                                              borderRadius:
-                                                  BorderRadius.circular(200.w),
-                                              child: SizedBox(
-                                                height: 365.sp,
-                                                width: 365.sp,
-                                                child: documents1[i]
-                                                            ['profile_photo'] ==
-                                                        ""
-                                                    ? Container(
-                                                        decoration:
-                                                            BoxDecoration(
-                                                          color: CustomColors
-                                                              .backgroundColor,
-                                                        ),
-                                                        child: Icon(
-                                                          Icons.person,
-                                                          size: 64.sp,
-                                                          color: CustomColors
-                                                              .textColor,
-                                                        ),
-                                                      )
-                                                    : CachedNetworkImage(
-                                                        placeholder:
-                                                            (context, val) {
-                                                          return Container(
-                                                            width: 31.w,
-                                                            child: Center(
-                                                              child: Text(
-                                                                "Loading",
-                                                                style:
-                                                                    TextStyle(
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .bold,
-                                                                  fontSize:
-                                                                      15.sp,
-                                                                ),
-                                                              ),
-                                                            ),
-                                                          );
-                                                        },
-                                                        imageUrl: documents1[i]
-                                                            ['profile_photo'],
-                                                        fit: BoxFit.fill,
-                                                      ),
-                                              ),
-                                            ),
-                                          ),
-                                          Center(
-                                            child: Image.asset(
-                                              "assets/images/png/profile_photo_border.png",
-                                              height: 420.sp,
-                                              width: 420.sp,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
+                      ZoomTapAnimation(
+                        onTap: () {
+                          Get.put(ViralController()).isSearchActive.value =
+                              true;
+                          Get.put(HomeController()).clearBottomNav();
+                          Get.put(HomeController()).viralSelected.value = true;
+                          Get.put(HomeController())
+                              .bottomNavController
+                              .jumpToTab(1);
+                        },
+                        child: const Icon(
+                          Icons.search_outlined,
+                          color: Colors.white,
+                        ),
+                      ),
+                      Image.asset(
+                        "assets/images/png/intro_logo.png",
+                        height: 90.h,
+                        width: 219.w,
+                      ),
+                      ZoomTapAnimation(
+                        onTap: () {
+                          Get.put(HomeController()).clearBottomNav();
+                          Get.put(HomeController()).profileSelected.value =
+                              true;
+                          Get.put(HomeController())
+                              .bottomNavController
+                              .jumpToTab(3);
+                        },
+                        child: const Icon(
+                          Icons.person,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(
+                  height: 74.h,
+                ),
+                StreamBuilder<QuerySnapshot>(
+                  stream: userCollection.snapshots(),
+                  builder: (context, snapshot) {
+                    if (!snapshot.hasData) {
+                      return CircularProgressIndicator();
+                    }
+                    final documents1 = snapshot.data!.docs;
+                    return Column(
+                      children: [
+                        for (int i = 0; i < documents1.length; i++) ...[
+                          (documents1[i].id !=
+                                      FirebaseAuth.instance.currentUser!.uid) &&
+                                  (documents1[i]['has_posted'] &&
+                                      (documents1[i]['followers'].contains(
+                                          FirebaseAuth
+                                              .instance.currentUser!.uid)))
+                              ? SizedBox(
+                                  height: 1000.h,
+                                  child: Stack(
+                                    children: [
+                                      //align was here
 
-                                    //it was center photo
+                                      //it was center photo
 
-                                    SizedBox(
-                                      height: 980.h,
-                                      child: StreamBuilder(
-                                          stream: FirebaseFirestore.instance
-                                              .collection('Users')
-                                              .doc(documents1[i].id)
-                                              .collection('Posts')
-                                              .snapshots(),
-                                          builder: (context, snapshot) {
-                                            if (!snapshot.hasData) {
-                                              return CircularProgressIndicator();
-                                            }
-                                            final documents2 =
-                                                snapshot.data!.docs;
-                                            return Stack(
-                                              children: [
-                                                Center(
-                                                  child: Image.asset(
-                                                    "assets/images/png/post_photo_border.png",
-                                                    height: 803.sp,
-                                                    width: 803.sp,
+                                      SizedBox(
+                                        height: 980.h,
+                                        child: StreamBuilder(
+                                            stream: FirebaseFirestore.instance
+                                                .collection('Users')
+                                                .doc(documents1[i].id)
+                                                .collection('Posts')
+                                                .snapshots(),
+                                            builder: (context, snapshot) {
+                                              if (!snapshot.hasData) {
+                                                return CircularProgressIndicator();
+                                              }
+                                              final documents2 =
+                                                  snapshot.data!.docs;
+                                              return Stack(
+                                                children: [
+                                                  Center(
+                                                    child: Image.asset(
+                                                      "assets/images/png/post_photo_border.png",
+                                                      height: 803.sp,
+                                                      width: 803.sp,
+                                                    ),
                                                   ),
-                                                ),
-                                                Stack(
-                                                  children: [
-                                                    for (int j = 0;
-                                                        j < documents2.length;
-                                                        j++) ...[
-                                                      // documents2[j].id != 'init'
-                                                      //     ?
-                                                      Positioned(
-                                                        left: leftPosition[j].w,
-                                                        bottom:
-                                                            bottomPosition[j].h,
-                                                        child: documents2[j]
-                                                                    .id ==
-                                                                'init'
-                                                            ? SizedBox()
-                                                            : ZoomTapAnimation(
-                                                                onTap:
-                                                                    () async {
-                                                                  await viewPost(
-                                                                      documents1[
-                                                                              i]
-                                                                          .id,
-                                                                      j,
-                                                                      context);
-                                                                },
-                                                                child:
-                                                                    ClipRRect(
-                                                                  borderRadius:
-                                                                      BorderRadius
-                                                                          .circular(
-                                                                              200.w),
+                                                  Stack(
+                                                    children: [
+                                                      for (int j = 0;
+                                                          j < documents2.length;
+                                                          j++) ...[
+                                                        // documents2[j].id != 'init'
+                                                        //     ?
+                                                        Positioned(
+                                                          left:
+                                                              leftPosition[j].w,
+                                                          bottom:
+                                                              bottomPosition[j]
+                                                                  .h,
+                                                          child: documents2[j]
+                                                                      .id ==
+                                                                  'init'
+                                                              ? SizedBox()
+                                                              : ZoomTapAnimation(
+                                                                  onTap:
+                                                                      () async {
+                                                                    await viewPost(
+                                                                        documents1[i]
+                                                                            .id,
+                                                                        j,
+                                                                        context);
+                                                                  },
                                                                   child:
-                                                                      SizedBox(
-                                                                    height:
-                                                                        220.sp,
-                                                                    width:
-                                                                        220.sp,
+                                                                      ClipRRect(
+                                                                    borderRadius:
+                                                                        BorderRadius.circular(
+                                                                            200.w),
                                                                     child:
-                                                                        CachedNetworkImage(
-                                                                      placeholder:
-                                                                          (context,
-                                                                              val) {
-                                                                        return SizedBox(
-                                                                          width:
-                                                                              31.w,
-                                                                          child:
-                                                                              Center(
+                                                                        SizedBox(
+                                                                      height:
+                                                                          220.sp,
+                                                                      width: 220
+                                                                          .sp,
+                                                                      child:
+                                                                          CachedNetworkImage(
+                                                                        placeholder:
+                                                                            (context,
+                                                                                val) {
+                                                                          return SizedBox(
+                                                                            width:
+                                                                                31.w,
                                                                             child:
-                                                                                Text(
-                                                                              "Loading",
-                                                                              style: TextStyle(
-                                                                                fontWeight: FontWeight.bold,
-                                                                                fontSize: 15.sp,
+                                                                                Center(
+                                                                              child: Text(
+                                                                                "Loading",
+                                                                                style: TextStyle(
+                                                                                  fontWeight: FontWeight.bold,
+                                                                                  color: Colors.white,
+                                                                                  fontSize: 34.sp,
+                                                                                ),
                                                                               ),
                                                                             ),
-                                                                          ),
-                                                                        );
-                                                                      },
-                                                                      imageUrl:
-                                                                          documents2[j]
-                                                                              [
-                                                                              'post_photo'],
-                                                                      fit: BoxFit
-                                                                          .fill,
+                                                                          );
+                                                                        },
+                                                                        imageUrl:
+                                                                            documents2[j]['post_photo'],
+                                                                        fit: BoxFit
+                                                                            .fill,
+                                                                      ),
                                                                     ),
                                                                   ),
                                                                 ),
+                                                        ),
+                                                      ]
+                                                      // for (int j = 0; j < 5; j++) ...[
+                                                      //   Positioned(
+                                                      //       left: leftPosition[j].w,
+                                                      //       bottom:
+                                                      //           bottomPosition[j].h,
+                                                      //       child: Container(
+                                                      //         height: 220.sp,
+                                                      //         width: 220.sp,
+                                                      //         color: Colors.red,
+                                                      //       )),
+                                                      // ]
+                                                    ],
+                                                  ),
+                                                  //got pasted here
+                                                  ZoomTapAnimation(
+                                                    onTap: () {
+                                                      Get.to(() =>
+                                                          // UserProfileView(
+                                                          //   userUid:
+                                                          //       documents1[i]
+                                                          //           .id,
+                                                          // )
+                                                          ProfileView(
+                                                              userUid:
+                                                                  documents1[i]
+                                                                      .id));
+                                                    },
+                                                    child: Align(
+                                                      alignment:
+                                                          Alignment.center,
+                                                      child: Stack(
+                                                        children: [
+                                                          Center(
+                                                            child: ClipRRect(
+                                                              borderRadius:
+                                                                  BorderRadius
+                                                                      .circular(
+                                                                          200.w),
+                                                              child: SizedBox(
+                                                                height: 365.sp,
+                                                                width: 365.sp,
+                                                                child: documents1[i]
+                                                                            [
+                                                                            'profile_photo'] ==
+                                                                        ""
+                                                                    ? Container(
+                                                                        decoration:
+                                                                            BoxDecoration(
+                                                                          color:
+                                                                              CustomColors.backgroundColor,
+                                                                        ),
+                                                                        child:
+                                                                            Icon(
+                                                                          Icons
+                                                                              .person,
+                                                                          size:
+                                                                              64.sp,
+                                                                          color:
+                                                                              CustomColors.textColor,
+                                                                        ),
+                                                                      )
+                                                                    : CachedNetworkImage(
+                                                                        placeholder:
+                                                                            (context,
+                                                                                val) {
+                                                                          return Container(
+                                                                            width:
+                                                                                31.w,
+                                                                            child:
+                                                                                Center(
+                                                                              child: Text(
+                                                                                "Loading",
+                                                                                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 34.sp, color: Colors.white),
+                                                                              ),
+                                                                            ),
+                                                                          );
+                                                                        },
+                                                                        imageUrl:
+                                                                            documents1[i]['profile_photo'],
+                                                                        fit: BoxFit
+                                                                            .fill,
+                                                                      ),
                                                               ),
+                                                            ),
+                                                          ),
+                                                          Center(
+                                                            child: Image.asset(
+                                                              "assets/images/png/profile_photo_border.png",
+                                                              height: 420.sp,
+                                                              width: 420.sp,
+                                                            ),
+                                                          ),
+                                                        ],
                                                       ),
-                                                    ]
-                                                    // for (int j = 0; j < 5; j++) ...[
-                                                    //   Positioned(
-                                                    //       left: leftPosition[j].w,
-                                                    //       bottom:
-                                                    //           bottomPosition[j].h,
-                                                    //       child: Container(
-                                                    //         height: 220.sp,
-                                                    //         width: 220.sp,
-                                                    //         color: Colors.red,
-                                                    //       )),
-                                                    // ]
-                                                  ],
-                                                ),
-                                              ],
-                                            );
-                                          }),
-                                    ),
-                                    // return Column(
-                                    //   children: [
-                                    //     for (int j = 0;
-                                    //         j < documents2.length;
-                                    //         j++) ...[
-                                    //       documents2[j].id != "init"
-                                    //           ? ZoomTapAnimation(
-                                    //             onTap: () async {
-                                    //               await viewPost(
-                                    //                   documents1[i].id,
-                                    //                   j,
-                                    //                   context);
-                                    //             },
-                                    //             child: ClipRRect(
-                                    //               borderRadius:
-                                    //                   BorderRadius
-                                    //                       .circular(
-                                    //                           200.w),
-                                    //               child: SizedBox(
-                                    //                 height: 220.sp,
-                                    //                 width: 220.sp,
-                                    //                 child:
-                                    //                     CachedNetworkImage(
-                                    //                   placeholder:
-                                    //                       (context,
-                                    //                           val) {
-                                    //                     return SizedBox(
-                                    //                       width: 31.w,
-                                    //                       child: Center(
-                                    //                         child: Text(
-                                    //                           "Loading",
-                                    //                           style:
-                                    //                               TextStyle(
-                                    //                             fontWeight:
-                                    //                                 FontWeight.bold,
-                                    //                             fontSize:
-                                    //                                 15.sp,
-                                    //                           ),
-                                    //                         ),
-                                    //                       ),
-                                    //                     );
-                                    //                   },
-                                    //                   imageUrl: documents2[
-                                    //                           j][
-                                    //                       'post_photo'],
-                                    //                   fit: BoxFit.fill,
-                                    //                 ),
-                                    //               ),
-                                    //             ),
-                                    //           )
-                                    //           : const SizedBox(),
-
-                                    // Positioned(
-                                    //     left: 65.w,
-                                    //     bottom: 444.h,
-                                    //     child: Container(
-                                    //       decoration: BoxDecoration(
-                                    //         shape: BoxShape.circle,
-                                    //         color: Colors.red,
-                                    //       ),
-                                    //       height: 220.sp,
-                                    //       width: 220.sp,
-                                    //     )),
-                                    // Positioned(
-                                    //     left: 450.w,
-                                    //     bottom: 753.h,
-                                    //     child: Container(
-                                    //       decoration: BoxDecoration(
-                                    //         shape: BoxShape.circle,
-                                    //         color: Colors.blue,
-                                    //       ),
-                                    //       height: 220.sp,
-                                    //       width: 220.sp,
-                                    //     )),
-                                    // Positioned(
-                                    //     left: 800.w,
-                                    //     bottom: 444.h,
-                                    //     child: Container(
-                                    //       decoration: BoxDecoration(
-                                    //         shape: BoxShape.circle,
-                                    //         color: Colors.green,
-                                    //       ),
-                                    //       height: 220.sp,
-                                    //       width: 220.sp,
-                                    //     )),
-                                    // Positioned(
-                                    //     left: 600.w,
-                                    //     bottom: 80.h,
-                                    //     child: Container(
-                                    //       decoration: BoxDecoration(
-                                    //         shape: BoxShape.circle,
-                                    //         color: Colors.white,
-                                    //       ),
-                                    //       height: 220.sp,
-                                    //       width: 220.sp,
-                                    //     )),
-                                    // Positioned(
-                                    //     left: 242.w,
-                                    //     bottom: 80.h,
-                                    //     child: Container(
-                                    //       decoration: BoxDecoration(
-                                    //         shape: BoxShape.circle,
-                                    //         color: Colors.white,
-                                    //       ),
-                                    //       height: 220.sp,
-                                    //       width: 220.sp,
-                                    //     )),
-                                  ],
-                                ),
-                              )
-                            // Row(
-                            //     mainAxisAlignment:
-                            //         MainAxisAlignment.spaceEvenly,
-                            //     children: [
-                            //       ClipRRect(
-                            //         borderRadius: BorderRadius.circular(38.w),
-                            //         child: SizedBox(
-                            //           height: 100.sp,
-                            //           width: 100.sp,
-                            //           child: documents1[i]['profile_photo'] ==
-                            //                   ""
-                            //               ? Container(
-                            //                   decoration: BoxDecoration(
-                            //                     color: CustomColors
-                            //                         .backgroundColor,
-                            //                   ),
-                            //                   child: Icon(
-                            //                     Icons.person,
-                            //                     size: 64.sp,
-                            //                     color: CustomColors.textColor,
-                            //                   ),
-                            //                 )
-                            //               : CachedNetworkImage(
-                            //                   placeholder: (context, val) {
-                            //                     return Container(
-                            //                       width: 31.w,
-                            //                       child: Center(
-                            //                         child: Text(
-                            //                           "Loading",
-                            //                           style: TextStyle(
-                            //                             fontWeight:
-                            //                                 FontWeight.bold,
-                            //                             fontSize: 15.sp,
-                            //                           ),
-                            //                         ),
-                            //                       ),
-                            //                     );
-                            //                   },
-                            //                   imageUrl: documents1[i]
-                            //                       ['profile_photo'],
-                            //                   fit: BoxFit.fill,
-                            //                 ),
-                            //         ),
-                            //       ),
-                            //       StreamBuilder(
-                            //           stream: FirebaseFirestore.instance
-                            //               .collection('Users')
-                            //               .doc(documents1[i].id)
-                            //               .collection('Posts')
-                            //               .snapshots(),
-                            //           builder: (context, snapshot) {
-                            //             if (!snapshot.hasData) {
-                            //               return CircularProgressIndicator();
-                            //             }
-                            //             final documents2 = snapshot.data!.docs;
-                            //             return Column(
-                            //               children: [
-                            //                 for (int j = 0;
-                            //                     j < documents2.length;
-                            //                     j++) ...[
-                            //                   documents2[j].id != "init"
-                            //                       ? Padding(
-                            //                           padding:
-                            //                               EdgeInsets.symmetric(
-                            //                                   vertical: 5.h),
-                            //                           child: ZoomTapAnimation(
-                            //                             onTap: () async {
-                            //                               await viewPost(
-                            //                                   documents1[i].id,
-                            //                                   j,
-                            //                                   context);
-                            //                             },
-                            //                             child: ClipRRect(
-                            //                               borderRadius:
-                            //                                   BorderRadius
-                            //                                       .circular(
-                            //                                           200.w),
-                            //                               child: SizedBox(
-                            //                                 height: 60.sp,
-                            //                                 width: 60.sp,
-                            //                                 child:
-                            //                                     CachedNetworkImage(
-                            //                                   placeholder:
-                            //                                       (context,
-                            //                                           val) {
-                            //                                     return SizedBox(
-                            //                                       width: 31.w,
-                            //                                       child: Center(
-                            //                                         child: Text(
-                            //                                           "Loading",
-                            //                                           style:
-                            //                                               TextStyle(
-                            //                                             fontWeight:
-                            //                                                 FontWeight.bold,
-                            //                                             fontSize:
-                            //                                                 15.sp,
-                            //                                           ),
-                            //                                         ),
-                            //                                       ),
-                            //                                     );
-                            //                                   },
-                            //                                   imageUrl: documents2[
-                            //                                           j][
-                            //                                       'post_photo'],
-                            //                                   fit: BoxFit.fill,
-                            //                                 ),
-                            //                               ),
-                            //                             ),
-                            //                           ),
-                            //                         )
-                            //                       : const SizedBox(),
-                            //                 ]
-                            //               ],
-                            //             );
-                            //           })
-                            //     ],
-                            //   )
-                            : SizedBox(),
-                        SizedBox(
-                          height: 30.h,
-                        ),
-                        documents1[i]['has_posted'] &&
-                                documents1[i].id !=
-                                    FirebaseAuth.instance.currentUser!.uid &&
-                                (documents1[i]['followers'].contains(
-                                    FirebaseAuth.instance.currentUser!.uid))
-                            ? Center(
-                                child: Container(
-                                  decoration:
-                                      BoxDecoration(color: Color(0xFFD9D9D9)),
-                                  height: 2.sp,
-                                  width: 350.w,
-                                ),
-                              )
-                            : SizedBox(),
-                        SizedBox(
-                          height: 30.h,
-                        ),
-                      ]
-                    ],
-                  );
-                },
-              )
-            ],
+                                                    ),
+                                                  ),
+                                          
+                                                ],
+                                              );
+                                            }),
+                                      ),
+                                 
+                                    ],
+                                  ),
+                                )
+                             
+                              : SizedBox(),
+                          SizedBox(
+                            height: 30.h,
+                          ),
+                          documents1[i]['has_posted'] &&
+                                  documents1[i].id !=
+                                      FirebaseAuth.instance.currentUser!.uid &&
+                                  (documents1[i]['followers'].contains(
+                                      FirebaseAuth.instance.currentUser!.uid))
+                              ? Center(
+                                  child: Container(
+                                    decoration:
+                                        BoxDecoration(color: Color(0xFFD9D9D9)),
+                                    height: 2.sp,
+                                    width: 350.w,
+                                  ),
+                                )
+                              : SizedBox(),
+                          SizedBox(
+                            height: 30.h,
+                          ),
+                        ]
+                      ],
+                    );
+                  },
+                )
+              ],
+            ),
           ),
-        ),
-      )),
+        )),
+      ),
     );
   }
 }

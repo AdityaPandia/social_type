@@ -11,7 +11,8 @@ import 'package:social_type/views/home/views/main/controllers/main_controller.da
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
 
 class FollowingView extends StatelessWidget {
-  FollowingView({super.key});
+  FollowingView({required this.userUid});
+  final String userUid;
   final appController = Get.put(AppController());
   Future<String?> getUidByUsername(String username) async {
     final usersRef = FirebaseFirestore.instance.collection('Users');
@@ -50,7 +51,7 @@ class FollowingView extends StatelessWidget {
             height: 50.h,
           ),
           FutureBuilder(
-              future: appController.getUserName(),
+              future: appController.getUserName(userUid),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.done) {
                   return Text(
@@ -77,7 +78,7 @@ class FollowingView extends StatelessWidget {
           FutureBuilder<List<Map<String, dynamic>>>(
             future: FirebaseFirestore.instance
                 .collection('Users')
-                .doc(FirebaseAuth.instance.currentUser!.uid)
+                .doc(userUid)
                 .get()
                 .then((snapshot) => snapshot.data()!)
                 .then((userDocument) {
@@ -175,21 +176,6 @@ class FollowingView extends StatelessWidget {
                               ),
                               ZoomTapAnimation(
                                 onTap: () async {
-                                  // String? userId = await getUidByUsername(
-                                  //     followingData['username']);
-                                  // isLoading.value = true;
-                                  // await Get.put(MainController())
-                                  //         .isUserIdInFollowers(
-                                  //   userId!,
-                                  // )
-                                  //     ? await Get.put(MainController())
-                                  //         .removeUserIdFromFollowers(userId)
-                                  //     : await Get.put(MainController())
-                                  //         .addUserIdToFollowers(userId);
-                                  // isF.value
-                                  //     ? isF.value = false
-                                  //     : isF.value = true;
-                                  // isLoading.value = false;
                                   String? userId = await getUidByUsername(
                                       followingData['username']);
                                   isLoading.value = true;

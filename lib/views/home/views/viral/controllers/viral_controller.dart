@@ -3,13 +3,17 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class ViralController extends GetxController {
+ RxBool isSearchActive = false.obs;
 
 
   RxBool isViralLoading = false.obs;
   List<List<String>> viralList = [];
+  List<List<String>> viralList2=[];
+  
   String name = "";
   String photo = "";
   List<List<String>> viralInfoList = [];
+  List<List<String>> viralInfoList2=[];
   getPostDetails(
     String uid,
     String postDocumentId,
@@ -41,6 +45,7 @@ class ViralController extends GetxController {
 
   fetchData() async {
     viralList.clear();
+    viralList2.clear();
     try {
       QuerySnapshot querySnapshot =
           await FirebaseFirestore.instance.collection('Users').get();
@@ -60,8 +65,9 @@ class ViralController extends GetxController {
               tempList.add(querySnapshot2.docs[j].id);
               tempList.add((querySnapshot2.docs[j]['likes'].length).toString());
               viralList.add(tempList);
+              viralList2.add(tempList);
             }
-          }
+          } 
         }
       }
       viralList.sort((a, b) {

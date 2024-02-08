@@ -4,8 +4,8 @@ import 'package:get_storage/get_storage.dart';
 
 
 class AppController extends GetxController {
-Future<String?> getUsername()async{
-   String uid = await GetStorage().read('uid');
+Future<String?> getUsername(String? uid)async{
+  //  String uid = await GetStorage().read('uid');
     final userDoc =
         await FirebaseFirestore.instance.collection('Users').doc(uid).get();
 
@@ -21,8 +21,8 @@ Future<String?> getUsername()async{
     return username; // Return the username
 }
 
-  Future<String?> getUserEmail() async {
-    String uid = await GetStorage().read('uid');
+  Future<String?> getUserEmail(String? uid) async {
+    // String uid = await GetStorage().read('uid');
     final userDoc =
         await FirebaseFirestore.instance.collection('Users').doc(uid).get();
 
@@ -38,8 +38,8 @@ Future<String?> getUsername()async{
     return email; // Return the email address
   }
 
-  Future<String?> getUserName() async {
-    String uid = await GetStorage().read('uid');
+  Future<String?> getUserName(String ?uid) async {
+    // String uid = await GetStorage().read('uid');
     final userDoc =
         await FirebaseFirestore.instance.collection('Users').doc(uid).get();
 
@@ -55,8 +55,8 @@ Future<String?> getUsername()async{
     return name; // Return the email address
   }
 
-  Future<String?> getUserProfilePhoto() async {
-    String uid = await GetStorage().read('uid');
+  Future<String?> getUserProfilePhoto(String ?uid) async {
+    // String uid = await GetStorage().read('uid');
     final userDoc =
         await FirebaseFirestore.instance.collection('Users').doc(uid).get();
 

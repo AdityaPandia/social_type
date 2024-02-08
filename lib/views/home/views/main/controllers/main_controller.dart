@@ -7,6 +7,39 @@ import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 
 class MainController extends GetxController {
+
+  Future<String?> getUsernameByUid(String userUid)async{
+    final userDoc =
+        await FirebaseFirestore.instance.collection('Users').doc(userUid).get();
+
+    if (!userDoc.exists) {
+      return null; // User document not found
+    }
+
+    final username = userDoc.data()!['username'];
+    if (username== null) {
+      return null; // username field not found or empty
+    }
+
+    return username; // Return the username
+  }
+
+ 
+Future<String?>getUserNameByUid(String uid)async{
+  final userDoc =
+        await FirebaseFirestore.instance.collection('Users').doc(uid).get();
+          if (!userDoc.exists) {
+      return null; // User document not found
+    }
+
+    final name = userDoc.data()!['name'];
+    if (name == null) {
+      return null; // Email field not found or empty
+    }
+
+    return name; // Return the email address
+}
+
   getCapturedPost(XFile pickedFile) async {
     final storageRef =
         FirebaseStorage.instance.ref().child('user_photos/${pickedFile.name}');
@@ -14,7 +47,7 @@ class MainController extends GetxController {
     return await uploadTask;
   }
 
-  Future<void> addUserIdToFollowers(String userId) async {
+  Future<void> addUserIdToFollowers(String ?userId) async {
     try {
       String currentUserId = FirebaseAuth.instance.currentUser!.uid;
       DocumentReference uidReferene =
@@ -42,7 +75,7 @@ class MainController extends GetxController {
     }
   }
 
-  Future<void> removeUserIdFromFollowers(String userId) async {
+  Future<void> removeUserIdFromFollowers(String ?userId) async {
     try {
       String currentUserId = FirebaseAuth.instance.currentUser!.uid;
       DocumentReference uidReference =
@@ -74,7 +107,7 @@ class MainController extends GetxController {
     }
   }
 
-  Future<bool> isUserIdInFollowers(String userId) async {
+  Future<bool> isUserIdInFollowers(String ?userId) async {
     try {
       String currentUserId =  FirebaseAuth.instance.currentUser!.uid;
       DocumentReference uidReference =
