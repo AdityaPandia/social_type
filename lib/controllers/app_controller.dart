@@ -4,7 +4,22 @@ import 'package:get_storage/get_storage.dart';
 
 
 class AppController extends GetxController {
+Future<String?> getUsername()async{
+   String uid = await GetStorage().read('uid');
+    final userDoc =
+        await FirebaseFirestore.instance.collection('Users').doc(uid).get();
 
+    if (!userDoc.exists) {
+      return null; // User document not found
+    }
+
+    final username = userDoc.data()!['username'];
+    if (username== null) {
+      return null; // username field not found or empty
+    }
+
+    return username; // Return the username
+}
 
   Future<String?> getUserEmail() async {
     String uid = await GetStorage().read('uid');

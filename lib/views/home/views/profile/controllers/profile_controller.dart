@@ -7,6 +7,7 @@ import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 
 class ProfileController extends GetxController {
+
   RxBool isLoading = false.obs;
   Future<XFile?> pickImageFromGallery() async {
     // Using image_picker package

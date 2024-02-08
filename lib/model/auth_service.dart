@@ -8,11 +8,26 @@ import 'package:social_type/views/authentication/views/google_signup_view.dart';
 import 'package:social_type/views/home/views/home_view.dart';
 
 class AuthService {
+  Future<bool> doesUsernameExist(String username) async {
+    final _firestore = FirebaseFirestore.instance;
+
+    final querySnapshot = await _firestore
+        .collection('Users')
+        .where('username', isEqualTo: username)
+        .get();
+
+    return querySnapshot.docs.isNotEmpty;
+  }
+
   emailSignUp() async {
     final storage = GetStorage();
     FirebaseAuth auth = FirebaseAuth.instance;
     final authController = Get.put(AuthenticationController());
 
+    if (await doesUsernameExist(authController.userNameController.text)) {
+      return Get.defaultDialog(
+          title: "Username already exists", middleText: "");
+    }
     try {
       authController.isActiveButtonLoading.value = true;
       await auth
@@ -23,7 +38,10 @@ class AuthService {
           .then((value) async {
         String uid = auth.currentUser!.uid;
         await addUserToFirestore(
-            uid, auth.currentUser!.email, authController.nameController.text);
+            uid,
+            auth.currentUser!.email,
+            authController.nameController.text,
+            authController.userNameController.text);
         await storage.write("uid", uid);
         await storage.write('isSignInDone', true);
         authController.isActiveButtonLoading.value = false;
@@ -120,10 +138,14 @@ class AuthService {
     final storage = GetStorage();
     FirebaseAuth auth = FirebaseAuth.instance;
     final authController = Get.put(AuthenticationController());
+
     String uid = auth.currentUser!.uid;
     authController.isActiveButtonLoading.value = true;
     await addUserToFirestore(
-        uid, auth.currentUser!.email, authController.nameController.text);
+        uid,
+        auth.currentUser!.email,
+        authController.nameController.text,
+        authController.userNameController.text);
     await storage.write("uid", uid);
     await storage.write('isSignInDone', true);
     authController.isActiveButtonLoading.value = false;
@@ -147,8 +169,8 @@ class AuthService {
     }
   }
 
-  Future<void> addUserToFirestore(
-      String uid, String? email, String name) async {
+  addUserToFirestore(
+      String uid, String? email, String name, String userName) async {
     try {
       CollectionReference usersCollection =
           FirebaseFirestore.instance.collection('Users');
@@ -156,6 +178,7 @@ class AuthService {
       await usersCollection.doc(uid).set({
         'email': email,
         'name': name,
+        'username': userName,
         'profile_photo': '',
         'has_posted': false,
         'followers': [],

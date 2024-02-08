@@ -99,13 +99,40 @@ class GoogleSignUpView extends StatelessWidget {
             ),
           ),
           SizedBox(
+            height: 60.h,
+          ),
+          Container(
+            decoration: BoxDecoration(
+              border: Border.all(width: 6.sp, color: Colors.white),
+              borderRadius: BorderRadius.circular(30.w),
+            ),
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 48.w),
+              child: TextField(
+                controller: controller.userNameController,
+                style: GoogleFonts.archivo(
+                    fontSize: 40.sp,
+                    fontWeight: FontWeight.w400,
+                    color: Colors.white),
+                decoration: InputDecoration(
+                    border: InputBorder.none,
+                    hintText: "Username",
+                    hintStyle: GoogleFonts.archivo(
+                        fontSize: 40.sp,
+                        fontWeight: FontWeight.w400,
+                        color: Colors.white)),
+              ),
+            ),
+          ),
+          SizedBox(
             height: 250.h,
           ),
           ZoomTapAnimation(
             onTap: () async {
               if (controller.isGoogleSignupLoading.value) {
               } else {
-                if (controller.isGoogleSignupNext.value) {
+                if (controller.isGoogleSignupNext.value &&
+                    controller.isUserNameDone.value) {
                   controller.isGoogleSignupLoading.value = true;
                   final storage = GetStorage();
                   FirebaseAuth auth = FirebaseAuth.instance;
@@ -113,14 +140,24 @@ class GoogleSignUpView extends StatelessWidget {
                   String uid = auth.currentUser!.uid;
 
                   print(authController.nameController);
-                  await AuthService().addUserToFirestore(
+                  if(await AuthService().doesUsernameExist(authController.userNameController.text)){
+                    Get.defaultDialog(title: "Username already exists");
+                    controller.isGoogleSignupLoading.value=false;
+                  }
+                  else{
+ await AuthService().addUserToFirestore(
                       uid,
                       auth.currentUser!.email,
-                      controller.googleNameController.text);
+                      controller.googleNameController.text,
+                      authController.userNameController.text);
                   await storage.write("uid", uid);
-                  await storage.write('isSignInDone', true);
-                  controller.isGoogleSignupLoading.value = false;
-                  Get.offAll(() => HomeView());
+                  await storage.write('isSignInDone', true).then((value) {
+                    controller.isGoogleSignupLoading.value = false;
+                    Get.offAll(() => HomeView());
+                  }
+                  );
+                  };
+                 
                 } else {}
               }
             },
@@ -131,7 +168,8 @@ class GoogleSignUpView extends StatelessWidget {
                     width: 699.w,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(200.w),
-                      color: controller.isGoogleSignupNext.value
+                      color: controller.isGoogleSignupNext.value &&
+                              controller.isUserNameDone.value
                           ? Color(0xFFD5F600)
                           : Colors.grey,
                     ),

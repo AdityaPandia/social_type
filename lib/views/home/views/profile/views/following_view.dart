@@ -8,13 +8,11 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:social_type/common/custom_colors.dart';
 import 'package:social_type/controllers/app_controller.dart';
 import 'package:social_type/views/home/views/main/controllers/main_controller.dart';
-import 'package:social_type/views/home/views/profile/controllers/profile_controller.dart';
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
 
-class FollowerView extends StatelessWidget {
-  FollowerView({super.key});
+class FollowingView extends StatelessWidget {
+  FollowingView({super.key});
   final appController = Get.put(AppController());
-
   Future<String?> getUidByUsername(String username) async {
     final usersRef = FirebaseFirestore.instance.collection('Users');
 
@@ -29,6 +27,8 @@ class FollowerView extends StatelessWidget {
       return null; // User not found
     }
   }
+
+  RxBool isF = false.obs;
 
   RxBool isLoading = false.obs;
   @override
@@ -81,36 +81,35 @@ class FollowerView extends StatelessWidget {
                 .get()
                 .then((snapshot) => snapshot.data()!)
                 .then((userDocument) {
-              final followersIds =
-                  (userDocument['followers'] as List<dynamic>).cast<String>();
+              final followingIds =
+                  (userDocument['following'] as List<dynamic>).cast<String>();
 
-              return Future.wait(followersIds.map((id) => FirebaseFirestore
+              return Future.wait(followingIds.map((id) => FirebaseFirestore
                   .instance
                   .collection('Users')
                   .doc(id)
                   .get()
                   .then((doc) => doc.data())));
-            }).then((listOfFollowerData) =>
-                    listOfFollowerData.map((data) => data!).toList()),
+            }).then((listOfFollowingData) =>
+                    listOfFollowingData.map((data) => data!).toList()),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return const CircularProgressIndicator();
               } else if (snapshot.hasError) {
-                return Text('Error loading followers: ${snapshot.error}');
+                return Text('Error loading following: ${snapshot.error}');
               } else {
-                final followers = snapshot.data!;
+                final following = snapshot.data!;
                 return Padding(
                   padding: EdgeInsets.symmetric(horizontal: 58.w),
                   child: SizedBox(
                     height: 5000.h,
                     child: ListView.builder(
-                      itemCount: followers.length,
+                      itemCount: following.length,
                       itemBuilder: (context, index) {
-                        final followerData = followers[index];
-                        final followerName = followerData['name'] as String;
-                        final followerPhoto =
-                            followerData['profile_photo'] as String;
-                        RxBool isF = false.obs;
+                        final followingData = following[index];
+                        final followingName = followingData['name'] as String;
+                        final followingPhoto =
+                            followingData['profile_photo'] as String;
                         return Padding(
                           padding: EdgeInsets.only(bottom: 50.h),
                           child: Row(
@@ -118,7 +117,7 @@ class FollowerView extends StatelessWidget {
                             children: [
                               Row(
                                 children: [
-                                  (followerPhoto == "")
+                                  (followingPhoto == "")
                                       ? SizedBox(
                                           width: 100.w,
                                           child: Icon(
@@ -147,7 +146,7 @@ class FollowerView extends StatelessWidget {
                                                 ),
                                               );
                                             },
-                                            imageUrl: followerPhoto,
+                                            imageUrl: followingPhoto,
                                             fit: BoxFit.fill,
                                           ),
                                         ),
@@ -159,14 +158,14 @@ class FollowerView extends StatelessWidget {
                                         CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        followerName,
+                                        followingName,
                                         style: GoogleFonts.poppins(
                                             fontSize: 48.sp,
                                             color: Colors.white),
                                       ),
                                       Text(
-                                        "@${followerData['username']}",
-                                        style: GoogleFonts.poppins( 
+                                        "@${followingData['username']}",
+                                        style: GoogleFonts.poppins(
                                             fontSize: 32.sp,
                                             color: Colors.white),
                                       ),
@@ -174,13 +173,25 @@ class FollowerView extends StatelessWidget {
                                   ),
                                 ],
                               ),
-
-                              //builder that calls function that will get uid by username
-
                               ZoomTapAnimation(
                                 onTap: () async {
+                                  // String? userId = await getUidByUsername(
+                                  //     followingData['username']);
+                                  // isLoading.value = true;
+                                  // await Get.put(MainController())
+                                  //         .isUserIdInFollowers(
+                                  //   userId!,
+                                  // )
+                                  //     ? await Get.put(MainController())
+                                  //         .removeUserIdFromFollowers(userId)
+                                  //     : await Get.put(MainController())
+                                  //         .addUserIdToFollowers(userId);
+                                  // isF.value
+                                  //     ? isF.value = false
+                                  //     : isF.value = true;
+                                  // isLoading.value = false;
                                   String? userId = await getUidByUsername(
-                                      followerData['username']);
+                                      followingData['username']);
                                   isLoading.value = true;
                                   await Get.put(MainController())
                                           .isUserIdInFollowers(
@@ -197,27 +208,22 @@ class FollowerView extends StatelessWidget {
                                 },
                                 child: Obx(
                                   () => Container(
-                                    width: 279.w,
                                     decoration: BoxDecoration(
                                         color: isF.value
                                             ? Color(0xFFC5D6A1)
                                             : Color(0xFF817BCA),
                                         borderRadius:
                                             BorderRadius.circular(100.w)),
-                                    child: Center(
-                                      child: Padding(
-                                        padding: EdgeInsets.symmetric(
-                                            horizontal: 30.w, vertical: 20.h),
-                                        child: isLoading.value
-                                            ? CircularProgressIndicator()
-                                            : Text(
-                                                isF.value
-                                                    ? "Follow"
-                                                    : "Unfollow",
-                                                style: GoogleFonts.poppins(
-                                                    color: Colors.white),
-                                              ),
-                                      ),
+                                    child: Padding(
+                                      padding: EdgeInsets.symmetric(
+                                          horizontal: 30.w, vertical: 20.h),
+                                      child: isLoading.value
+                                          ? CircularProgressIndicator()
+                                          : Text(
+                                              isF.value ? "Follow" : "Unfollow",
+                                              style: GoogleFonts.poppins(
+                                                  color: Colors.white),
+                                            ),
                                     ),
                                   ),
                                 ),

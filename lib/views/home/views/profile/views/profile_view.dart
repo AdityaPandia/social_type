@@ -14,6 +14,7 @@ import 'package:social_type/views/authentication/views/login_view.dart';
 import 'package:social_type/views/home/views/main/views/main_view.dart';
 import 'package:social_type/views/home/views/profile/controllers/profile_controller.dart';
 import 'package:social_type/views/home/views/profile/views/follower_view.dart';
+import 'package:social_type/views/home/views/profile/views/following_view.dart';
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
 
 class ProfileView extends StatelessWidget {
@@ -43,14 +44,6 @@ class ProfileView extends StatelessWidget {
                   ),
                   Row(
                     children: [
-                      // Text(
-                      //   "Frank A",
-                      //   style: GoogleFonts.poppins(
-                      //     fontSize: 90.sp,
-                      //     fontWeight: FontWeight.w600,
-                      //     color: Color(0xFFF5F5F5),
-                      //   ),
-                      // ),
                       FutureBuilder(
                           future: appController.getUserName(),
                           builder: (context, snapshot) {
@@ -82,26 +75,52 @@ class ProfileView extends StatelessWidget {
                       ),
                       ZoomTapAnimation(
                         onTap: () async {
-                          await GetStorage().write('isSignInDone', false);
-                          await GoogleSignIn().signOut();
-                          Get.offAll(() => LoginView());
+                          // await GetStorage().write('isSignInDone', false);
+                          // await GoogleSignIn().signOut();
+                          // Get.offAll(() => LoginView());
                         },
-                        child: SizedBox(
-                          width: 329.w,
-                          child: Text(
-                            "(@username)",
-                            style: GoogleFonts.poppins(
-                                fontSize: 36.sp,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.white),
-                          ),
-                        ),
+                        child: FutureBuilder(
+                            future: appController.getUsername(),
+                            builder: (context, snapshot) {
+                              if (snapshot.connectionState ==
+                                  ConnectionState.done) {
+                                return SizedBox(
+                                  width: 350.w,
+                                  child: Text(
+                                    "@${snapshot.data!}",
+                                    style: GoogleFonts.poppins(
+                                        fontSize: 36.sp,
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.white),
+                                  ),
+                                );
+                              } else {
+                                return SizedBox(
+                                  width: 12.sp,
+                                  height: 12.sp,
+                                  child: CircularProgressIndicator(
+                                    color: CustomColors.textColor2,
+                                  ),
+                                );
+                              }
+                            }),
+
+                        // SizedBox(
+                        //   width: 329.w,
+                        //   child: Text(
+                        //     "(@username)",
+                        //     style: GoogleFonts.poppins(
+                        //         fontSize: 36.sp,
+                        //         fontWeight: FontWeight.w600,
+                        //         color: Colors.white),
+                        //   ),
+                        // ),
                       ),
                       SizedBox(
-                        width: 15.w,
+                        width: 0.w,
                       ),
                       SizedBox(
-                          width: 279.w,
+                          width: 140.w,
                           child: Text(
                             "Follow",
                             style: GoogleFonts.poppins(
@@ -169,7 +188,7 @@ class ProfileView extends StatelessWidget {
                                 final following = doc.get('following').length;
                                 return ZoomTapAnimation(
                                   onTap: () {
-                                    Get.to(FollowerView());
+                                    Get.to(FollowingView());
                                   },
                                   child: Text(
                                     '$following Following',

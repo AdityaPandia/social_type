@@ -15,6 +15,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:social_type/common/custom_colors.dart';
 import 'package:social_type/common/custom_texts.dart';
+import 'package:social_type/views/home/controllers/home_controller.dart';
 import 'package:social_type/views/home/views/main/controllers/main_controller.dart';
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
 
@@ -35,6 +36,7 @@ class MainViewState extends State<MainView> {
 
   RxBool isFollowButtonLoading = false.obs;
   RxBool isLiked = false.obs;
+  RxBool isAddCommentLoading = false.obs;
   Widget checkUrl(String url) {
     try {
       return Image.network(url, height: 70.0, width: 70.0, fit: BoxFit.cover);
@@ -46,6 +48,7 @@ class MainViewState extends State<MainView> {
   final controller = Get.put(MainController());
   final storage = GetStorage();
   TextEditingController descriptionController = TextEditingController();
+  TextEditingController commentController = TextEditingController();
   RxBool isUploadPostLoading = false.obs;
   RxBool isModalSheetLoading = false.obs;
   XFile? _imageFile; // Stores the picked image file
@@ -105,6 +108,59 @@ class MainViewState extends State<MainView> {
     }
   }
 
+  Widget buildCommentsStreamBuilder(String userId, int postIndex) {
+    return StreamBuilder<QuerySnapshot>(
+      // Change to QuerySnapshot
+      stream: FirebaseFirestore.instance
+          .collection('Users')
+          .doc(userId)
+          .collection('Posts')
+          .snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return Text('Error loading comments');
+        }
+
+        if (snapshot.hasData) {
+          QuerySnapshot postsSnapshot = snapshot.data as QuerySnapshot;
+          if (postsSnapshot.docs.length > postIndex) {
+            // Ensure index is valid
+            DocumentSnapshot postDoc = postsSnapshot.docs[postIndex];
+            List<dynamic> comments = postDoc['comments'];
+
+            return ListView.builder(
+              itemCount: comments.length,
+              itemBuilder: (context, index) {
+                return Container(
+                  margin: EdgeInsets.symmetric(vertical: 30.h),
+                  decoration: BoxDecoration(
+                      color: Color(0xFFD9D9D9),
+                      borderRadius: BorderRadius.circular(60.w)),
+                  child: Padding(
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 60.w, vertical: 30.h),
+                    child: Center(
+                        child: Text(
+                      comments[index],
+                      style: GoogleFonts.poppins(
+                          fontSize: 34.sp,
+                          fontWeight: FontWeight.w400,
+                          color: Colors.black),
+                    )),
+                  ),
+                ); // Replace with your comment widget
+              },
+            );
+          } else {
+            return Text('Post not found'); // Handle invalid index
+          }
+        }
+
+        return CircularProgressIndicator();
+      },
+    );
+  }
+
   Future<void> addUserIdToPostLikes(String userId, String postId) async {
     try {
       String currentUserId = await FirebaseAuth.instance.currentUser!.uid;
@@ -132,6 +188,105 @@ class MainViewState extends State<MainView> {
     }
   }
 
+  Future<void> addCommentToPost(
+      String userId, int postIndex, String comment) async {
+    try {
+      // Get the Posts collection reference
+      QuerySnapshot postsSnapshot = await FirebaseFirestore.instance
+          .collection('Users')
+          .doc(userId)
+          .collection('Posts')
+          .get();
+
+      // Access the document at the specified index
+      DocumentSnapshot postDoc = postsSnapshot.docs[postIndex];
+
+      // Update the comments field of the document
+      await postDoc.reference.update({
+        'comments': FieldValue.arrayUnion([comment])
+      });
+    } catch (error) {
+      // Handle errors as before
+    }
+  }
+
+  commentModalSheet(String userId, int postIndex, BuildContext context) {
+    showModalBottomSheet(
+        backgroundColor: Color(0xFF101010),
+        isScrollControlled: true,
+        constraints: BoxConstraints(maxHeight: 1200.h),
+        context: context,
+        builder: (context) {
+          return Padding(
+            padding: EdgeInsets.only(top: 60.h, left: 60.w, right: 60.w),
+            child: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Container(
+                      decoration: BoxDecoration(),
+                      width: 600.w,
+                      child: TextField(
+                        style: GoogleFonts.poppins(
+                            fontSize: 34.sp,
+                            color: Colors.white,
+                            fontWeight: FontWeight.w600),
+                        decoration: InputDecoration(
+                          focusColor: Colors.white,
+                          hoverColor: Colors.white,
+                          fillColor: Colors.white,
+                        ),
+                        controller: commentController,
+                      ),
+                    ),
+                    ZoomTapAnimation(
+                      onTap: () async {
+                        if (isAddCommentLoading.value) {
+                        } else {
+                          isAddCommentLoading.value = true;
+                          await addCommentToPost(
+                              userId, postIndex, commentController.text);
+                          commentController.clear();
+                          isAddCommentLoading.value = false;
+                        }
+                      },
+                      child: Obx(
+                        () => Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(60.w),
+                            color: Color(0xFFD5F600),
+                          ),
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 60.w, vertical: 30.h),
+                            child: isAddCommentLoading.value
+                                ? CircularProgressIndicator(
+                                    color: Colors.white,
+                                  )
+                                : Text(
+                                    "Add Comment",
+                                    style: GoogleFonts.poppins(
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 34.sp,
+                                      color: Colors.black,
+                                    ),
+                                  ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(
+                    height: 800.h,
+                    child: buildCommentsStreamBuilder(userId, postIndex)),
+              ],
+            ),
+          );
+        });
+  }
+
   viewPost(String userId, int postIndex, BuildContext context) async {
     final userDoc =
         await FirebaseFirestore.instance.collection('Users').doc(userId).get();
@@ -139,6 +294,8 @@ class MainViewState extends State<MainView> {
     final profilePhoto = userDoc.data()!['profile_photo'];
 
     showModalBottomSheet(
+        constraints: BoxConstraints(maxHeight: 1937.h),
+        isScrollControlled: true,
         backgroundColor: Colors.grey[400],
         context: context,
         builder: (context) {
@@ -286,48 +443,48 @@ class MainViewState extends State<MainView> {
                                         color: Color(0xFF9EA2A3),
                                       ),
                                       child: Center(
-                                          child: isFollowButtonLoading.value
-                                              ? SizedBox(
-                                                  height: 40.h,
-                                                  width: 20.h,
-                                                  child:
-                                                      const CircularProgressIndicator())
-                                              : StreamBuilder(
-                                                  stream: controller
-                                                      .isUserIdInFollowers(
-                                                          userId)
-                                                      .asStream(),
-                                                  builder: (context, snapshot) {
-                                                    if (!snapshot.hasData) {
-                                                      return SizedBox(
-                                                          height: 40.h,
-                                                          width: 20.h,
-                                                          child:
-                                                              const CircularProgressIndicator());
-                                                    }
+                                        child: isFollowButtonLoading.value
+                                            ? SizedBox(
+                                                height: 40.h,
+                                                width: 20.h,
+                                                child:
+                                                    const CircularProgressIndicator())
+                                            : StreamBuilder(
+                                                stream: controller
+                                                    .isUserIdInFollowers(userId)
+                                                    .asStream(),
+                                                builder: (context, snapshot) {
+                                                  if (!snapshot.hasData) {
+                                                    return SizedBox(
+                                                        height: 40.h,
+                                                        width: 20.h,
+                                                        child:
+                                                            const CircularProgressIndicator());
+                                                  }
 
-                                                    if (snapshot.data!) {
-                                                      // return const Text("Unfollow",);
-                                                      return Text(
-                                                        "Unfollow",
-                                                        style:
-                                                            GoogleFonts.poppins(
-                                                                color: Colors
-                                                                    .white,
-                                                                fontSize:
-                                                                    20.sp),
-                                                      );
-                                                    } else {
-                                                      // return const Text("Follow");
-                                                      return Center(
-                                                        child: Image.asset(
-                                                          "assets/images/png/follow_icon.png",
-                                                          height: 70.sp,
-                                                          width: 70.sp,
-                                                        ),
-                                                      );
-                                                    }
-                                                  })),
+                                                  if (snapshot.data!) {
+                                                    // return const Text("Unfollow",);
+                                                    return Text(
+                                                      "Unfollow",
+                                                      style:
+                                                          GoogleFonts.poppins(
+                                                              color:
+                                                                  Colors.white,
+                                                              fontSize: 20.sp),
+                                                    );
+                                                  } else {
+                                                    // return const Text("Follow");
+                                                    return Center(
+                                                      child: Image.asset(
+                                                        "assets/images/png/follow_icon.png",
+                                                        height: 70.sp,
+                                                        width: 70.sp,
+                                                      ),
+                                                    );
+                                                  }
+                                                },
+                                              ),
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -374,18 +531,25 @@ class MainViewState extends State<MainView> {
                                 SizedBox(
                                   height: 66.h,
                                 ),
-                                Container(
-                                  height: 150.sp,
-                                  width: 150.sp,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: Color(0xFF9EA2A3),
-                                  ),
-                                  child: Center(
-                                    child: Image.asset(
-                                      "assets/images/png/comment_icon.png",
-                                      height: 80.sp,
-                                      width: 80.sp,
+                                ZoomTapAnimation(
+                                  onTap: () {
+                                    //commentModalSheet
+                                    commentModalSheet(
+                                        userId, postIndex, context);
+                                  },
+                                  child: Container(
+                                    height: 150.sp,
+                                    width: 150.sp,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: Color(0xFF9EA2A3),
+                                    ),
+                                    child: Center(
+                                      child: Image.asset(
+                                        "assets/images/png/comment_icon.png",
+                                        height: 80.sp,
+                                        width: 80.sp,
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -888,9 +1052,16 @@ class MainViewState extends State<MainView> {
                       height: 90.h,
                       width: 219.w,
                     ),
-                    const Icon(
-                      Icons.person,
-                      color: Colors.white,
+                    ZoomTapAnimation(
+                      onTap: () {
+                        Get.put(HomeController())
+                            .bottomNavController
+                            .jumpToTab(3);
+                      },
+                      child: const Icon(
+                        Icons.person,
+                        color: Colors.white,
+                      ),
                     ),
                   ],
                 ),
@@ -910,7 +1081,10 @@ class MainViewState extends State<MainView> {
                       for (int i = 0; i < documents1.length; i++) ...[
                         (documents1[i].id !=
                                     FirebaseAuth.instance.currentUser!.uid) &&
-                                (documents1[i]['has_posted'])
+                                (documents1[i]['has_posted'] &&
+                                    (documents1[i]['followers'].contains(
+                                        FirebaseAuth
+                                            .instance.currentUser!.uid)))
                             ? SizedBox(
                                 height: 1000.h,
                                 child: Stack(
@@ -1325,7 +1499,9 @@ class MainViewState extends State<MainView> {
                         ),
                         documents1[i]['has_posted'] &&
                                 documents1[i].id !=
-                                    FirebaseAuth.instance.currentUser!.uid
+                                    FirebaseAuth.instance.currentUser!.uid &&
+                                (documents1[i]['followers'].contains(
+                                    FirebaseAuth.instance.currentUser!.uid))
                             ? Center(
                                 child: Container(
                                   decoration:

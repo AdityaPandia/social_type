@@ -28,7 +28,7 @@ class SignUpView extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(
-            height: 591.h,
+            height: 350.h,
           ),
           Center(
             child: Image.asset(
@@ -97,6 +97,32 @@ class SignUpView extends StatelessWidget {
                           fontWeight: FontWeight.w400,
                           color: Colors.white)),
                 ),
+              ),
+            ),
+          ),
+          SizedBox(
+            height: 60.h,
+          ),
+          Container(
+            decoration: BoxDecoration(
+              border: Border.all(width: 6.sp, color: Colors.white),
+              borderRadius: BorderRadius.circular(30.w),
+            ),
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 48.w),
+              child: TextField(
+                controller: controller.userNameController,
+                style: GoogleFonts.archivo(
+                    fontSize: 40.sp,
+                    fontWeight: FontWeight.w400,
+                    color: Colors.white),
+                decoration: InputDecoration(
+                    border: InputBorder.none,
+                    hintText: "Username",
+                    hintStyle: GoogleFonts.archivo(
+                        fontSize: 40.sp,
+                        fontWeight: FontWeight.w400,
+                        color: Colors.white)),
               ),
             ),
           ),
