@@ -1,21 +1,21 @@
 {
   "project_info": {
-    "project_number": "119997886577",
-    "project_id": "socialtype-b8cec",
-    "storage_bucket": "socialtype-b8cec.appspot.com"
+    "project_number": "885378539534",
+    "project_id": "khe-dev-app-530a8",
+    "storage_bucket": "khe-dev-app-530a8.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:119997886577:android:1f2f37cb8adc366a3eebd0",
+        "mobilesdk_app_id": "1:885378539534:android:e58acb782e0bd6bf029c5f",
         "android_client_info": {
-          "package_name": "com.example.social_type"
+          "package_name": "com.khe.dev"
         }
       },
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyDHzvkzQjbg00LBTOgFX9fdEnQJxPMirIs"
+          "current_key": "AIzaSyDvQcnkP4bPziJaQdSMlJj5jKk_YxXVSVY"
         }
       ],
       "services": {

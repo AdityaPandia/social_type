@@ -44,37 +44,37 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyCDg3TMq4DOdVTnU0Kw2Og3PDqqmTl8e6k',
-    appId: '1:119997886577:web:7561f990fe8b48603eebd0',
-    messagingSenderId: '119997886577',
-    projectId: 'socialtype-b8cec',
-    authDomain: 'socialtype-b8cec.firebaseapp.com',
-    storageBucket: 'socialtype-b8cec.appspot.com',
+    apiKey: 'AIzaSyB7Zbqn2avUz-iKBGj5OvkxcqihayoOEtY',
+    appId: '1:885378539534:web:b319efce9c18eeb9029c5f',
+    messagingSenderId: '885378539534',
+    projectId: 'khe-dev-app-530a8',
+    authDomain: 'khe-dev-app-530a8.firebaseapp.com',
+    storageBucket: 'khe-dev-app-530a8.appspot.com',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyDHzvkzQjbg00LBTOgFX9fdEnQJxPMirIs',
-    appId: '1:119997886577:android:1f2f37cb8adc366a3eebd0',
-    messagingSenderId: '119997886577',
-    projectId: 'socialtype-b8cec',
-    storageBucket: 'socialtype-b8cec.appspot.com',
+    apiKey: 'AIzaSyDvQcnkP4bPziJaQdSMlJj5jKk_YxXVSVY',
+    appId: '1:885378539534:android:e58acb782e0bd6bf029c5f',
+    messagingSenderId: '885378539534',
+    projectId: 'khe-dev-app-530a8',
+    storageBucket: 'khe-dev-app-530a8.appspot.com',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyD71qKqHf3NvHG3MT3ZsMO65DkLWvQNodc',
-    appId: '1:119997886577:ios:b2fd49368f57c5093eebd0',
-    messagingSenderId: '119997886577',
-    projectId: 'socialtype-b8cec',
-    storageBucket: 'socialtype-b8cec.appspot.com',
+    apiKey: 'AIzaSyBRAdX4CfpQGB7LRXK7FGnHpSH7vdHsSbA',
+    appId: '1:885378539534:ios:2eacd6a498f353ff029c5f',
+    messagingSenderId: '885378539534',
+    projectId: 'khe-dev-app-530a8',
+    storageBucket: 'khe-dev-app-530a8.appspot.com',
     iosBundleId: 'com.example.socialType',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'AIzaSyD71qKqHf3NvHG3MT3ZsMO65DkLWvQNodc',
-    appId: '1:119997886577:ios:42dd45ae240ac6de3eebd0',
-    messagingSenderId: '119997886577',
-    projectId: 'socialtype-b8cec',
-    storageBucket: 'socialtype-b8cec.appspot.com',
+    apiKey: 'AIzaSyBRAdX4CfpQGB7LRXK7FGnHpSH7vdHsSbA',
+    appId: '1:885378539534:ios:4e19ff405a9ebba9029c5f',
+    messagingSenderId: '885378539534',
+    projectId: 'khe-dev-app-530a8',
+    storageBucket: 'khe-dev-app-530a8.appspot.com',
     iosBundleId: 'com.example.socialType.RunnerTests',
   );
 }

@@ -1,9 +1,14 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 
 
 class AppController extends GetxController {
+
+
+
+
 Future<String?> getUsername(String? uid)async{
   //  String uid = await GetStorage().read('uid');
     final userDoc =

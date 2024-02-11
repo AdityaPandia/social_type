@@ -10,6 +10,8 @@ import 'package:get_storage/get_storage.dart';
 import 'package:social_type/common/custom_colors.dart';
 import 'package:social_type/controllers/app_controller.dart';
 import 'package:social_type/views/authentication/views/login_view.dart';
+import 'package:social_type/views/home/controllers/home_controller.dart';
+import 'package:social_type/views/home/views/main/controllers/main_controller.dart';
 import 'package:social_type/views/home/views/main/views/main_view.dart';
 import 'package:social_type/views/home/views/profile/controllers/profile_controller.dart';
 import 'package:social_type/views/home/views/profile/views/follower_view.dart';
@@ -27,6 +29,7 @@ class ProfileView extends StatefulWidget {
 class _ProfileViewState extends State<ProfileView> {
   final controller = Get.put(ProfileController());
 
+  RxBool isFollow2 = false.obs;
   final appController = Get.put(AppController());
 
   Future<void> _refreshData() async {
@@ -60,6 +63,137 @@ class _ProfileViewState extends State<ProfileView> {
                     ),
                     Row(
                       children: [
+                        StreamBuilder<DocumentSnapshot>(
+                          stream: FirebaseFirestore.instance
+                              .collection('Users')
+                              .doc(widget.userUid)
+                              .snapshots(),
+                          builder: (context, snapshot) {
+                            if (snapshot.hasData) {
+                              final user = snapshot.data!;
+                              final imageUrl = user['profile_photo'];
+                              print("image url is");
+                              print(imageUrl);
+                              if (imageUrl != '') {
+                                return Obx(
+                                  () => ZoomTapAnimation(
+                                    onTap: () async {
+                                      if (controller.isLoading.value) {
+                                      } else {
+                                        await controller.uploadProfilePhoto();
+                                      }
+                                    },
+                                    child: controller.isLoading.value
+                                        ? SizedBox(
+                                            width: 220.sp,
+                                            height: 220.sp,
+                                            child:
+                                                const CircularProgressIndicator(
+                                              color: Colors.white,
+                                            ),
+                                          )
+                                        : ClipRRect(
+                                            borderRadius:
+                                                BorderRadius.circular(1000.w),
+                                            child: Image.network(
+                                              imageUrl,
+                                              height: 220.sp,
+                                              width: 220.sp,
+                                              fit: BoxFit.fill,
+                                            ),
+                                          ),
+                                  ),
+                                );
+                              } else if (imageUrl == '') {
+                                return Obx(
+                                  () => ZoomTapAnimation(
+                                    onTap: () async {
+                                      if (controller.isLoading.value) {
+                                      } else {
+                                        await controller.uploadProfilePhoto();
+                                      }
+                                    },
+                                    child: controller.isLoading.value
+                                        ? SizedBox(
+                                            width: 220.sp,
+                                            height: 220.sp,
+                                            child:
+                                                const CircularProgressIndicator(
+                                              color: Colors.white,
+                                            ),
+                                          )
+                                        : Stack(
+                                            children: [
+                                              Align(
+                                                alignment: Alignment.topCenter,
+                                                child: Container(
+                                                  width: 220.sp,
+                                                  height: 220.sp,
+                                                  decoration: BoxDecoration(
+                                                      color: Colors.grey,
+                                                      shape: BoxShape.circle),
+                                                  child: Icon(
+                                                    Icons.person,
+                                                    color: Colors.white,
+                                                    size: 120.sp,
+                                                  ),
+                                                ),
+                                              ),
+                                              Align(
+                                                alignment:
+                                                    Alignment.bottomCenter,
+                                                child: Padding(
+                                                  padding: EdgeInsets.only(
+                                                      left: 25.w, top: 120.h),
+                                                  child: Text('Upload Photo',
+                                                      style:
+                                                          GoogleFonts.poppins(
+                                                              fontSize: 24.sp,
+                                                              color: Colors
+                                                                  .black)),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                  ),
+                                ); // Placeholder if no image
+                              } else {
+                                return const Text("Something Wrong");
+                              }
+                            } else if (!snapshot.hasData) {
+                              return const Icon(Icons.person);
+                            } else if (snapshot.hasError) {
+                              return Text('Error: ${snapshot.error}');
+                            } else {
+                              return const CircularProgressIndicator();
+                            }
+                          },
+                        ),
+                        // ZoomTapAnimation(
+                        //   onTap: ()async{
+                        //    if (Get.put(ProfileController()).isLoading.value){
+
+                        //    }else{
+                        //     await Get.put(ProfileController()).uploadProfilePhoto();
+                        //    }
+                        //   },
+                        //   child: Container(
+                        //     height: 220.sp,
+                        //     width: 220.sp,
+                        //     decoration: BoxDecoration(
+                        //       shape: BoxShape.circle,
+                        //       color: Colors.grey,
+                        //     ),
+                        //     child: Get.put(ProfileController()).isLoading.value? CircularProgressIndicator():Icon(
+                        //       Icons.person,
+                        //       size: 120.sp,
+                        //       color: Colors.white,
+                        //     ),
+                        //   ),
+                        // ),
+                        SizedBox(
+                          width: 20.w,
+                        ),
                         FutureBuilder(
                             future: appController.getUserName(widget.userUid),
                             builder: (context, snapshot) {
@@ -89,53 +223,123 @@ class _ProfileViewState extends State<ProfileView> {
                         SizedBox(
                           width: 9.w,
                         ),
-                        FutureBuilder(
-                            future: appController.getUsername(widget.userUid),
-                            builder: (context, snapshot) {
-                              if (snapshot.connectionState ==
-                                  ConnectionState.done) {
-                                return SizedBox(
-                                  width: 350.w,
-                                  child: Text(
-                                    "@${snapshot.data}",
-                                    style: GoogleFonts.poppins(
-                                        fontSize: 36.sp,
-                                        fontWeight: FontWeight.w600,
-                                        color: Colors.white),
+                        Column(
+                          children: [
+                            FirebaseAuth.instance.currentUser!.uid ==
+                                    widget.userUid
+                                ? SizedBox()
+                                : ZoomTapAnimation(
+                                    onTap: () async {
+                                      if (isFollow2.value) {
+                                      } else {
+                                        isFollow2.value = true;
+                                        await Get.put(MainController())
+                                                .isUserIdInFollowers(
+                                          widget.userUid,
+                                        )
+                                            ? await Get.put(MainController())
+                                                .removeUserIdFromFollowers(
+                                                    widget.userUid)
+                                            : await Get.put(MainController())
+                                                .addUserIdToFollowers(
+                                                    widget.userUid);
+                                        isFollow2.value = false;
+                                      }
+                                    },
+                                    child: Column(
+                                      children: [
+                                        StreamBuilder(
+                                          stream: Get.put(MainController())
+                                              .isUserIdInFollowers(
+                                                  widget.userUid)
+                                              .asStream(),
+                                          builder: (context, snapshot) {
+                                            if (!snapshot.hasData) {
+                                              return SizedBox(
+                                                  height: 40.h,
+                                                  width: 20.h,
+                                                  child:
+                                                      const CircularProgressIndicator());
+                                            }
+
+                                            if (snapshot.data!) {
+                                              // return const Text("Unfollow",);
+                                              return Text(
+                                                "Unfollow",
+                                                style: GoogleFonts.poppins(
+                                                    color: Colors.white,
+                                                    fontSize: 36.sp),
+                                              );
+                                            } else {
+                                              // return const Text("Follow");
+                                              return Text(
+                                                "Follow",
+                                                style: GoogleFonts.poppins(
+                                                    color: Colors.white,
+                                                    fontSize: 36.sp),
+                                              );
+                                            }
+                                          },
+                                        ),
+                                        SizedBox(
+                                          height: 45.h,
+                                        ),
+                                      ],
+                                    ),
                                   ),
-                                );
-                              } else {
-                                return SizedBox(
-                                  width: 12.sp,
-                                  height: 12.sp,
-                                  child: CircularProgressIndicator(
-                                    color: CustomColors.textColor2,
-                                  ),
-                                );
-                              }
-                            }),
-                        SizedBox(
-                          width: 40.w,
+                            FutureBuilder(
+                                future:
+                                    appController.getUsername(widget.userUid),
+                                builder: (context, snapshot) {
+                                  if (snapshot.connectionState ==
+                                      ConnectionState.done) {
+                                    return SizedBox(
+                                      // width: 350.w,
+                                      width: 250.w,
+                                      child: Text(
+                                        "@${snapshot.data}",
+                                        style: GoogleFonts.poppins(
+                                            fontSize: 36.sp,
+                                            fontWeight: FontWeight.w600,
+                                            color: Colors.white),
+                                      ),
+                                    );
+                                  } else {
+                                    return SizedBox(
+                                      width: 12.sp,
+                                      height: 12.sp,
+                                      child: CircularProgressIndicator(
+                                        color: CustomColors.textColor2,
+                                      ),
+                                    );
+                                  }
+                                }),
+                          ],
                         ),
-                        ZoomTapAnimation(
-                          onTap: () async {
-                            await GetStorage().write('isSignInDone', false);
-                            await GoogleSignIn().signOut();
-                            Get.offAll(() => LoginView());
-                          },
-                          child: Text(
-                            "Sign Out",
-                            style: GoogleFonts.poppins(
-                                fontSize: 24.sp, color: Colors.white),
-                          ),
-                        ),
-                        SizedBox(width: 5.w),
-                        Icon(
-                          Icons.logout_outlined,
-                          color: Colors.white,
-                          size: 34.sp,
-                        ),
-                  
+                        // SizedBox(
+                        //   width: 40.w,
+                        // ),
+                        FirebaseAuth.instance.currentUser!.uid != widget.userUid
+                            ? SizedBox()
+                            : ZoomTapAnimation(
+                                onTap: () async {
+                                  await GetStorage()
+                                      .write('isSignInDone', false);
+                                  await GoogleSignIn().signOut();
+                                  Get.offAll(() => LoginView());
+                                },
+                                child: Text(
+                                  "Sign Out",
+                                  style: GoogleFonts.poppins(
+                                      fontSize: 24.sp, color: Colors.white),
+                                ),
+                              ),
+                        // SizedBox(width: 5.w),
+                        // Icon(
+                        //   Icons.logout_outlined,
+                        //   color: Colors.white,
+                        //   size: 34.sp,
+                        // ),
                       ],
                     ),
                     SizedBox(
@@ -233,45 +437,43 @@ class _ProfileViewState extends State<ProfileView> {
                     final documents = snapshot.data!.docs;
                     return Padding(
                       padding: EdgeInsets.symmetric(horizontal: 58.w),
-                      child: SizedBox(
-                        height: 5000.h,
-                        child: GridView.count(
-                          crossAxisCount: 3,
-                          mainAxisSpacing: 77.w,
-                          crossAxisSpacing: 77.w,
-                          children: List.generate(documents.length, (index) {
-                            return documents[index].id != "init"
-                                ? ZoomTapAnimation(
-                                    onTap: () async {
-                                      await MainViewState().viewPost(
-                                          widget.userUid, index, context);
-                                    },
-                                    child: ClipRRect(
-                                      borderRadius: BorderRadius.circular(80.w),
-                                      child: CachedNetworkImage(
-                                        placeholder: (context, val) {
-                                          return Container(
-                                            width: 31.w,
-                                            child: Center(
-                                              child: Text(
-                                                "Loading",
-                                                style: TextStyle(
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: 15.sp,
-                                                ),
+                      child: GridView.count(
+                        physics: BouncingScrollPhysics(),
+                        shrinkWrap: true,
+                        crossAxisCount: 3,
+                        mainAxisSpacing: 77.w,
+                        crossAxisSpacing: 77.w,
+                        children: List.generate(documents.length, (index) {
+                          return documents[index].id != "init"
+                              ? ZoomTapAnimation(
+                                  onTap: () async {
+                                    await MainViewState().viewPost(
+                                        widget.userUid, index, context);
+                                  },
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(80.w),
+                                    child: CachedNetworkImage(
+                                      placeholder: (context, val) {
+                                        return Container(
+                                          width: 31.w,
+                                          child: Center(
+                                            child: Text(
+                                              "Loading",
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 15.sp,
                                               ),
                                             ),
-                                          );
-                                        },
-                                        imageUrl: documents[index]
-                                            ['post_photo'],
-                                        fit: BoxFit.fill,
-                                      ),
+                                          ),
+                                        );
+                                      },
+                                      imageUrl: documents[index]['post_photo'],
+                                      fit: BoxFit.fill,
                                     ),
-                                  )
-                                : SizedBox();
-                          }),
-                        ),
+                                  ),
+                                )
+                              : SizedBox();
+                        }),
                       ),
                     );
                   }))

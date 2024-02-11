@@ -3,17 +3,17 @@
 <plist version="1.0">
 <dict>
 	<key>API_KEY</key>
-	<string>AIzaSyD71qKqHf3NvHG3MT3ZsMO65DkLWvQNodc</string>
+	<string>AIzaSyBRAdX4CfpQGB7LRXK7FGnHpSH7vdHsSbA</string>
 	<key>GCM_SENDER_ID</key>
-	<string>119997886577</string>
+	<string>885378539534</string>
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
 	<string>com.example.socialType</string>
 	<key>PROJECT_ID</key>
-	<string>socialtype-b8cec</string>
+	<string>khe-dev-app-530a8</string>
 	<key>STORAGE_BUCKET</key>
-	<string>socialtype-b8cec.appspot.com</string>
+	<string>khe-dev-app-530a8.appspot.com</string>
 	<key>IS_ADS_ENABLED</key>
 	<false></false>
 	<key>IS_ANALYTICS_ENABLED</key>
@@ -25,6 +25,6 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:119997886577:ios:b2fd49368f57c5093eebd0</string>
+	<string>1:885378539534:ios:2eacd6a498f353ff029c5f</string>
 </dict>
 </plist>

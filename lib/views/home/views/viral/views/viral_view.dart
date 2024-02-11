@@ -3,8 +3,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:get/get_connect/http/src/utils/utils.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:social_type/common/custom_colors.dart';
+import 'package:social_type/views/home/controllers/home_controller.dart';
 import 'package:social_type/views/home/views/main/views/main_view.dart';
 import 'package:social_type/views/home/views/profile/views/profile_view.dart';
 import 'package:social_type/views/home/views/viral/controllers/viral_controller.dart';
@@ -29,10 +31,150 @@ class ViralView extends StatefulWidget {
 
 class _ViralViewState extends State<ViralView> {
   final controller = Get.put(ViralController());
+  List<ProfilePhotoData> profilePhotos = [];
+
+  Future<List<ProfilePhotoData>>
+      fetchAllprofilePhotos2SortedByDateTime() async {
+    List<ProfilePhotoData> allprofilePhotos2 = [];
+
+    try {
+      QuerySnapshot usersSnapshot =
+          await FirebaseFirestore.instance.collection('Users').get();
+
+      // Iterate through each user document
+      for (var userDoc in usersSnapshot.docs) {
+        List<ProfilePhotoData> profilePhotos2 =
+            await fetchprofilePhotos2SortedByDateTime(userDoc.id);
+        allprofilePhotos2.addAll(profilePhotos2);
+      }
+
+      // Sort all profile photos by DateTime
+      allprofilePhotos2
+          .sort((a, b) => a.profilePhoto.compareTo(b.profilePhoto));
+
+      return allprofilePhotos2;
+    } catch (e) {
+      // Handle any errors that occur during the process
+      print('Error fetching all profile photos: $e');
+      return [];
+    }
+  }
+
+  Future<List<ProfilePhotoData>> fetchprofilePhotos2SortedByDateTime(
+      String uid) async {
+    List<ProfilePhotoData> profilePhotos2 = [];
+
+    try {
+      QuerySnapshot postsSnapshot = await FirebaseFirestore.instance
+          .collection('Users')
+          .doc(uid)
+          .collection('Posts')
+          .get();
+
+      // Extracting and sorting the posts by DateTime value
+      // List<DocumentSnapshot> sortedPosts = postsSnapshot.docs
+      //     .where((doc) => doc.id != 'init')
+      //     .toList()
+      //   ..sort((a, b) => DateTime.parse(b.id).compareTo(DateTime.parse(a.id)));
+      List<DocumentSnapshot> sortedPosts = postsSnapshot.docs
+          .where((doc) => doc.id != 'init')
+          .toList()
+        ..sort((a, b) => DateTime.parse(b.id).compareTo(DateTime.parse(a.id)));
+
+      // Iterate through each sorted post document
+      for (var postSnapshot in sortedPosts) {
+        // Access likes and profile photo
+        final data = postSnapshot.data() as Map<String, dynamic>;
+        List<dynamic>? likes = data['likes'];
+        String? profilePhoto = data['post_photo'];
+
+        // Add data to profilePhotos2 list
+        if (profilePhoto != null && likes != null) {
+          profilePhotos2.add(ProfilePhotoData(
+            uid: uid,
+            profilePhoto: profilePhoto,
+            likes: likes.length,
+          ));
+        }
+      }
+
+      return profilePhotos2;
+    } catch (e) {
+      // Handle any errors that occur during the process
+      print('Error fetching profile photos: $e');
+      return [];
+    }
+  }
+
   bool showProgressIndicator = true;
 
   TextEditingController searchController = TextEditingController();
   String _searchQuery = '';
+  Future<int?> findProfilePhotoIndex(String uid, String profilePhoto) async {
+    try {
+      int index = 0;
+
+      // Access the posts collection for the given UID
+      QuerySnapshot postsSnapshot = await FirebaseFirestore.instance
+          .collection('Users')
+          .doc(uid)
+          .collection('Posts')
+          .get();
+
+      // Iterate through each post document
+      for (var postSnapshot in postsSnapshot.docs) {
+        // Ignore the 'init' document
+        if (postSnapshot.id != 'init') {
+          // Check if the profile photo matches
+          String? pP =
+              (postSnapshot.data() as Map<String, dynamic>?)?['post_photo'];
+          // print(index);
+          // print (pP);
+          if (pP == profilePhoto) {
+            return index;
+          }
+          index++;
+        }
+      }
+      // If the profile photo is not found, return null
+      return null;
+    } catch (e) {
+      // Handle any errors that occur during the process
+      print('Error finding profile photo index: $e');
+      return null;
+    }
+  }
+
+  Future<List<ProfilePhotoData>> fetchProfilePhotos() async {
+    List<ProfilePhotoData> profilePhotos = [];
+
+    QuerySnapshot userSnapshot =
+        await FirebaseFirestore.instance.collection('Users').get();
+
+    for (var userDoc in userSnapshot.docs) {
+      if (userDoc['has_posted']) {
+        QuerySnapshot postsSnapshot =
+            await userDoc.reference.collection('Posts').get();
+        for (var postSnapshot in postsSnapshot.docs) {
+          if (postSnapshot.id != 'init') {
+            final data = postSnapshot.data() as Map<String, dynamic>;
+            final likes = data['likes'];
+            final profilePhoto = data['post_photo'];
+            final uid = userDoc.id;
+
+            profilePhotos.add(ProfilePhotoData(
+              uid: uid,
+              profilePhoto: profilePhoto,
+              likes: likes.length,
+            ));
+          }
+        }
+      }
+    }
+
+    profilePhotos.sort((a, b) => b.likes.compareTo(a.likes));
+    return profilePhotos;
+  }
 
   @override
   void initState() {
@@ -100,475 +242,608 @@ class _ViralViewState extends State<ViralView> {
   Widget build(BuildContext context) {
     return DefaultTabController(
       length: 2,
-      child: Scaffold(
-          appBar: AppBar(
-            title: Container(
-              margin: EdgeInsets.only(top: 30.h),
-              decoration: BoxDecoration(
-                  color: Colors.grey,
-                  borderRadius: BorderRadius.circular(80.w)),
-              child: Row(
-                children: [
-                  SizedBox(
-                    width: 50.w,
-                  ),
-                  Icon(
-                    Icons.search_rounded,
-                    color: CustomColors.backgroundColor,
-                  ),
-                  SizedBox(
-                    width: 50.w,
-                  ),
-                  Column(
-                    children: [
-                      SizedBox(
-                        width: 600.w,
-                        child: TextField(
-                          controller: searchController,
-                          onChanged: (value) {
-                            setState(() {
-                              _searchQuery = value.trim();
-                            });
-                          },
-                          decoration: InputDecoration(
-                              border: InputBorder.none,
-                              hintText: "Search User..."),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
+      child: PopScope(
+        canPop: false,
+        onPopInvoked: (didPop) {
+          Get.put(HomeController()).index.value = 0;
+        },
+        child: Scaffold(
+            appBar: AppBar(
+              title: Center(
+                child: Image.asset(
+                  "assets/images/png/onboarding_khe.png",
+                  color: Colors.white,
+                  width: 219.w,
+                  height: 90.h,
+                ),
               ),
+              backgroundColor: const Color(0XFF101010),
+              bottom: TabBar(
+                  dividerColor: Color(0xFF101010),
+                  indicatorColor: Color(0xFF101010),
+                  tabs: [
+                    Padding(
+                      padding: EdgeInsets.only(bottom: 20.h),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Image.asset(
+                            'assets/images/png/bottom_nav_viral.png',
+                            height: 60.sp,
+                            width: 60.sp,
+                          ),
+                          SizedBox(
+                            width: 10.w,
+                          ),
+                          Text(
+                            "Trending",
+                            style: GoogleFonts.poppins(
+                                fontSize: 48.sp, color: Colors.white),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.only(bottom: 20.h),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.watch_later_outlined,
+                            color: Colors.white,
+                            size: 60.sp,
+                          ),
+                          SizedBox(
+                            width: 10.w,
+                          ),
+                          Text(
+                            "Recent",
+                            style: GoogleFonts.poppins(
+                                fontSize: 48.sp, color: Colors.white),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ]),
             ),
             backgroundColor: const Color(0XFF101010),
-            bottom: TabBar(
-                dividerColor: Color(0xFF101010),
-                indicatorColor: Color(0xFF101010),
-                tabs: [
-                  Padding(
-                    padding: EdgeInsets.only(bottom: 20.h),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Image.asset(
-                          'assets/images/png/bottom_nav_viral.png',
-                          height: 60.sp,
-                          width: 60.sp,
-                        ),
-                        SizedBox(
-                          width: 10.w,
-                        ),
-                        Text(
-                          "Trending",
-                          style: GoogleFonts.poppins(
-                              fontSize: 48.sp, color: Colors.white),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Padding(
-                    padding: EdgeInsets.only(bottom: 20.h),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.watch_later_outlined,
-                          color: Colors.white,
-                          size: 60.sp,
-                        ),
-                        SizedBox(
-                          width: 10.w,
-                        ),
-                        Text(
-                          "Recent",
-                          style: GoogleFonts.poppins(
-                              fontSize: 48.sp, color: Colors.white),
-                        ),
-                      ],
-                    ),
-                  ),
-                ]),
-          ),
-          backgroundColor: const Color(0XFF101010),
-          body: TabBarView(children: [
-            SingleChildScrollView(
-              child: RefreshIndicator(
-                onRefresh: _refreshData,
-                child: SafeArea(
-                    child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16.w),
-                  child: Obx(
-                    () => Column(
-                      children: [
-                        controller.isSearchActive.value
-                            ? StreamBuilder(
-                                stream: _searchQuery.isEmpty
-                                    ? FirebaseFirestore.instance
-                                        .collection('Users')
-                                        .snapshots()
-                                    : FirebaseFirestore.instance
-                                        .collection('Users')
-                                        .where('username',
-                                            isGreaterThanOrEqualTo:
-                                                _searchQuery)
-                                        .where('username',
-                                            isLessThan: _searchQuery + 'z')
-                                        .snapshots(),
-                                builder: (context, snapshot) {
-                                  if (snapshot.connectionState ==
-                                      ConnectionState.waiting) {
-                                    return Center(
-                                      child: CircularProgressIndicator(),
-                                    );
-                                  }
+            body: Padding(
+              padding: EdgeInsets.only(left: 40.w, right: 40.w, bottom: 60.h),
+              child: TabBarView(children: [
+                SingleChildScrollView(
+                  child: RefreshIndicator(
+                    onRefresh: _refreshData,
+                    child: SafeArea(
+                        child: Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 16.w),
+                      child: Column(
+                        children: [
+                          SizedBox(
+                            height: 40.h,
+                          ),
 
-                                  if (snapshot.hasError) {
-                                    return Center(
-                                      child: Text('Error: ${snapshot.error}'),
-                                    );
-                                  }
-
-                                  if (!snapshot.hasData ||
-                                      snapshot.data!.docs.isEmpty) {
-                                    return Center(
-                                      child: Text('No users found'),
-                                    );
-                                  }
-
-                                  return Container(
-                                    margin: EdgeInsets.all(60.w),
-                                    decoration: BoxDecoration(
-                                        color: Colors.grey,
-                                        borderRadius:
-                                            BorderRadius.circular(80.w)),
-                                    height: 800.h,
-                                    child: Padding(
-                                      padding: EdgeInsets.only(
-                                          left: 80.w, top: 50.h, bottom: 50.h),
-                                      child: ListView.builder(
-                                        itemCount: snapshot.data!.docs.length,
-                                        itemBuilder: (context, index) {
-                                          var user = snapshot.data!.docs[index];
-                                          return ListTile(
-                                            title: ZoomTapAnimation(
-                                              onTap: () {
-                                                Get.to(() => ProfileView(
-                                                    userUid: user.id));
-                                              },
-                                              child: Text(
-                                                user['username'],
-                                                style: GoogleFonts.poppins(
-                                                    color: Colors.white),
-                                              ),
-                                            ),
-                                            // You can add more details or actions here
-                                          );
-                                        },
-                                      ),
-                                    ),
-                                  );
-                                },
-                              )
-                            : SizedBox(),
-                        SizedBox(
-                          height: 20.h,
-                        ),
-                        FutureBuilder(
-                          future: controller.fetchData(),
-                          builder: (context, snapshot) {
-                            if (snapshot.connectionState ==
-                                ConnectionState.waiting) {
-                              return SizedBox(); //cpi
-                            }
-                            controller.viralInfoList.clear();
-                            return SizedBox(
-                              height: 40.h,
-                              child: ListView.builder(
-                                  itemCount: controller.viralList.length,
-                                  itemBuilder: ((context, index) {
-                                    print(controller.viralList);
-
-                                    controller
-                                        .getPostDetails(
-                                            controller.viralList[index][0],
-                                            controller.viralList[index][1])
-                                        .then((result) {
-                                      RxList<String> temp = <String>[
-                                        controller.viralList[index][0],
-                                        result['post_photo'],
-                                        (result['likes']).toString()
-                                      ].obs;
-                                      //sort viralList2 here
-                                      sortViralList(controller.viralList2);
-                                      RxList<String> temp2 = <String>[
-                                        controller.viralList2[index][0],
-                                        result['post_photo'],
-                                        (result['likes']).toString()
-                                      ].obs;
-                                      controller.viralInfoList.add(temp);
-                                      controller.viralInfoList2.add(temp2);
-                                      print("Here");
-                                      print(controller.viralList2);
-                                      print(controller.viralInfoList2);
-                                      controller.viralInfoList.sort((a, b) {
-                                        int likesComparison = int.parse(b[2])
-                                            .compareTo(int.parse(a[2]));
-                                        if (likesComparison == 0) {
-                                          return a[0].compareTo(b[0]);
-                                        } else {
-                                          return likesComparison;
-                                        }
-                                      });
-                                    });
-                                    return SizedBox();
-                                  })),
-                            );
-                          },
-                        ),
-                        showProgressIndicator
-                            ? CircularProgressIndicator()
-                            //
-                            : Padding(
-                                padding: EdgeInsets.symmetric(
-                                  horizontal: 60.w,
-                                ),
-                                child: Padding(
-                                  padding: EdgeInsets.only(top: 50.h),
-                                  child: SizedBox(
-                                    height: 100000.h,
-                                    child: GridView.count(
-                                      childAspectRatio: 0.6,
-                                      crossAxisCount: 2,
-                                      mainAxisSpacing: 40.w,
-                                      crossAxisSpacing: 40.w,
-                                      children: List.generate(
-                                        controller.viralInfoList.length,
-                                        (index) {
-                                          return ZoomTapAnimation(
-                                            onTap: () async {
-                                              int postIndex = 0;
-                                              await FirebaseFirestore.instance
-                                                  .collection('Users')
-                                                  .doc(controller
-                                                      .viralList[index][0])
-                                                  .collection('Posts')
-                                                  .get()
-                                                  .then((snapshot) {
-                                                for (final doc
-                                                    in snapshot.docs) {
-                                                  if (doc.id ==
-                                                      controller
-                                                              .viralList[index]
-                                                          [1]) {
-                                                    print(
-                                                        'Document index: $postIndex');
-                                                    break;
-                                                  }
-                                                  postIndex++;
-                                                }
-                                              });
-
-                                              // ignore: use_build_context_synchronously
-                                              await MainViewState().viewPost(
-                                                  controller.viralList[index]
-                                                      [0],
-                                                  postIndex,
-                                                  context);
-                                            },
-                                            child: ClipRRect(
-                                              borderRadius:
-                                                  BorderRadius.circular(40.w),
-                                              child: SizedBox(
-                                                height: 120.h,
-                                                width: 120.w,
-                                                child: CachedNetworkImage(
-                                                  placeholder: (context, val) {
-                                                    return Container(
-                                                      width: 31.w,
-                                                      child: Center(
-                                                        child: Text(
-                                                          "Loading",
-                                                          style: TextStyle(
-                                                            fontWeight:
-                                                                FontWeight.bold,
-                                                            fontSize: 15.sp,
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    );
-                                                  },
-                                                  imageUrl: controller
-                                                      .viralInfoList[index][1],
-                                                  fit: BoxFit.fill,
-                                                ),
-                                              ),
-                                            ),
-                                          );
-                                        },
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                      ],
-                    ),
-                  ),
-                )),
-              ),
-            ),
-            SingleChildScrollView(
-              child: RefreshIndicator(
-                onRefresh: _refreshData,
-                child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 58.w),
-                  child: Column(
-                    children: [
-                      SizedBox(
-                        height: 60.h,
-                      ),
-                      controller.isSearchActive.value
-                          ? StreamBuilder(
-                              stream: _searchQuery.isEmpty
-                                  ? FirebaseFirestore.instance
-                                      .collection('Users')
-                                      .snapshots()
-                                  : FirebaseFirestore.instance
-                                      .collection('Users')
-                                      .where('username',
-                                          isGreaterThanOrEqualTo: _searchQuery)
-                                      .where('username',
-                                          isLessThan: _searchQuery + 'z')
-                                      .snapshots(),
-                              builder: (context, snapshot) {
+                          SizedBox(
+                            height: 20.h,
+                          ),
+                          FutureBuilder(
+                              future: fetchProfilePhotos(),
+                              builder: (context,
+                                  AsyncSnapshot<List<ProfilePhotoData>>
+                                      snapshot) {
                                 if (snapshot.connectionState ==
                                     ConnectionState.waiting) {
                                   return Center(
-                                    child: SizedBox(), //cpi
+                                    child: CircularProgressIndicator(
+                                      color: Colors.white,
+                                    ),
                                   );
                                 }
-
                                 if (snapshot.hasError) {
                                   return Center(
                                     child: Text('Error: ${snapshot.error}'),
                                   );
                                 }
-
                                 if (!snapshot.hasData ||
-                                    snapshot.data!.docs.isEmpty) {
+                                    snapshot.data!.isEmpty) {
                                   return Center(
-                                    child: Text('No users found'),
+                                    child: Text('No data available'),
                                   );
                                 }
+                                List<ProfilePhotoData> profilePhotos =
+                                    snapshot.data!;
 
-                                return Container(
-                                  margin: EdgeInsets.all(60.w),
-                                  decoration: BoxDecoration(
-                                      color: Colors.grey,
-                                      borderRadius:
-                                          BorderRadius.circular(80.w)),
-                                  height: 800.h,
-                                  child: Padding(
-                                    padding: EdgeInsets.only(
-                                        left: 80.w, top: 50.h, bottom: 50.h),
-                                    child: ListView.builder(
-                                      itemCount: snapshot.data!.docs.length,
-                                      itemBuilder: (context, index) {
-                                        var user = snapshot.data!.docs[index];
-                                        return ListTile(
-                                          title: ZoomTapAnimation(
-                                            onTap: () {
-                                              Get.to(() => ProfileView(
-                                                  userUid: user.id));
-                                            },
-                                            child: Text(
-                                              user['username'],
-                                              style: GoogleFonts.poppins(
-                                                  color: Colors.white),
-                                            ),
-                                          ),
-                                          // You can add more details or actions here
-                                        );
+                                return GridView.count(
+                                  shrinkWrap: true,
+                                  physics: BouncingScrollPhysics(),
+                                  childAspectRatio: 0.6,
+                                  crossAxisCount: 2,
+                                  mainAxisSpacing: 40.w,
+                                  crossAxisSpacing: 40.w,
+                                  children: List.generate(profilePhotos.length,
+                                      (index) {
+                                    return ZoomTapAnimation(
+                                      onTap: () async {
+                                        ProfilePhotoData tappedPhoto =
+                                            profilePhotos[index];
+
+                                        print(
+                                            'UID of tapped photo: ${tappedPhoto.uid}');
+
+                                        int? postIndex =
+                                            await findProfilePhotoIndex(
+                                                tappedPhoto.uid,
+                                                tappedPhoto.profilePhoto);
+
+                                        await MainViewState().viewPost(
+                                            tappedPhoto.uid,
+                                            postIndex!,
+                                            context);
                                       },
+                                      child: ClipRRect(
+                                        borderRadius:
+                                            BorderRadius.circular(26.w),
+                                        child: SizedBox(
+                                          height: 120.h,
+                                          width: 120.w,
+                                          child: CachedNetworkImage(
+                                            placeholder: (context, val) {
+                                              return Container(
+                                                width: 31.w,
+                                                child: Center(
+                                                  child: Text(
+                                                    "Loading",
+                                                    style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      fontSize: 15.sp,
+                                                    ),
+                                                  ),
+                                                ),
+                                              );
+                                            },
+                                            imageUrl: profilePhotos[index]
+                                                .profilePhoto,
+                                            fit: BoxFit.fill,
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                  }),
+                                );
+                              })
+
+                          // //new Trending
+                          //                         StreamBuilder(
+                          //                           stream: FirebaseFirestore.instance
+                          //                               .collection('Users')
+                          //                               .snapshots(),
+                          //                           builder:
+                          //                               (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                          //                             if (snapshot.connectionState ==
+                          //                                 ConnectionState.waiting) {
+                          //                               return Center(
+                          //                                 child: CircularProgressIndicator(),
+                          //                               );
+                          //                             }
+                          //                             if (snapshot.hasError) {
+                          //                               return Center(
+                          //                                 child: Text('Error: ${snapshot.error}'),
+                          //                               );
+                          //                             }
+                          //                             // Process snapshot data
+                          //                             final usersDocs =
+                          //                                 snapshot.data!.docs; //UIDs collection
+
+                          //                             // Iterate through each user document
+                          //                             for (var userDoc in usersDocs) {
+                          //                               // Check if the document contains the 'Posts' collection
+
+                          //                               if (userDoc['has_posted']) {
+                          //                                 // Fetch posts collection
+                          //                                 userDoc.reference
+                          //                                     .collection('Posts')
+                          //                                     .get()
+                          //                                     .then((postsCollection) {
+                          //                                   // Iterate through each post
+
+                          //                                   postsCollection.docs.forEach((postSnapshot) {
+                          //                                     // Ignore the 'init' document
+
+                          //                                     if (postSnapshot.id != 'init') {
+                          //                                       // Extract likes and profile_photo
+
+                          //                                       final likes =
+                          //                                           postSnapshot.data()['likes'];
+
+                          //                                       final profilePhoto =
+                          //                                           postSnapshot.data()['post_photo'];
+
+                          //                                       final uid = userDoc.id;
+
+                          //                                       profilePhotos.add(ProfilePhotoData(
+                          //                                         uid: uid,
+                          //                                         profilePhoto: profilePhoto,
+                          //                                         likes: likes.length, // Count likes
+                          //                                       ));
+                          //                                     }
+                          //                                   });
+
+                          //                                   // print('fetching done');
+
+                          //                                   // Sort profile photos by likes
+                          //                                   profilePhotos.sort(
+                          //                                       (a, b) => b.likes.compareTo(a.likes));
+
+                          //                                   // Update the UI
+
+                          //                                   // setState(() {});
+                          //                                 });
+                          //                               }
+                          //                             }
+                          // return Column(children: [
+                          //   for (int i=0; i<profilePhotos.length;i++)...[
+                          //      GestureDetector(
+                          //       onTap: (){
+                          //   final String uid = profilePhotos[i].uid;
+                          //           print(uid);
+                          //       },
+                          //        child: ListTile(
+                          //                                         leading: CircleAvatar(
+                          //                                           backgroundImage: NetworkImage(
+                          //                                               profilePhotos[i].profilePhoto),
+                          //                                         ),
+                          //                                         title: Text(
+                          //                                             'Likes: ${profilePhotos[i].likes} UID ${profilePhotos[i].uid}'),
+                          //                                       ),
+                          //      ),
+                          //   ]
+                          // ],);
+                          //                             // return SizedBox(
+                          //   height: 2000.h,
+                          //   child: ListView.builder(
+                          //     itemCount: profilePhotos.length,
+                          //     itemBuilder: (context, index) {
+                          //       return ZoomTapAnimation(
+                          //         onTap: ()async {
+
+                          //         },
+                          //         child: ListTile(
+                          //           leading: CircleAvatar(
+                          //             backgroundImage: NetworkImage(
+                          //                 profilePhotos[index].profilePhoto),
+                          //           ),
+                          //           title: Text(
+                          //               'Likes: ${profilePhotos[index].likes} UID ${profilePhotos[index].uid}'),
+                          //         ),
+                          //       );
+                          //     },
+                          //   ),
+                          // );
+                          //   },
+                          // ),
+                          //                       child: GridView.count(
+                          //                         childAspectRatio: 0.6,
+                          //                         crossAxisCount: 2,
+                          //                         mainAxisSpacing: 40.w,
+                          //                         crossAxisSpacing: 40.w,
+                          //                         children: List.generate(profilePhotos.length,
+                          //                             (index) {
+                          //                           return ZoomTapAnimation(
+                          //                             onTap: () {
+                          //                              ProfilePhotoData tappedPhoto = profilePhotos[index];
+                          // // Print the UID associated with the tapped photo
+                          // print('UID of tapped photo: ${tappedPhoto.uid}');
+                          //                             },
+                          //                             child: ClipRRect(
+                          //                               borderRadius: BorderRadius.circular(40.w),
+                          //                               child: SizedBox(
+                          //                                 height: 120.h,
+                          //                                 width: 120.w,
+                          //                                 child: CachedNetworkImage(
+                          //                                   placeholder: (context, val) {
+                          //                                     return Container(
+                          //                                       width: 31.w,
+                          //                                       child: Center(
+                          //                                         child: Text(
+                          //                                           "Loading",
+                          //                                           style: TextStyle(
+                          //                                             fontWeight: FontWeight.bold,
+                          //                                             fontSize: 15.sp,
+                          //                                           ),
+                          //                                         ),
+                          //                                       ),
+                          //                                     );
+                          //                                   },
+                          //                                   imageUrl:
+                          //                                       profilePhotos[index].profilePhoto,
+                          //                                   fit: BoxFit.fill,
+                          //                                 ),
+                          //                               ),
+                          //                             ),
+                          //                           );
+                          //                         }),
+                          //                       ),
+
+                          //old Trending
+                          // showProgressIndicator
+                          //     ? CircularProgressIndicator()
+                          //     //
+                          //     : Padding(
+                          //         padding: EdgeInsets.symmetric(
+                          //           horizontal: 60.w,
+                          //         ),
+                          //         child: Padding(
+                          //           padding: EdgeInsets.only(top: 50.h),
+                          //           child: SizedBox(
+                          //             height: 100000.h,
+                          //             child: GridView.count(
+                          //               childAspectRatio: 0.6,
+                          //               crossAxisCount: 2,
+                          //               mainAxisSpacing: 40.w,
+                          //               crossAxisSpacing: 40.w,
+                          //               children: List.generate(
+                          //                 controller.viralInfoList.length,
+                          //                 (index) {
+                          //                   return ZoomTapAnimation(
+                          //                     onTap: () async {
+                          //                       int postIndex = 0;
+                          //                       await FirebaseFirestore.instance
+                          //                           .collection('Users')
+                          //                           .doc(controller
+                          //                               .viralList[index][0])
+                          //                           .collection('Posts')
+                          //                           .get()
+                          //                           .then((snapshot) {
+                          //                         for (final doc
+                          //                             in snapshot.docs) {
+                          //                           if (doc.id ==
+                          //                               controller
+                          //                                       .viralList[index]
+                          //                                   [1]) {
+                          //                             print(
+                          //                                 'Document index: $postIndex');
+                          //                             break;
+                          //                           }
+                          //                           postIndex++;
+                          //                         }
+                          //                       });
+
+                          //                       // ignore: use_build_context_synchronously
+                          //                       await MainViewState().viewPost(
+                          //                           controller.viralList[index]
+                          //                               [0],
+                          //                           postIndex,
+                          //                           context);
+                          //                     },
+                          //                     child: ClipRRect(
+                          //                       borderRadius:
+                          //                           BorderRadius.circular(40.w),
+                          //                       child: SizedBox(
+                          //                         height: 120.h,
+                          //                         width: 120.w,
+                          //                         child: CachedNetworkImage(
+                          //                           placeholder: (context, val) {
+                          //                             return Container(
+                          //                               width: 31.w,
+                          //                               child: Center(
+                          //                                 child: Text(
+                          //                                   "Loading",
+                          //                                   style: TextStyle(
+                          //                                     fontWeight:
+                          //                                         FontWeight.bold,
+                          //                                     fontSize: 15.sp,
+                          //                                   ),
+                          //                                 ),
+                          //                               ),
+                          //                             );
+                          //                           },
+                          //                           imageUrl: controller
+                          //                               .viralInfoList[index][1],
+                          //                           fit: BoxFit.fill,
+                          //                         ),
+                          //                       ),
+                          //                     ),
+                          //                   );
+                          //                 },
+                          //               ),
+                          //             ),
+                          //           ),
+                          //         ),
+                          //       ),
+                        ],
+                      ),
+                    )),
+                  ),
+                ),
+                SingleChildScrollView(
+                  child: RefreshIndicator(
+                    onRefresh: _refreshData,
+                    child: Column(
+                      children: [
+                        SizedBox(
+                          height: 60.h,
+                        ),
+
+                        //new Recent
+                        FutureBuilder<List<ProfilePhotoData>>(
+                          future: fetchAllprofilePhotos2SortedByDateTime(),
+                          builder: (context, snapshot) {
+                            if (snapshot.connectionState ==
+                                ConnectionState.waiting) {
+                              return Center(
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                ),
+                              );
+                            }
+                            if (snapshot.hasError) {
+                              return Center(
+                                child: Text('Error: ${snapshot.error}'),
+                              );
+                            }
+                            List<ProfilePhotoData> profilePhotos2 =
+                                snapshot.data ?? [];
+                            return GridView.count(
+                              shrinkWrap: true,
+                              physics: BouncingScrollPhysics(),
+                              childAspectRatio: 0.6,
+                              crossAxisCount: 2,
+                              mainAxisSpacing: 40.w,
+                              crossAxisSpacing: 40.w,
+                              children:
+                                  List.generate(profilePhotos2.length, (index) {
+                                return ZoomTapAnimation(
+                                  onTap: () async {
+                                    ProfilePhotoData tappedPhoto =
+                                        profilePhotos2[index];
+
+                                    print(
+                                        'UID of tapped photo: ${tappedPhoto.uid}');
+                                    int? postIndex =
+                                        await findProfilePhotoIndex(
+                                            tappedPhoto.uid,
+                                            tappedPhoto.profilePhoto);
+
+                                    await MainViewState().viewPost(
+                                        tappedPhoto.uid, postIndex!, context);
+                                  },
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(40.w),
+                                    child: SizedBox(
+                                      height: 120.h,
+                                      width: 120.w,
+                                      child: CachedNetworkImage(
+                                        placeholder: (context, val) {
+                                          return Container(
+                                            width: 31.w,
+                                            child: Center(
+                                              child: Text(
+                                                "Loading",
+                                                style: TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 15.sp,
+                                                ),
+                                              ),
+                                            ),
+                                          );
+                                        },
+                                        imageUrl:
+                                            profilePhotos2[index].profilePhoto,
+                                        fit: BoxFit.fill,
+                                      ),
                                     ),
                                   ),
                                 );
-                              },
-                            )
-                          : SizedBox(),
-                      SizedBox(
-                        height: 100000.h,
-                        child: GridView.count(
-                          childAspectRatio: 0.6,
-                          crossAxisCount: 2,
-                          mainAxisSpacing: 40.w,
-                          crossAxisSpacing: 40.w,
-                          children: List.generate(
-                            controller.viralInfoList2.length,
-                            (index) {
-                              return ZoomTapAnimation(
-                                onTap: () async {
-                                  print('here');
-                                  print(controller.viralList2);
-                                  int postIndex = 0;
-                                  await FirebaseFirestore.instance
-                                      .collection('Users')
-                                      .doc(controller.viralList2[index][0])
-                                      .collection('Posts')
-                                      .get()
-                                      .then((snapshot) {
-                                    for (final doc in snapshot.docs) {
-                                      if (doc.id ==
-                                          controller.viralList2[index][1]) {
-                                        print('Document index: $postIndex');
-                                        break;
-                                      }
-                                      postIndex++;
-                                    }
-                                  });
+                              }),
+                            );
 
-                                  // ignore: use_build_context_synchronously
-                                  await MainViewState().viewPost(
-                                      controller.viralList2[index][0],
-                                      postIndex,
-                                      context);
-                                },
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(40.w),
-                                  child: SizedBox(
-                                    height: 120.h,
-                                    width: 120.w,
-                                    child: CachedNetworkImage(
-                                      placeholder: (context, val) {
-                                        return Container(
-                                          width: 31.w,
-                                          child: Center(
-                                            child: Text(
-                                              "Loading",
-                                              style: TextStyle(
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 15.sp,
-                                              ),
-                                            ),
-                                          ),
-                                        );
-                                      },
-                                      imageUrl: controller.viralInfoList2[index]
-                                          [1],
-                                      fit: BoxFit.fill,
-                                    ),
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
+                            // return SizedBox(
+                            //   height: 1000.h,
+                            //   child: ListView.builder(
+                            //     itemCount: profilePhotos2.length,
+                            //     itemBuilder: (context, index) {
+                            //       return ListTile(
+                            //         leading: CircleAvatar(
+                            //           backgroundImage: NetworkImage(profilePhotos2[index].profilePhoto),
+                            //         ),
+                            //         title: Text(
+                            //           'Likes: ${profilePhotos2[index].likes} UID ${profilePhotos2[index].uid}',
+                            //         ),
+                            //       );
+                            //     },
+                            //   ),
+                            // );
+                          },
                         ),
-                      ),
-                    ],
+
+                        //old Recent
+                        // SizedBox(
+                        //   height: 100000.h,
+                        //   child: GridView.count(
+                        //     childAspectRatio: 0.6,
+                        //     crossAxisCount: 2,
+                        //     mainAxisSpacing: 40.w,
+                        //     crossAxisSpacing: 40.w,
+                        //     children: List.generate(
+                        //       controller.viralInfoList2.length,
+                        //       (index) {
+                        //         return ZoomTapAnimation(
+                        //           onTap: () async {
+                        //             print('here');
+                        //             print(controller.viralList2);
+                        //             int postIndex = 0;
+                        //             await FirebaseFirestore.instance
+                        //                 .collection('Users')
+                        //                 .doc(controller.viralList2[index][0])
+                        //                 .collection('Posts')
+                        //                 .get()
+                        //                 .then((snapshot) {
+                        //               for (final doc in snapshot.docs) {
+                        //                 if (doc.id ==
+                        //                     controller.viralList2[index][1]) {
+                        //                   print('Document index: $postIndex');
+                        //                   break;
+                        //                 }
+                        //                 postIndex++;
+                        //               }
+                        //             });
+
+                        //             // ignore: use_build_context_synchronously
+                        //             await MainViewState().viewPost(
+                        //                 controller.viralList2[index][0],
+                        //                 postIndex,
+                        //                 context);
+                        //           },
+                        //           child: ClipRRect(
+                        //             borderRadius: BorderRadius.circular(40.w),
+                        //             child: SizedBox(
+                        //               height: 120.h,
+                        //               width: 120.w,
+                        //               child: CachedNetworkImage(
+                        //                 placeholder: (context, val) {
+                        //                   return Container(
+                        //                     width: 31.w,
+                        //                     child: Center(
+                        //                       child: Text(
+                        //                         "Loading",
+                        //                         style: TextStyle(
+                        //                           fontWeight: FontWeight.bold,
+                        //                           fontSize: 15.sp,
+                        //                         ),
+                        //                       ),
+                        //                     ),
+                        //                   );
+                        //                 },
+                        //                 imageUrl: controller.viralInfoList2[index]
+                        //                     [1],
+                        //                 fit: BoxFit.fill,
+                        //               ),
+                        //             ),
+                        //           ),
+                        //         );
+                        //       },
+                        //     ),
+                        //   ),
+                        // ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ),
-          ])),
+              ]),
+            )),
+      ),
     );
   }
+}
+
+class ProfilePhotoData {
+  final String profilePhoto;
+  final int likes;
+  final String uid;
+
+  ProfilePhotoData({
+    required this.profilePhoto,
+    required this.likes,
+    required this.uid,
+  });
 }

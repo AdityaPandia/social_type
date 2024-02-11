@@ -15,12 +15,14 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:social_type/common/custom_colors.dart';
 import 'package:social_type/common/custom_texts.dart';
+import 'package:social_type/controllers/app_controller.dart';
 import 'package:social_type/views/home/controllers/home_controller.dart';
 import 'package:social_type/views/home/views/home_view.dart';
 import 'package:social_type/views/home/views/main/controllers/main_controller.dart';
 
 import 'package:social_type/views/home/views/profile/views/profile_view.dart';
 import 'package:social_type/views/home/views/viral/controllers/viral_controller.dart';
+import 'package:social_type/views/home/views/viral/views/search_view.dart';
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
 
 class MainView extends StatefulWidget {
@@ -56,8 +58,39 @@ class MainViewState extends State<MainView> {
   RxBool isUploadPostLoading = false.obs;
   RxBool isModalSheetLoading = false.obs;
   XFile? _imageFile; // Stores the picked image file
-  int totalPosts = 0;
-  getNumberOfPosts() async {
+  // Future<int> getTotalPostsCount() async {
+  //   try {
+  //     // Reference to the 'Users' collection
+  //     CollectionReference usersCollection =
+  //         FirebaseFirestore.instance.collection('Users');
+
+  //     // QuerySnapshot to get all documents in the 'Users' collection
+  //     QuerySnapshot usersSnapshot = await usersCollection.get();
+
+  //     int totalPostsCount = 0;
+
+  //     // Iterate through each document in the 'Users' collection
+  //     for (QueryDocumentSnapshot userDoc in usersSnapshot.docs) {
+  //       // Get the reference to the 'Posts' collection for each user
+  //       CollectionReference postsCollection =
+  //           userDoc.reference.collection('Posts');
+
+  //       // QuerySnapshot to get all documents in the 'Posts' collection for the current user
+  //       QuerySnapshot postsSnapshot = await postsCollection.get();
+
+  //       // Increment the total count with the number of documents in the 'Posts' collection for the current user
+  //       totalPostsCount += postsSnapshot.size;
+  //     }
+
+  //     // Return the total count of documents in the 'Posts' collection across all users
+  //     return totalPostsCount - 1;
+  //   } catch (e) {
+  //     print('Error getting total posts count: $e');
+  //     return 0; // Return 0 if there's an error
+  //   }
+  // }
+//   int totalPosts = 0;
+  Future<int> getNumberOfPosts() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
       print('error 1 '); // Handle or throw an error if no user is signed in
@@ -66,15 +99,18 @@ class MainViewState extends State<MainView> {
     final uid = user!.uid;
 
     try {
+      int totalPosts = 0;
       final snapshot = await FirebaseFirestore.instance
           .collection('Users')
           .doc(uid)
           .collection('Posts')
           .get();
-      totalPosts = snapshot.size;
+      totalPosts = snapshot.size - 1;
+      return totalPosts;
     } on FirebaseException catch (e) {
       // Handle errors gracefully, e.g., log, display user-friendly message
       print('Error getting number of posts: $e');
+      return 9;
 // Indicate an error occurred
     }
   }
@@ -403,47 +439,20 @@ class MainViewState extends State<MainView> {
                                   opacity: 0.6,
                                   child: Container(
                                     width: 636.w,
-                                    height: 150.h,
+                                    height: 200.h,
                                     decoration: BoxDecoration(
                                       borderRadius:
                                           BorderRadius.circular(200.w),
                                       color: Color(0xFF9EA2A3),
                                     ),
-                                    child: Row(
-                                      children: [
-                                        SizedBox(
-                                          width: 60.w,
-                                        ),
-
-                                        // SizedBox(
-                                        //     width: 348.w,
-                                        //     child: TextField(
-                                        //       decoration: InputDecoration(
-                                        //           border: InputBorder.none,
-                                        //           hintText:
-                                        //           hintStyle: GoogleFonts.poppins(
-                                        //               fontSize: 64.sp,
-                                        //               fontWeight: FontWeight.w600,
-                                        //               color: Color(0xFFD5F600))),
-                                        //       style: GoogleFonts.poppins(
-                                        //           fontSize: 64.sp,
-                                        //           fontWeight: FontWeight.w600,
-                                        //           color: Color(0xFFD5F600)),
-                                        //     )),
-                                        SizedBox(
-                                          width: 348.w,
-                                          child: Center(
-                                            child: Text(
-                                              documents[postIndex]
-                                                  ['description'],
-                                              style: GoogleFonts.poppins(
-                                                  fontSize: 48.sp,
-                                                  fontWeight: FontWeight.w600,
-                                                  color: Color(0xFFD5F600)),
-                                            ),
-                                          ),
-                                        ),
-                                      ],
+                                    child: Center(
+                                      child: Text(
+                                        documents[postIndex]['description'],
+                                        style: GoogleFonts.poppins(
+                                            fontSize: 72.sp,
+                                            fontWeight: FontWeight.w600,
+                                            color: Color(0xFFD5F600)),
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -455,77 +464,87 @@ class MainViewState extends State<MainView> {
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.end,
                               children: [
-                                ZoomTapAnimation(
-                                  onTap: () async {
-                                    isFollowButtonLoading.value = true;
-                                    await controller.isUserIdInFollowers(
-                                      userId,
-                                    )
-                                        ? await controller
-                                            .removeUserIdFromFollowers(userId)
-                                        : await controller
-                                            .addUserIdToFollowers(userId);
-                                    isFollowButtonLoading.value = false;
-                                  },
-                                  child: Obx(
-                                    () => Opacity(
-                                      opacity: 0.6,
-                                      child: Container(
-                                        height: 150.sp,
-                                        width: 150.sp,
-                                        decoration: const BoxDecoration(
-                                          shape: BoxShape.circle,
-                                          color: Color(0xFF9EA2A3),
-                                        ),
-                                        child: Center(
-                                          child: isFollowButtonLoading.value
-                                              ? SizedBox(
-                                                  height: 40.h,
-                                                  width: 20.h,
-                                                  child:
-                                                      const CircularProgressIndicator())
-                                              : StreamBuilder(
-                                                  stream: controller
-                                                      .isUserIdInFollowers(
-                                                          userId)
-                                                      .asStream(),
-                                                  builder: (context, snapshot) {
-                                                    if (!snapshot.hasData) {
-                                                      return SizedBox(
-                                                          height: 40.h,
-                                                          width: 20.h,
-                                                          child:
-                                                              const CircularProgressIndicator());
-                                                    }
+                                FirebaseAuth.instance.currentUser!.uid == userId
+                                    ? SizedBox()
+                                    : ZoomTapAnimation(
+                                        onTap: () async {
+                                          isFollowButtonLoading.value = true;
+                                          await controller.isUserIdInFollowers(
+                                            userId,
+                                          )
+                                              ? await controller
+                                                  .removeUserIdFromFollowers(
+                                                      userId)
+                                              : await controller
+                                                  .addUserIdToFollowers(userId);
+                                          isFollowButtonLoading.value = false;
+                                        },
+                                        child: Obx(
+                                          () => Opacity(
+                                            opacity: 0.6,
+                                            child: Container(
+                                              height: 150.sp,
+                                              width: 150.sp,
+                                              decoration: const BoxDecoration(
+                                                shape: BoxShape.circle,
+                                                color: Color(0xFF9EA2A3),
+                                              ),
+                                              child: Center(
+                                                child: isFollowButtonLoading
+                                                        .value
+                                                    ? SizedBox(
+                                                        height: 40.h,
+                                                        width: 20.h,
+                                                        child:
+                                                            const CircularProgressIndicator())
+                                                    : StreamBuilder(
+                                                        stream: controller
+                                                            .isUserIdInFollowers(
+                                                                userId)
+                                                            .asStream(),
+                                                        builder: (context,
+                                                            snapshot) {
+                                                          if (!snapshot
+                                                              .hasData) {
+                                                            return SizedBox(
+                                                                height: 40.h,
+                                                                width: 20.h,
+                                                                child:
+                                                                    const CircularProgressIndicator());
+                                                          }
 
-                                                    if (snapshot.data!) {
-                                                      // return const Text("Unfollow",);
-                                                      return Text(
-                                                        "Unfollow",
-                                                        style:
-                                                            GoogleFonts.poppins(
-                                                                color: Colors
-                                                                    .white,
-                                                                fontSize:
-                                                                    20.sp),
-                                                      );
-                                                    } else {
-                                                      // return const Text("Follow");
-                                                      return Center(
-                                                        child: Image.asset(
-                                                          "assets/images/png/follow_icon.png",
-                                                          height: 70.sp,
-                                                          width: 70.sp,
-                                                        ),
-                                                      );
-                                                    }
-                                                  },
-                                                ),
+                                                          if (snapshot.data!) {
+                                                            // return const Text("Unfollow",);
+                                                            return Text(
+                                                              "Unfollow",
+                                                              style: GoogleFonts.poppins(
+                                                                  color: const Color
+                                                                      .fromRGBO(
+                                                                      255,
+                                                                      255,
+                                                                      255,
+                                                                      1),
+                                                                  fontSize:
+                                                                      20.sp),
+                                                            );
+                                                          } else {
+                                                            // return const Text("Follow");
+                                                            return Center(
+                                                              child:
+                                                                  Image.asset(
+                                                                "assets/images/png/follow_icon.png",
+                                                                height: 70.sp,
+                                                                width: 70.sp,
+                                                              ),
+                                                            );
+                                                          }
+                                                        },
+                                                      ),
+                                              ),
+                                            ),
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                  ),
-                                ),
                                 SizedBox(
                                   height: 66.h,
                                 ),
@@ -555,11 +574,40 @@ class MainViewState extends State<MainView> {
                                         shape: BoxShape.circle,
                                         color: Color(0xFF9EA2A3),
                                       ),
-                                      child: Center(
-                                        child: Icon(CupertinoIcons.heart_fill,
-                                            size: 90.sp,
-                                            color: Color(0xFFD5F600)),
+                                      child: StreamBuilder(
+                                        stream: isUserIdInPostLikes(
+                                                userId, documents[postIndex].id)
+                                            .asStream(),
+                                        builder: (context, snapshot) {
+                                          if (!snapshot.hasData) {
+                                            return SizedBox(
+                                                height: 40.h,
+                                                width: 20.h,
+                                                child:
+                                                    const CircularProgressIndicator());
+                                          }
+                                          if (snapshot.data!) {
+                                            // return const Text("Unfollow",);
+                                            return Center(
+                                                child: Icon(
+                                                    CupertinoIcons.heart_fill,
+                                                    color: Color(0xFFD5F600),
+                                                    size: 90.sp));
+                                          } else {
+                                            // return const Text("Follow");
+                                            return Center(
+                                                child: Icon(
+                                                    CupertinoIcons.heart_fill,
+                                                    color: Colors.white,
+                                                    size: 90.sp));
+                                          }
+                                        },
                                       ),
+                                      // child: Center(
+                                      //   child: Icon(CupertinoIcons.heart_fill,
+                                      //       size: 90.sp,
+                                      //       color: Color(0xFFD5F600)),
+                                      // ),
                                     ),
                                   ),
                                 ),
@@ -605,7 +653,6 @@ class MainViewState extends State<MainView> {
                     ),
                   ],
                 );
-              
               });
         });
   }
@@ -728,7 +775,6 @@ class MainViewState extends State<MainView> {
               ),
             ],
           );
-          
         },
       );
     }
@@ -769,15 +815,15 @@ class MainViewState extends State<MainView> {
           padding: EdgeInsets.only(bottom: 20.h, left: 20.w),
           child: ZoomTapAnimation(
             onTap: () async {
-              isUploadPostLoading.value = true;
-              await getNumberOfPosts();
-              print(totalPosts);
-              totalPosts > 4
-                  ? Get.defaultDialog(
-                      title: 'You already have 5 posts', middleText: "")
-                  : _pickImage();
-
-              isUploadPostLoading.value = false;
+              if (isUploadPostLoading.value) {
+              } else {
+                isUploadPostLoading.value = true;
+                (await getNumberOfPosts() < 5)
+                    ? _pickImage()
+                    : Get.defaultDialog(
+                        title: "You already have 5 posts", middleText: "");
+                isUploadPostLoading.value = false;
+              }
             },
             child: Obx(
               () => Container(
@@ -817,13 +863,14 @@ class MainViewState extends State<MainView> {
                     children: [
                       ZoomTapAnimation(
                         onTap: () {
-                          Get.put(ViralController()).isSearchActive.value =
-                              true;
-                          Get.put(HomeController()).clearBottomNav();
-                          Get.put(HomeController()).viralSelected.value = true;
-                          Get.put(HomeController())
-                              .bottomNavController
-                              .jumpToTab(1);
+                          // Get.put(ViralController()).isSearchActive.value =
+                          //     true;
+                          // Get.put(HomeController()).clearBottomNav();
+                          // Get.put(HomeController()).viralSelected.value = true;
+                          // Get.put(HomeController())
+                          //     .bottomNavController
+                          //     .jumpToTab(1);
+                          Get.to(SearchView());
                         },
                         child: const Icon(
                           Icons.search_outlined,
@@ -837,12 +884,14 @@ class MainViewState extends State<MainView> {
                       ),
                       ZoomTapAnimation(
                         onTap: () {
-                          Get.put(HomeController()).clearBottomNav();
-                          Get.put(HomeController()).profileSelected.value =
-                              true;
-                          Get.put(HomeController())
-                              .bottomNavController
-                              .jumpToTab(3);
+                          // Get.put(HomeController()).clearBottomNav();
+                          // Get.put(HomeController()).profileSelected.value =
+                          //     true;
+                          // Get.put(HomeController())
+                          //     .bottomNavController
+                          //     .jumpToTab(3);
+                          //
+                          Get.put(HomeController()).index.value = 3;
                         },
                         child: const Icon(
                           Icons.person,
@@ -905,7 +954,10 @@ class MainViewState extends State<MainView> {
                                                   Stack(
                                                     children: [
                                                       for (int j = 0;
-                                                          j < documents2.length;
+                                                          j <
+                                                              documents2
+                                                                      .length -
+                                                                  1;
                                                           j++) ...[
                                                         // documents2[j].id != 'init'
                                                         //     ?
@@ -985,7 +1037,7 @@ class MainViewState extends State<MainView> {
                                                   ),
                                                   //got pasted here
                                                   ZoomTapAnimation(
-                                                    onTap: () {
+                                                    onTap: () async{
                                                       Get.to(() =>
                                                           // UserProfileView(
                                                           //   userUid:
@@ -996,6 +1048,8 @@ class MainViewState extends State<MainView> {
                                                               userUid:
                                                                   documents1[i]
                                                                       .id));
+
+                                                   
                                                     },
                                                     child: Align(
                                                       alignment:
@@ -1015,42 +1069,126 @@ class MainViewState extends State<MainView> {
                                                                             [
                                                                             'profile_photo'] ==
                                                                         ""
-                                                                    ? Container(
-                                                                        decoration:
-                                                                            BoxDecoration(
-                                                                          color:
-                                                                              CustomColors.backgroundColor,
-                                                                        ),
-                                                                        child:
-                                                                            Icon(
-                                                                          Icons
-                                                                              .person,
-                                                                          size:
-                                                                              64.sp,
-                                                                          color:
-                                                                              CustomColors.textColor,
-                                                                        ),
-                                                                      )
-                                                                    : CachedNetworkImage(
-                                                                        placeholder:
-                                                                            (context,
-                                                                                val) {
-                                                                          return Container(
-                                                                            width:
-                                                                                31.w,
+                                                                    ? Stack(
+                                                                        children: [
+                                                                          Center(
                                                                             child:
-                                                                                Center(
-                                                                              child: Text(
-                                                                                "Loading",
-                                                                                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 34.sp, color: Colors.white),
+                                                                                Container(
+                                                                              decoration: BoxDecoration(
+                                                                                color: CustomColors.backgroundColor,
+                                                                              ),
+                                                                              child: Icon(
+                                                                                Icons.person,
+                                                                                size: 64.sp,
+                                                                                color: CustomColors.textColor,
                                                                               ),
                                                                             ),
-                                                                          );
-                                                                        },
-                                                                        imageUrl:
-                                                                            documents1[i]['profile_photo'],
-                                                                        fit: BoxFit
-                                                                            .fill,
+                                                                          ),
+                                                                          Align(
+                                                                            alignment:
+                                                                                Alignment.bottomCenter,
+                                                                            child:
+                                                                                Padding(
+                                                                              padding: EdgeInsets.only(bottom: 77.h),
+                                                                              child: FutureBuilder(
+                                                                                  future: Get.put(AppController()).getUsername(documents1[i].id),
+                                                                                  builder: (context, snapshot) {
+                                                                                    if (snapshot.connectionState == ConnectionState.done) {
+                                                                                      return Opacity(
+                                                                                        opacity: 0.7,
+                                                                                        child: Container(
+                                                                                          decoration: BoxDecoration(color: Colors.grey, borderRadius: BorderRadius.circular(40.w)),
+
+                                                                                          // width: 350.w,
+                                                                                          child: Padding(
+                                                                                            padding: EdgeInsets.symmetric(horizontal: 30.w, vertical: 5.h),
+                                                                                            child: Text(
+                                                                                              "@${snapshot.data}",
+                                                                                              style: GoogleFonts.poppins(fontSize: 24.sp, fontWeight: FontWeight.w600, color: Colors.white),
+                                                                                            ),
+                                                                                          ),
+                                                                                        ),
+                                                                                      );
+                                                                                    } else {
+                                                                                      return SizedBox(
+                                                                                        width: 12.sp,
+                                                                                        height: 12.sp,
+                                                                                        child: CircularProgressIndicator(
+                                                                                          color: CustomColors.textColor2,
+                                                                                        ),
+                                                                                      );
+                                                                                    }
+                                                                                  }),
+                                                                            ),
+                                                                          ),
+                                                                        ],
+                                                                      )
+                                                                    : Stack(
+                                                                        // alignment:
+                                                                        //     Alignment.center,
+                                                                        children: [
+                                                                          Center(
+                                                                            child:
+                                                                                SizedBox(
+                                                                              height: 365.sp,
+                                                                              width: 365.sp,
+                                                                              child: CachedNetworkImage(
+                                                                                placeholder: (context, val) {
+                                                                                  return SizedBox(
+                                                                                    width: 31.w,
+                                                                                    child: Center(
+                                                                                      child: Text(
+                                                                                        "Loading",
+                                                                                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 34.sp, color: Colors.white),
+                                                                                      ),
+                                                                                    ),
+                                                                                  );
+                                                                                },
+                                                                                imageUrl: documents1[i]['profile_photo'],
+                                                                                fit: BoxFit.fill,
+                                                                              ),
+                                                                            ),
+                                                                          ),
+                                                                          Align(
+                                                                            alignment:
+                                                                                Alignment.bottomCenter,
+                                                                            child:
+                                                                                Padding(
+                                                                              padding: EdgeInsets.only(bottom: 77.h),
+                                                                              child: FutureBuilder(
+                                                                                  future: Get.put(AppController()).getUsername(documents1[i].id),
+                                                                                  builder: (context, snapshot) {
+                                                                                    if (snapshot.connectionState == ConnectionState.done) {
+                                                                                      return Opacity(
+                                                                                        opacity: 0.7,
+                                                                                        child: Container(
+                                                                                          decoration: BoxDecoration(
+                                                                                            borderRadius: BorderRadius.circular(40.w),
+                                                                                            color: Colors.grey,
+                                                                                          ),
+                                                                                          // width: 350.w,
+                                                                                          child: Padding(
+                                                                                            padding: EdgeInsets.symmetric(horizontal: 30.w, vertical: 5.h),
+                                                                                            child: Text(
+                                                                                              "@${snapshot.data}",
+                                                                                              style: GoogleFonts.poppins(fontSize: 24.sp, fontWeight: FontWeight.w600, color: Colors.white),
+                                                                                            ),
+                                                                                          ),
+                                                                                        ),
+                                                                                      );
+                                                                                    } else {
+                                                                                      return SizedBox(
+                                                                                        width: 12.sp,
+                                                                                        height: 12.sp,
+                                                                                        child: CircularProgressIndicator(
+                                                                                          color: CustomColors.textColor2,
+                                                                                        ),
+                                                                                      );
+                                                                                    }
+                                                                                  }),
+                                                                            ),
+                                                                          ),
+                                                                        ],
                                                                       ),
                                                               ),
                                                             ),
@@ -1066,16 +1204,13 @@ class MainViewState extends State<MainView> {
                                                       ),
                                                     ),
                                                   ),
-                                          
                                                 ],
                                               );
                                             }),
                                       ),
-                                 
                                     ],
                                   ),
                                 )
-                             
                               : SizedBox(),
                           SizedBox(
                             height: 30.h,

@@ -1,4 +1,4 @@
-package com.example.social_type
+package com.khe.dev
 
 import io.flutter.embedding.android.FlutterActivity
 
