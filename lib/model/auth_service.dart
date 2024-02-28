@@ -183,6 +183,8 @@ class AuthService {
         'has_posted': false,
         'followers': [],
         'following': [],
+        'verified_user': false,
+        'vip_user': false,
       });
     } catch (error) {
       //to show popup

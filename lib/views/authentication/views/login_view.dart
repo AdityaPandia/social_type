@@ -8,7 +8,9 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:social_type/common/custom_colors.dart';
 import 'package:social_type/views/authentication/controllers/authentication_controller.dart';
 import 'package:social_type/views/authentication/views/google_signup_view.dart';
+import 'package:social_type/views/authentication/views/privacy_view.dart';
 import 'package:social_type/views/authentication/views/signup_view.dart';
+import 'package:social_type/views/authentication/views/terms_view.dart';
 import 'package:video_player/video_player.dart';
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
 import 'package:social_type/model/auth_service.dart';
@@ -132,7 +134,8 @@ class _LoginViewState extends State<LoginView> {
                                           decoration: InputDecoration(
                                               border: InputBorder.none,
                                               hintText:
-                                                  "Introduce your email...",
+                                                  // "Introduce your email...",
+                                                  "Introduce tu correo electrónico",
                                               hintStyle: GoogleFonts.archivo(
                                                   fontSize: 40.sp,
                                                   fontWeight: FontWeight.w400,
@@ -162,7 +165,8 @@ class _LoginViewState extends State<LoginView> {
                                             color: Colors.white),
                                         decoration: InputDecoration(
                                             border: InputBorder.none,
-                                            hintText: "Password",
+                                            // hintText: "Password",
+                                            hintText: "Contraseña",
                                             hintStyle: GoogleFonts.archivo(
                                                 fontSize: 40.sp,
                                                 fontWeight: FontWeight.w400,
@@ -176,7 +180,8 @@ class _LoginViewState extends State<LoginView> {
                                   Align(
                                       alignment: Alignment.centerRight,
                                       child: Text(
-                                        "Forgot Password?",
+                                        // "Forgot Password?",
+                                        "¿Has olvidado tu contraseña?",
                                         style: GoogleFonts.archivo(
                                             fontSize: 36.sp,
                                             fontWeight: FontWeight.w400,
@@ -186,7 +191,8 @@ class _LoginViewState extends State<LoginView> {
                                     height: 60.h,
                                   ),
                                   Text(
-                                    "or",
+                                    // "or",
+                                    "o",
                                     style: GoogleFonts.archivo(
                                         fontSize: 56.sp,
                                         fontWeight: FontWeight.w700,
@@ -240,7 +246,8 @@ class _LoginViewState extends State<LoginView> {
                                                       width: 10.w,
                                                     ),
                                                     Text(
-                                                      "Continue with Google",
+                                                      // "Continue with Google",
+                                                      "Continua con Google",
                                                       style:
                                                           GoogleFonts.archivo(
                                                               fontSize: 36.sp,
@@ -290,7 +297,8 @@ class _LoginViewState extends State<LoginView> {
                                                         color: Colors.white,
                                                       ))
                                                   : Text(
-                                                      "Login",
+                                                      // "Login",
+                                                      "Iniciar Sesión",
                                                       style:
                                                           GoogleFonts.archivo(
                                                               fontWeight:
@@ -307,7 +315,8 @@ class _LoginViewState extends State<LoginView> {
                                   ),
                                   Text.rich(TextSpan(children: [
                                     TextSpan(
-                                        text: "Don't have an account? ",
+                                        // text: "Don't have an account? ",
+                                        text: "¿Aún no tienes cuenta? ",
                                         style: GoogleFonts.archivo(
                                             fontSize: 36.sp,
                                             fontWeight: FontWeight.w400,
@@ -320,12 +329,60 @@ class _LoginViewState extends State<LoginView> {
                                             controller.isLoginPage.value =
                                                 false;
                                           },
-                                        text: "Register now",
+                                        // text: "Register now",
+                                        text: "Regístrate aquí",
                                         style: GoogleFonts.archivo(
                                             fontSize: 36.sp,
                                             fontWeight: FontWeight.w400,
                                             color: const Color(0xFFD5F600)))
-                                  ]))
+                                  ])),
+                                  SizedBox(height: 30.h),
+                                  Align(
+                                    alignment: Alignment.center,
+                                    child: Text.rich(TextSpan(children: [
+                                      TextSpan(
+                                          // text: "Don't have an account? ",
+                                          text:
+                                              "Cuendo creas una cuenta o inicias sesion, aceptas Ios ",
+                                          style: GoogleFonts.archivo(
+                                              fontSize: 36.sp,
+                                              fontWeight: FontWeight.w400,
+                                              color: Colors.white)),
+                                      TextSpan(
+                                          recognizer: TapGestureRecognizer()
+                                            ..onTap = () {
+                                              // // Get.delete<AuthenticationController>();
+                                              // Get.offAll(() => SignupView());
+                                              Get.to(() => TermsView());
+                                            },
+                                          // text: "Register now",
+                                          text: "Terminos de uso ",
+                                          style: GoogleFonts.archivo(
+                                              fontSize: 36.sp,
+                                              fontWeight: FontWeight.w400,
+                                              color: const Color(0xFFD5F600))),
+                                      TextSpan(
+                                          // text: "Don't have an account? ",
+                                          text: "y las ",
+                                          style: GoogleFonts.archivo(
+                                              fontSize: 36.sp,
+                                              fontWeight: FontWeight.w400,
+                                              color: Colors.white)),
+                                      TextSpan(
+                                          recognizer: TapGestureRecognizer()
+                                            ..onTap = () {
+                                              // // Get.delete<AuthenticationController>();
+                                              // Get.offAll(() => SignupView());
+                                              Get.to(() => PrivacyView());
+                                            },
+                                          // text: "Register now",
+                                          text: "Politicas de Privacidad",
+                                          style: GoogleFonts.archivo(
+                                              fontSize: 36.sp,
+                                              fontWeight: FontWeight.w400,
+                                              color: const Color(0xFFD5F600))),
+                                    ])),
+                                  ),
                                 ],
                               ),
                             )

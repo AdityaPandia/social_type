@@ -276,7 +276,8 @@ class _ViralViewState extends State<ViralView> {
                             width: 10.w,
                           ),
                           Text(
-                            "Trending",
+                            // "Trending",
+                            "Tendecia",
                             style: GoogleFonts.poppins(
                                 fontSize: 48.sp, color: Colors.white),
                           ),
@@ -297,7 +298,8 @@ class _ViralViewState extends State<ViralView> {
                             width: 10.w,
                           ),
                           Text(
-                            "Recent",
+                            // "Recent",
+                            "Novedades",
                             style: GoogleFonts.poppins(
                                 fontSize: 48.sp, color: Colors.white),
                           ),

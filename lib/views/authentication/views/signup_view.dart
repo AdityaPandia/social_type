@@ -56,7 +56,8 @@ class SignUpView extends StatelessWidget {
                     color: Colors.white),
                 decoration: InputDecoration(
                     border: InputBorder.none,
-                    hintText: "Enter you full name",
+                    // hintText: "Enter you full name",
+                    hintText: "¿Cúal es tu nombre?",
                     hintStyle: GoogleFonts.archivo(
                         fontSize: 40.sp,
                         fontWeight: FontWeight.w400,
@@ -91,7 +92,8 @@ class SignUpView extends StatelessWidget {
                       color: Colors.white),
                   decoration: InputDecoration(
                       border: InputBorder.none,
-                      hintText: "Introduce your email...",
+                      // hintText: "Introduce your email...",
+                      hintText: "Introduce tu correo electrónico",
                       hintStyle: GoogleFonts.archivo(
                           fontSize: 40.sp,
                           fontWeight: FontWeight.w400,
@@ -118,7 +120,8 @@ class SignUpView extends StatelessWidget {
                     color: Colors.white),
                 decoration: InputDecoration(
                     border: InputBorder.none,
-                    hintText: "Username",
+                    // hintText: "Username",
+                    hintText: "¿Khé @usuario usarás?",
                     hintStyle: GoogleFonts.archivo(
                         fontSize: 40.sp,
                         fontWeight: FontWeight.w400,
@@ -145,7 +148,8 @@ class SignUpView extends StatelessWidget {
                     color: Colors.white),
                 decoration: InputDecoration(
                     border: InputBorder.none,
-                    hintText: "Password",
+                    // hintText: "Password",
+                    hintText: "Contraseña",
                     hintStyle: GoogleFonts.archivo(
                         fontSize: 40.sp,
                         fontWeight: FontWeight.w400,
@@ -160,7 +164,8 @@ class SignUpView extends StatelessWidget {
           Align(
               alignment: Alignment.centerRight,
               child: Text(
-                "Forgot Password?",
+                // "Forgot Password?",
+                "¿Has olvidado tu contraseña?",
                 style: GoogleFonts.archivo(
                     fontSize: 36.sp,
                     fontWeight: FontWeight.w400,
@@ -171,7 +176,8 @@ class SignUpView extends StatelessWidget {
           ),
           Center(
             child: Text(
-              "or",
+              // "or",
+              "o",
               style: GoogleFonts.archivo(
                   fontSize: 56.sp,
                   fontWeight: FontWeight.w700,
@@ -223,7 +229,8 @@ class SignUpView extends StatelessWidget {
                                 width: 10.w,
                               ),
                               Text(
-                                "Continue with Google",
+                                // "Continue with Google",
+                                "Continua con Google",
                                 style: GoogleFonts.archivo(
                                     fontSize: 36.sp,
                                     fontWeight: FontWeight.w700,
@@ -266,7 +273,8 @@ class SignUpView extends StatelessWidget {
                                   color: Colors.white,
                                 ))
                             : Text(
-                                "Register",
+                                // "Register",
+                                "Crear cuenta",
                                 style: GoogleFonts.archivo(
                                     fontWeight: FontWeight.w700,
                                     fontSize: 48.sp,

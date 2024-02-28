@@ -1,9 +1,11 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'dart:ffi';
 import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
@@ -194,20 +196,98 @@ class MainViewState extends State<MainView> {
               itemCount: comments.length,
               itemBuilder: (context, index) {
                 return Container(
+                  height: 172.h,
                   margin: EdgeInsets.symmetric(vertical: 30.h),
                   decoration: BoxDecoration(
-                      color: Color(0xFFD9D9D9),
-                      borderRadius: BorderRadius.circular(60.w)),
+                      color: Color(0xFFFBFBFB),
+                      borderRadius: BorderRadius.only(
+                          topRight: Radius.circular(80.w),
+                          bottomRight: Radius.circular(80.w),
+                          bottomLeft: Radius.circular(80.w))),
                   child: Padding(
                     padding:
                         EdgeInsets.symmetric(horizontal: 60.w, vertical: 30.h),
                     child: Center(
-                        child: Text(
-                      comments[index],
-                      style: GoogleFonts.poppins(
-                          fontSize: 34.sp,
-                          fontWeight: FontWeight.w400,
-                          color: Colors.black),
+                        child: Row(
+                      children: [
+                        FutureBuilder(
+                            future: Get.put(AppController())
+                                .getUserProfilePhoto(
+                                    comments[index]['commenterUid']),
+                            builder: (context, snapshot) {
+                              if (snapshot.connectionState ==
+                                  ConnectionState.done) {
+                                return ClipRRect(
+                                  borderRadius: BorderRadius.circular(2000),
+                                  child: SizedBox(
+                                    width: 100.sp,
+                                    height: 100.sp,
+                                    child: CachedNetworkImage(
+                                      placeholder: (context, val) {
+                                        return Container(
+                                          child: Center(
+                                            child: Text(
+                                              "Loading",
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 15.sp,
+                                              ),
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                      imageUrl: "${snapshot.data}",
+                                      fit: BoxFit.fill,
+                                    ),
+                                  ),
+                                );
+                              } else {
+                                return SizedBox(
+                                  width: 12.sp,
+                                  height: 12.sp,
+                                  child: CircularProgressIndicator(
+                                    color: CustomColors.textColor2,
+                                  ),
+                                );
+                              }
+                            }),
+                        SizedBox(
+                          width: 27.w,
+                        ),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            FutureBuilder(
+                                future: controller.getUserNameByUid(
+                                    comments[index]['commenterUid']),
+                                builder: (context, snapshot) {
+                                  if (snapshot.connectionState ==
+                                      ConnectionState.done) {
+                                    return Text("${snapshot.data}",
+                                        style: GoogleFonts.poppins(
+                                            fontWeight: FontWeight.w500,
+                                            fontSize: 40.sp,
+                                            color: Colors.black));
+                                  } else {
+                                    return SizedBox(
+                                      width: 12.sp,
+                                      height: 12.sp,
+                                      child: CircularProgressIndicator(
+                                        color: CustomColors.textColor2,
+                                      ),
+                                    );
+                                  }
+                                }),
+                            Text(
+                              comments[index]['comment'],
+                              style: GoogleFonts.poppins(
+                                  fontSize: 34.sp,
+                                  fontWeight: FontWeight.w400,
+                                  color: Colors.black),
+                            ),
+                          ],
+                        ),
+                      ],
                     )),
                   ),
                 ); // Replace with your comment widget
@@ -252,6 +332,7 @@ class MainViewState extends State<MainView> {
 
   Future<void> addCommentToPost(
       String? userId, int postIndex, String comment) async {
+    //userId is user id of the one who has posted post, not comment
     try {
       // Get the Posts collection reference
       QuerySnapshot postsSnapshot = await FirebaseFirestore.instance
@@ -262,19 +343,23 @@ class MainViewState extends State<MainView> {
 
       // Access the document at the specified index
       DocumentSnapshot postDoc = postsSnapshot.docs[postIndex];
-
-      // Update the comments field of the document
+      List<dynamic> currentComments = postDoc['comments'];
+      print(currentComments);
+//new comment map
+      Map<String, String> newComment = {
+        'comment': comment,
+        'commenterUid': FirebaseAuth.instance.currentUser!.uid,
+      };
+      currentComments.add(newComment);
       await postDoc.reference.update({
-        'comments': FieldValue.arrayUnion([comment])
+        'comments': currentComments,
       });
-    } catch (error) {
-      // Handle errors as before
-    }
+    } catch (error) {}
   }
 
   commentModalSheet(String? userId, int postIndex, BuildContext context) {
     showModalBottomSheet(
-        backgroundColor: Color(0xFF101010),
+        backgroundColor: Color(0xFF1F1F1F),
         isScrollControlled: true,
         constraints: BoxConstraints(maxHeight: 1200.h),
         context: context,
@@ -283,62 +368,67 @@ class MainViewState extends State<MainView> {
             padding: EdgeInsets.only(top: 60.h, left: 60.w, right: 60.w),
             child: Column(
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Container(
-                      decoration: BoxDecoration(),
-                      width: 600.w,
-                      child: TextField(
-                        style: GoogleFonts.poppins(
-                            fontSize: 34.sp,
-                            color: Colors.white,
-                            fontWeight: FontWeight.w600),
-                        decoration: InputDecoration(
-                          focusColor: Colors.white,
-                          hoverColor: Colors.white,
-                          fillColor: Colors.white,
-                        ),
-                        controller: commentController,
-                      ),
-                    ),
-                    ZoomTapAnimation(
-                      onTap: () async {
-                        if (isAddCommentLoading.value) {
-                        } else {
-                          isAddCommentLoading.value = true;
-                          await addCommentToPost(
-                              userId, postIndex, commentController.text);
-                          commentController.clear();
-                          isAddCommentLoading.value = false;
-                        }
-                      },
-                      child: Obx(
-                        () => Container(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(60.w),
-                            color: Color(0xFFD5F600),
-                          ),
-                          child: Padding(
-                            padding: EdgeInsets.symmetric(
-                                horizontal: 60.w, vertical: 30.h),
-                            child: isAddCommentLoading.value
-                                ? CircularProgressIndicator(
-                                    color: Colors.white,
-                                  )
-                                : Text(
-                                    "Add Comment",
-                                    style: GoogleFonts.poppins(
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 34.sp,
-                                      color: Colors.black,
-                                    ),
-                                  ),
+                SizedBox(height: 74.h),
+                Container(
+                  decoration: BoxDecoration(
+                      color: Color(0xFFA9A9A9),
+                      borderRadius: BorderRadius.circular(110.w)),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Padding(
+                        padding: EdgeInsets.only(left: 96.w, right: 50.w),
+                        child: SizedBox(
+                          width: 600.w,
+                          child: TextField(
+                            style: GoogleFonts.poppins(
+                                fontSize: 34.sp,
+                                color: Colors.white,
+                                fontWeight: FontWeight.w600),
+                            decoration: InputDecoration(
+                              border: InputBorder.none,
+                              hintText: "Escribe algo...",
+                              hintStyle: GoogleFonts.poppins(
+                                  fontWeight: FontWeight.w500,
+                                  fontSize: 48.sp,
+                                  color: Colors.white),
+                              focusColor: Colors.white,
+                              hoverColor: Colors.white,
+                              fillColor: Colors.white,
+                            ),
+                            controller: commentController,
                           ),
                         ),
                       ),
-                    ),
-                  ],
+                      Padding(
+                        padding: EdgeInsets.only(right: 40.w),
+                        child: ZoomTapAnimation(
+                          onTap: () async {
+                            if (isAddCommentLoading.value) {
+                            } else {
+                              isAddCommentLoading.value = true;
+                              await addCommentToPost(
+                                  userId, postIndex, commentController.text);
+                              commentController.clear();
+                              isAddCommentLoading.value = false;
+                            }
+                          },
+                          child: isAddCommentLoading.value
+                              ? CircularProgressIndicator(
+                                  color: Colors.white,
+                                )
+                              : Image.asset(
+                                  "assets/images/png/send_comment.png",
+                                  height: 83.sp,
+                                  width: 83.sp,
+                                ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(
+                  height: 60.h,
                 ),
                 SizedBox(
                     height: 800.h,
@@ -349,6 +439,43 @@ class MainViewState extends State<MainView> {
         });
   }
 
+  //add comment button and functionality
+//  ZoomTapAnimation(
+//     onTap: () async {
+//       if (isAddCommentLoading.value) {
+//       } else {
+//         isAddCommentLoading.value = true;
+//         await addCommentToPost(
+//             userId, postIndex, commentController.text);
+//         commentController.clear();
+//         isAddCommentLoading.value = false;
+//       }
+//     },
+//     child: Obx(
+//       () => Container(
+//         decoration: BoxDecoration(
+//           borderRadius: BorderRadius.circular(60.w),
+//           color: Color(0xFFD5F600),
+//         ),
+//         child: Padding(
+//           padding: EdgeInsets.symmetric(
+//               horizontal: 60.w, vertical: 30.h),
+//           child: isAddCommentLoading.value
+//               ? CircularProgressIndicator(
+//                   color: Colors.white,
+//                 )
+//               : Text(
+//                   "Add Comment",
+//                   style: GoogleFonts.poppins(
+//                     fontWeight: FontWeight.w600,
+//                     fontSize: 34.sp,
+//                     color: Colors.black,
+//                   ),
+//                 ),
+//         ),
+//       ),
+//     ),
+//   ),
   viewPost(String? userId, int postIndex, BuildContext context) async {
     final userDoc =
         await FirebaseFirestore.instance.collection('Users').doc(userId).get();
@@ -695,83 +822,115 @@ class MainViewState extends State<MainView> {
                   ),
                 ),
               ),
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 10.w),
-                child: Column(
-                  children: [
-                    Row(
-                      children: [
-                        SizedBox(
-                          width: 30.w,
+              Stack(
+                children: [
+                  Align(
+                    alignment: Alignment.topCenter,
+                    child: Padding(
+                      padding: EdgeInsets.only(top: 92.h),
+                      child: Opacity(
+                        opacity: 0.4,
+                        child: Container(
+                          width: 903.w,
+                          height: 600.h,
+                          decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(120.w),
+                              color: Color(0xFFEEEEEE)),
                         ),
-                        Padding(
-                          padding: EdgeInsets.only(bottom: 10.h),
-                          child: Text("Khé",
-                              style: GoogleFonts.poppins(
-                                  fontSize: 48.sp,
-                                  fontWeight: FontWeight.w600,
-                                  color: Color(0xFFD5F600))),
-                        ),
-                        SizedBox(
-                          width: 10.w,
-                        ),
-                        Padding(
-                          padding: EdgeInsets.only(right: 30.w, top: 60.w),
-                          child: SizedBox(
-                            width: 650.w,
-                            child: TextField(
-                              style: GoogleFonts.poppins(
-                                  fontSize: 24.sp,
-                                  fontWeight: FontWeight.w600,
-                                  color: Color(0xFFD5F600)),
-                              maxLength: 20,
-                              controller: descriptionController,
-                              maxLines: 2,
-                              decoration: InputDecoration(
-                                  hintText: "Enter Description",
-                                  hintStyle: GoogleFonts.poppins(
-                                      fontSize: 48.sp,
-                                      fontWeight: FontWeight.w600,
-                                      color: Color(0xFFD5F600))),
-                            ),
+                      ),
+                    ),
+                  ),
+                  Align(
+                    alignment: Alignment.topCenter,
+                    child: Padding(
+                      padding: EdgeInsets.only(top: 92.h),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          SizedBox(
+                            height: 64.h,
                           ),
-                        ),
-                        ZoomTapAnimation(
-                          onTap: () async {
-                            isModalSheetLoading.value = true;
-                            await controller.uploadPost(pickedFile,
-                                "Khé " + descriptionController.text);
-                            isModalSheetLoading.value = false;
-                            Navigator.pop(context);
-                          },
-                          child: Obx(
-                            () => Container(
-                              decoration: BoxDecoration(
-                                  color: CustomColors.activeColor,
-                                  borderRadius: BorderRadius.circular(12.w)),
-                              child: SizedBox(
-                                width: 250.w,
-                                child: Padding(
-                                  padding: EdgeInsets.symmetric(
-                                      vertical: 10.h, horizontal: 60.w),
-                                  child: Center(
-                                      child: isModalSheetLoading.value
-                                          ? CircularProgressIndicator()
-                                          : Text(
-                                              "Post",
-                                              style: GoogleFonts.poppins(
-                                                  fontSize: 48.sp,
-                                                  color: Colors.white),
-                                            )),
+                          Text(
+                            "Introduce the title of your Khé",
+                            style: GoogleFonts.poppins(
+                                fontWeight: FontWeight.w500,
+                                color: Colors.white,
+                                fontSize: 40.sp),
+                          ),
+                          Row(
+                            children: [
+                              SizedBox(
+                                width: 280.w,
+                              ),
+                              Padding(
+                                padding: EdgeInsets.only(bottom: 10.h),
+                                child: Text("Khé",
+                                    style: GoogleFonts.poppins(
+                                        fontSize: 48.sp,
+                                        fontWeight: FontWeight.w600,
+                                        color: Color(0xFFD5F600))),
+                              ),
+                              SizedBox(
+                                width: 10.w,
+                              ),
+                              Padding(
+                                padding:
+                                    EdgeInsets.only(right: 30.w, top: 60.w),
+                                child: SizedBox(
+                                  width: 500.w,
+                                  child: TextField(
+                                    style: GoogleFonts.poppins(
+                                        fontSize: 24.sp,
+                                        fontWeight: FontWeight.w600,
+                                        color: Color(0xFFD5F600)),
+                                    maxLength: 20,
+                                    controller: descriptionController,
+                                    maxLines: 2,
+                                    decoration: InputDecoration(
+                                        hintText: "Enter Description",
+                                        hintStyle: GoogleFonts.poppins(
+                                            fontSize: 48.sp,
+                                            fontWeight: FontWeight.w600,
+                                            color: Color(0xFFD5F600))),
+                                  ),
                                 ),
+                              ),
+                            ],
+                          ),
+                          ZoomTapAnimation(
+                            onTap: () async {
+                              isModalSheetLoading.value = true;
+                              await controller.uploadPost(pickedFile,
+                                  "Khé " + descriptionController.text);
+                              isModalSheetLoading.value = false;
+                              Navigator.pop(context);
+                            },
+                            child: Obx(
+                              () => Container(
+                                height: 101.h,
+                                width: 444.w,
+                                decoration: BoxDecoration(
+                                  color: Color(0xFFD5F600),
+                                  borderRadius: BorderRadius.circular(120.w),
+                                ),
+                                child: Center(
+                                    child: isModalSheetLoading.value
+                                        ? CircularProgressIndicator()
+                                        : Text(
+                                            // "Post",
+                                            "Publicar",
+                                            style: GoogleFonts.poppins(
+                                                fontWeight: FontWeight.w500,
+                                                color: Color(0xFF494949)),
+                                          )),
                               ),
                             ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ],
           );
@@ -804,8 +963,9 @@ class MainViewState extends State<MainView> {
   }
 
   final usersRef = FirebaseFirestore.instance.collection('Users');
-  List<double> leftPosition = [65.0, 420.0, 800.0, 600.0, 242.0];
-  List<double> bottomPosition = [444.0, 753.0, 444.0, 80.0, 80.0];
+  // List<double> leftPosition = [65.0, 420.0, 800.0, 600.0, 242.0];
+  List<double> leftPosition = [30.0, 420.0, 770.0, 600.0, 242.0];
+  List<double> bottomPosition = [444.0, 720.0, 444.0, 20.0, 20.0];
   @override
   Widget build(BuildContext context) {
     return RefreshIndicator(
@@ -879,8 +1039,8 @@ class MainViewState extends State<MainView> {
                       ),
                       Image.asset(
                         "assets/images/png/intro_logo.png",
-                        height: 90.h,
                         width: 219.w,
+                        height: 80.h,
                       ),
                       ZoomTapAnimation(
                         onTap: () {
@@ -929,7 +1089,7 @@ class MainViewState extends State<MainView> {
                                       //it was center photo
 
                                       SizedBox(
-                                        height: 980.h,
+                                        height: 1000.h,
                                         child: StreamBuilder(
                                             stream: FirebaseFirestore.instance
                                                 .collection('Users')
@@ -940,16 +1100,30 @@ class MainViewState extends State<MainView> {
                                               if (!snapshot.hasData) {
                                                 return CircularProgressIndicator();
                                               }
+                                              //                                          final snapshot1 = FirebaseFirestore.instance
+                                              //     .collection('Users')
+                                              //     .doc(documents1[i].id)
+                                              //     .collection('Posts')
+                                              //     .get();
+                                              // final totalPosts = snapshot1.length - 1;
+
                                               final documents2 =
                                                   snapshot.data!.docs;
+                                              final totalPosts =
+                                                  documents2.length;
                                               return Stack(
                                                 children: [
                                                   Center(
-                                                    child: Image.asset(
-                                                      "assets/images/png/post_photo_border.png",
-                                                      height: 803.sp,
-                                                      width: 803.sp,
-                                                    ),
+                                                    child: totalPosts - 1 != 5
+                                                        ? Image.asset(
+                                                            "assets/images/png/post_photo_border.png",
+                                                            height: 803.sp,
+                                                            width: 803.sp,
+                                                          )
+                                                        : Image.asset(
+                                                            height: 803.sp,
+                                                            width: 803.sp,
+                                                            "assets/images/png/post_completed_border.png"),
                                                   ),
                                                   Stack(
                                                     children: [
@@ -988,8 +1162,8 @@ class MainViewState extends State<MainView> {
                                                                     child:
                                                                         SizedBox(
                                                                       height:
-                                                                          220.sp,
-                                                                      width: 220
+                                                                          275.sp,
+                                                                      width: 275
                                                                           .sp,
                                                                       child:
                                                                           CachedNetworkImage(
@@ -1037,7 +1211,7 @@ class MainViewState extends State<MainView> {
                                                   ),
                                                   //got pasted here
                                                   ZoomTapAnimation(
-                                                    onTap: () async{
+                                                    onTap: () async {
                                                       Get.to(() =>
                                                           // UserProfileView(
                                                           //   userUid:
@@ -1048,8 +1222,6 @@ class MainViewState extends State<MainView> {
                                                               userUid:
                                                                   documents1[i]
                                                                       .id));
-
-                                                   
                                                     },
                                                     child: Align(
                                                       alignment:
@@ -1129,23 +1301,26 @@ class MainViewState extends State<MainView> {
                                                                         children: [
                                                                           Center(
                                                                             child:
-                                                                                SizedBox(
-                                                                              height: 365.sp,
-                                                                              width: 365.sp,
-                                                                              child: CachedNetworkImage(
-                                                                                placeholder: (context, val) {
-                                                                                  return SizedBox(
-                                                                                    width: 31.w,
-                                                                                    child: Center(
-                                                                                      child: Text(
-                                                                                        "Loading",
-                                                                                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 34.sp, color: Colors.white),
+                                                                                ClipRRect(
+                                                                              borderRadius: BorderRadius.circular(2000),
+                                                                              child: SizedBox(
+                                                                                height: 225.sp,
+                                                                                width: 225.sp,
+                                                                                child: CachedNetworkImage(
+                                                                                  placeholder: (context, val) {
+                                                                                    return SizedBox(
+                                                                                      width: 31.w,
+                                                                                      child: Center(
+                                                                                        child: Text(
+                                                                                          "Loading",
+                                                                                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 34.sp, color: Colors.white),
+                                                                                        ),
                                                                                       ),
-                                                                                    ),
-                                                                                  );
-                                                                                },
-                                                                                imageUrl: documents1[i]['profile_photo'],
-                                                                                fit: BoxFit.fill,
+                                                                                    );
+                                                                                  },
+                                                                                  imageUrl: documents1[i]['profile_photo'],
+                                                                                  fit: BoxFit.fill,
+                                                                                ),
                                                                               ),
                                                                             ),
                                                                           ),
@@ -1196,8 +1371,8 @@ class MainViewState extends State<MainView> {
                                                           Center(
                                                             child: Image.asset(
                                                               "assets/images/png/profile_photo_border.png",
-                                                              height: 420.sp,
-                                                              width: 420.sp,
+                                                              height: 325.sp,
+                                                              width: 325.sp,
                                                             ),
                                                           ),
                                                         ],
@@ -1236,7 +1411,56 @@ class MainViewState extends State<MainView> {
                       ],
                     );
                   },
-                )
+                ),
+                //hello over here
+                StreamBuilder<QuerySnapshot>(
+                  stream: FirebaseFirestore.instance
+                      .collection('Users')
+                      .snapshots(),
+                  builder: (context, snapshot) {
+                    if (snapshot.hasData) {
+                      for (final doc in snapshot.data!.docs) {
+                        if (doc.id == FirebaseAuth.instance.currentUser!.uid) {
+                          final following = doc.get('following').length;
+                          return following == 0
+                              ? Container(
+                                  height: 536.h,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(100.w),
+                                    color: Color(0xFF353535),
+                                  ),
+                                  child: Column(children: [
+                                    SizedBox(
+                                      height: 58.h,
+                                    ),
+                                    Text(
+                                      "Let's start!",
+                                      textAlign: TextAlign.center,
+                                      style: GoogleFonts.poppins(
+                                        fontWeight: FontWeight.w500,
+                                        fontSize: 64.sp,
+                                        color: Color(0xFFC6C6C6),
+                                      ),
+                                    ),
+                                    SizedBox(
+                                      height: 68.h,
+                                    ),
+                                    Text(
+                                      "Connect with your friends to see your feed",
+                                      textAlign: TextAlign.center,
+                                      style: GoogleFonts.poppins(
+                                          fontSize: 60.sp,
+                                          color: Color(0xFFC6C6C6)),
+                                    )
+                                  ]),
+                                )
+                              : SizedBox();
+                        }
+                      }
+                    }
+                    return const SizedBox();
+                  },
+                ),
               ],
             ),
           ),

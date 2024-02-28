@@ -56,7 +56,7 @@ class GoogleSignUpView extends StatelessWidget {
             height: 160.h,
           ),
           Text(
-            "Register with Google",
+            "Crear cuenta con Google",
             style: GoogleFonts.archivo(
                 fontWeight: FontWeight.bold,
                 fontSize: 56.sp,
@@ -140,24 +140,23 @@ class GoogleSignUpView extends StatelessWidget {
                   String uid = auth.currentUser!.uid;
 
                   print(authController.nameController);
-                  if(await AuthService().doesUsernameExist(authController.userNameController.text)){
+                  if (await AuthService().doesUsernameExist(
+                      authController.userNameController.text)) {
                     Get.defaultDialog(title: "Username already exists");
-                    controller.isGoogleSignupLoading.value=false;
-                  }
-                  else{
- await AuthService().addUserToFirestore(
-                      uid,
-                      auth.currentUser!.email,
-                      controller.googleNameController.text,
-                      authController.userNameController.text);
-                  await storage.write("uid", uid);
-                  await storage.write('isSignInDone', true).then((value) {
                     controller.isGoogleSignupLoading.value = false;
-                    Get.offAll(() => HomeView());
+                  } else {
+                    await AuthService().addUserToFirestore(
+                        uid,
+                        auth.currentUser!.email,
+                        controller.googleNameController.text,
+                        authController.userNameController.text);
+                    await storage.write("uid", uid);
+                    await storage.write('isSignInDone', true).then((value) {
+                      controller.isGoogleSignupLoading.value = false;
+                      Get.offAll(() => HomeView());
+                    });
                   }
-                  );
-                  };
-                 
+                  ;
                 } else {}
               }
             },
@@ -182,7 +181,8 @@ class GoogleSignUpView extends StatelessWidget {
                                   color: Colors.white,
                                 ))
                             : Text(
-                                "Register",
+                                // "Register",
+                                "Crear cuenta",
                                 style: GoogleFonts.archivo(
                                     fontWeight: FontWeight.w700,
                                     fontSize: 48.sp,
