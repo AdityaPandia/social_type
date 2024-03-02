@@ -23,7 +23,7 @@ class FollowerView extends StatefulWidget {
 
 class _FollowerViewState extends State<FollowerView> {
   final appController = Get.put(AppController());
-
+var followTappedBy=[].obs;
   Future<String?> getUidByUsername(String username) async {
     final usersRef = FirebaseFirestore.instance.collection('Users');
 
@@ -75,7 +75,7 @@ class _FollowerViewState extends State<FollowerView> {
                     );
                   } else {
                     return SizedBox(
-                      width: 12.sp,
+                      width: 12.sp, 
                       height: 12.sp,
                       child: CircularProgressIndicator(
                         color: CustomColors.textColor2,
@@ -278,167 +278,6 @@ class _FollowerViewState extends State<FollowerView> {
                 );
               },
             ),
-
-            // FutureBuilder<List<Map<String, dynamic>>>(
-            //   future: FirebaseFirestore.instance
-            //       .collection('Users')
-            //       .doc(userUid)
-            //       .get()
-            //       .then((snapshot) => snapshot.data()!)
-            //       .then((userDocument) {
-            //     final followersIds =
-            //         (userDocument['followers'] as List<dynamic>).cast<String>();
-
-            //     return Future.wait(followersIds.map((id) => FirebaseFirestore
-            //         .instance
-            //         .collection('Users')
-            //         .doc(id)
-            //         .get()
-            //         .then((doc) => doc.data())));
-            //   }).then((listOfFollowerData) =>
-            //           listOfFollowerData.map((data) => data!).toList()),
-            //   builder: (context, snapshot) {
-            //     if (snapshot.connectionState == ConnectionState.waiting) {
-            //       return const CircularProgressIndicator();
-            //     } else if (snapshot.hasError) {
-            //       return Text('Error loading followers: ${snapshot.error}');
-            //     } else {
-            //       final followers = snapshot.data!;
-            //       return Padding(
-            //         padding: EdgeInsets.symmetric(horizontal: 58.w),
-            //         child: SizedBox(
-            //           height: 5000.h,
-            //           child: ListView.builder(
-            //             itemCount: followers.length,
-            //             itemBuilder: (context, index) {
-            //               final followerData = followers[index];
-
-            //               final followerName = followerData['name'] as String;
-            //               final followerPhoto =
-            //                   followerData['profile_photo'] as String;
-
-            //               RxBool isF = false.obs;
-            //               return Padding(
-            //                 padding: EdgeInsets.only(bottom: 50.h),
-            //                 child: Row(
-            //                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            //                   children: [
-            //                     Row(
-            //                       children: [
-            //                         (followerPhoto == "")
-            //                             ? SizedBox(
-            //                               width: 100.w,
-            //                               child: Icon(
-            //                                 Icons.person,
-            //                                 color: Colors.white,
-            //                               ),
-            //                             )
-            //                             : ClipRRect(
-            //                               borderRadius:
-            //                                   BorderRadius.circular(2000.w),
-            //                               child: CachedNetworkImage(
-            //                                 height: 100.h,
-            //                                 width: 100.w,
-            //                                 placeholder: (context, val) {
-            //                                   return Container(
-            //                                     width: 31.w,
-            //                                     child: Center(
-            //                                       child: Text(
-            //                                         "Loading",
-            //                                         style: TextStyle(
-            //                                           fontWeight:
-            //                                               FontWeight.bold,
-            //                                           fontSize: 15.sp,
-            //                                         ),
-            //                                       ),
-            //                                     ),
-            //                                   );
-            //                                 },
-            //                                 imageUrl: followerPhoto,
-            //                                 fit: BoxFit.fill,
-            //                               ),
-            //                             ),
-            //                         SizedBox(
-            //                           width: 58.w,
-            //                         ),
-            //                         Column(
-            //                           crossAxisAlignment:
-            //                               CrossAxisAlignment.start,
-            //                           children: [
-            //                             Text(
-            //                               followerName,
-            //                               style: GoogleFonts.poppins(
-            //                                   fontSize: 48.sp,
-            //                                   color: Colors.white),
-            //                             ),
-            //                             Text(
-            //                               "@${followerData['username']}",
-            //                               style: GoogleFonts.poppins(
-            //                                   fontSize: 32.sp,
-            //                                   color: Colors.white),
-            //                             ),
-            //                           ],
-            //                         ),
-            //                       ],
-            //                     ),
-
-            //                     //builder that calls function that will get uid by username
-
-            //                     ZoomTapAnimation(
-            //                       onTap: () async {
-            //                         String? userId = await getUidByUsername(
-            //                             followerData['username']);
-            //                         isLoading.value = true;
-            //                         await Get.put(MainController())
-            //                                 .isUserIdInFollowers(
-            //                           userId!,
-            //                         )
-            //                             ? await Get.put(MainController())
-            //                                 .removeUserIdFromFollowers(userId)
-            //                             : await Get.put(MainController())
-            //                                 .addUserIdToFollowers(userId);
-            //                         isF.value
-            //                             ? isF.value = false
-            //                             : isF.value = true;
-            //                         isLoading.value = false;
-            //                       },
-            //                       child: Obx(
-            //                         () => Container(
-            //                           width: 279.w,
-            //                           decoration: BoxDecoration(
-            //                               color: isF.value
-            //                                   ? Color(0xFFC5D6A1)
-            //                                   : Color(0xFF817BCA),
-            //                               borderRadius:
-            //                                   BorderRadius.circular(100.w)),
-            //                           child: Center(
-            //                             child: Padding(
-            //                               padding: EdgeInsets.symmetric(
-            //                                   horizontal: 30.w, vertical: 20.h),
-            //                               child: isLoading.value
-            //                                   ? CircularProgressIndicator()
-            //                                   : Text(
-            //                                       isF.value
-            //                                           ? "Follow"
-            //                                           : "Unfollow",
-            //                                       style: GoogleFonts.poppins(
-            //                                           color: Colors.white),
-            //                                     ),
-            //                             ),
-            //                           ),
-            //                         ),
-            //                       ),
-            //                     ),
-            //                   ],
-            //                 ),
-            //               );
-            //             },
-            //           ),
-            //         ),
-            //       );
-            //     }
-            //   },
-            // )
           ],
         ),
       ))),

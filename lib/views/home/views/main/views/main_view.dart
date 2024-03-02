@@ -15,6 +15,8 @@ import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
+
+import 'package:share_plus/share_plus.dart';
 import 'package:social_type/common/custom_colors.dart';
 import 'package:social_type/common/custom_texts.dart';
 import 'package:social_type/controllers/app_controller.dart';
@@ -476,6 +478,8 @@ class MainViewState extends State<MainView> {
 //       ),
 //     ),
 //   ),
+
+  var tappedFolloIcons = [].obs;
   viewPost(String? userId, int postIndex, BuildContext context) async {
     final userDoc =
         await FirebaseFirestore.instance.collection('Users').doc(userId).get();
@@ -552,12 +556,18 @@ class MainViewState extends State<MainView> {
                               mainAxisAlignment: MainAxisAlignment.end,
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
-                                  name,
-                                  style: GoogleFonts.poppins(
-                                      fontSize: 90.sp,
-                                      fontWeight: FontWeight.w600,
-                                      color: Color(0xFFF5F5F5)),
+                                ZoomTapAnimation(
+                                  onTap: () {
+                                    Get.to(() => ProfileView(
+                                        userUid: userId.toString()));
+                                  },
+                                  child: Text(
+                                    name,
+                                    style: GoogleFonts.poppins(
+                                        fontSize: 90.sp,
+                                        fontWeight: FontWeight.w600,
+                                        color: Color(0xFFF5F5F5)),
+                                  ),
                                 ),
                                 SizedBox(
                                   height: 43.h,
@@ -592,7 +602,31 @@ class MainViewState extends State<MainView> {
                               mainAxisAlignment: MainAxisAlignment.end,
                               children: [
                                 FirebaseAuth.instance.currentUser!.uid == userId
-                                    ? SizedBox()
+                                    ? ZoomTapAnimation(
+                                        onTap: () {
+                                          Share.share(
+                                              'Check out my post ${documents[postIndex]['post_photo']}');
+                                        },
+                                        child: Opacity(
+                                          opacity: 0.6,
+                                          child: Container(
+                                              height: 150.sp,
+                                              width: 150.sp,
+                                              decoration: const BoxDecoration(
+                                                shape: BoxShape.circle,
+                                                color: Color(0xFF9EA2A3),
+                                              ),
+                                              child: Padding(
+                                                padding:
+                                                    const EdgeInsets.all(8.0),
+                                                child: Image.asset(
+                                                  "assets/images/png/share_icon_2.png",
+                                                  height: 88.sp,
+                                                  width: 88.sp,
+                                                ),
+                                              )),
+                                        ),
+                                      )
                                     : ZoomTapAnimation(
                                         onTap: () async {
                                           isFollowButtonLoading.value = true;
@@ -605,6 +639,9 @@ class MainViewState extends State<MainView> {
                                               : await controller
                                                   .addUserIdToFollowers(userId);
                                           isFollowButtonLoading.value = false;
+                                          tappedFolloIcons.contains(userId)
+                                              ? tappedFolloIcons.remove(userId)
+                                              : tappedFolloIcons.add(userId);
                                         },
                                         child: Obx(
                                           () => Opacity(
@@ -656,13 +693,30 @@ class MainViewState extends State<MainView> {
                                                             );
                                                           } else {
                                                             // return const Text("Follow");
-                                                            return Center(
-                                                              child:
-                                                                  Image.asset(
-                                                                "assets/images/png/follow_icon.png",
-                                                                height: 70.sp,
-                                                                width: 70.sp,
-                                                              ),
+                                                            return Obx(
+                                                              () => tappedFolloIcons
+                                                                      .contains(
+                                                                          userId)
+                                                                  ? Center(
+                                                                      child:
+                                                                          Text(
+                                                                        "Pending",
+                                                                        style: TextStyle(
+                                                                            color:
+                                                                                Colors.white,
+                                                                            fontSize: 20.sp),
+                                                                      ),
+                                                                    )
+                                                                  : Center(
+                                                                      child: Image
+                                                                          .asset(
+                                                                        "assets/images/png/follow_icon.png",
+                                                                        height:
+                                                                            70.sp,
+                                                                        width: 70
+                                                                            .sp,
+                                                                      ),
+                                                                    ),
                                                             );
                                                           }
                                                         },
@@ -981,7 +1035,19 @@ class MainViewState extends State<MainView> {
                 (await getNumberOfPosts() < 5)
                     ? _pickImage()
                     : Get.defaultDialog(
-                        title: "You already have 5 posts", middleText: "");
+                        backgroundColor: Color(0xFF353535),
+                        titlePadding: EdgeInsets.only(
+                            top: 14, bottom: 8, left: 10, right: 10),
+                        titleStyle: GoogleFonts.poppins(
+                            fontSize: 54.sp,
+                            fontWeight: FontWeight.w500,
+                            color: Color(0xFFC6C6C6)),
+                        middleTextStyle: GoogleFonts.poppins(
+                            fontSize: 40.sp, color: Color(0xFFC6C6C6)),
+                        title: "Khé limit!",
+                        middleText: "You already post your daily 5 Khés",
+                        contentPadding: EdgeInsets.all(20),
+                      );
                 isUploadPostLoading.value = false;
               }
             },

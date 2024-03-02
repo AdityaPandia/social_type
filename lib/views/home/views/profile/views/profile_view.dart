@@ -7,6 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:social_type/common/custom_colors.dart';
 import 'package:social_type/controllers/app_controller.dart';
 import 'package:social_type/views/authentication/views/login_view.dart';
@@ -14,6 +15,7 @@ import 'package:social_type/views/home/controllers/home_controller.dart';
 import 'package:social_type/views/home/views/main/controllers/main_controller.dart';
 import 'package:social_type/views/home/views/main/views/main_view.dart';
 import 'package:social_type/views/home/views/profile/controllers/profile_controller.dart';
+import 'package:social_type/views/home/views/profile/views/edit_profile_view.dart';
 import 'package:social_type/views/home/views/profile/views/follower_view.dart';
 import 'package:social_type/views/home/views/profile/views/following_view.dart';
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
@@ -39,9 +41,72 @@ class _ProfileViewState extends State<ProfileView> {
     });
   }
 
+  Future<bool> checkIfUserIsVIP(String uid) async {
+    bool isVIP = false;
+
+    try {
+      // Access the Firestore collection and document
+      final userSnapshot =
+          await FirebaseFirestore.instance.collection('Users').doc(uid).get();
+
+      // Check if the document exists and contains the 'vip_user' field
+      if (userSnapshot.exists) {
+        // Retrieve the 'vip_user' field value
+        final vipUser = userSnapshot.data()!['vip_user'];
+
+        // If 'vip_user' is a boolean, set 'isVIP' accordingly
+        if (vipUser is bool) {
+          isVIP = vipUser;
+        }
+      }
+    } catch (e) {
+      print('Error retrieving user data: $e');
+      // Handle errors here, such as returning a default value or throwing an exception
+    }
+    isUserVip.value = isVIP;
+    return isVIP;
+  }
+
+  RxBool isUserVerified = false.obs;
+  RxBool isUserVip = false.obs;
+
+  List<String> khePosts = [];
+
+  Future<bool> checkIfUserIsVerified(String uid) async {
+    bool isVerified = false;
+
+    try {
+      // Access the Firestore collection and document
+      final userSnapshot =
+          await FirebaseFirestore.instance.collection('Users').doc(uid).get();
+
+      if (userSnapshot.exists) {
+        final verifiedUser = userSnapshot.data()!['verified_user'];
+
+        // If 'vip_user' is a boolean, set 'isVIP' accordingly
+        if (verifiedUser is bool) {
+          isVerified = verifiedUser;
+        }
+      }
+    } catch (e) {
+      print('Error retrieving user data: $e');
+      // Handle errors here, such as returning a default value or throwing an exception
+    }
+    isUserVerified.value = isVerified;
+    return isVerified;
+  }
+
   RxBool showDailyKhe = false.obs;
   List<double> leftPosition = [30.0, 420.0, 770.0, 600.0, 242.0];
   List<double> bottomPosition = [444.0, 720.0, 444.0, 20.0, 20.0];
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    checkIfUserIsVerified(widget.userUid);
+    checkIfUserIsVIP(widget.userUid);
+  }
+
   @override
   Widget build(BuildContext context) {
     return RefreshIndicator(
@@ -260,134 +325,156 @@ class _ProfileViewState extends State<ProfileView> {
                               SizedBox(
                                 height: 8.h,
                               ),
-                              Row(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  FirebaseAuth.instance.currentUser!.uid ==
-                                          widget.userUid
-                                      ? Container(
-                                          height: 101.h,
-                                          width: 344.w,
-                                          decoration: BoxDecoration(
-                                            color: Color(0xFFD5F600),
-                                            borderRadius:
-                                                BorderRadius.circular(120.w),
-                                          ),
-                                          child: Center(
-                                            child: Text(
-                                              "Editar perfil",
-                                              style: GoogleFonts.poppins(
-                                                  fontWeight: FontWeight.w500,
-                                                  color: Color(0xFF494949)),
+                              Obx(
+                                () => Row(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    FirebaseAuth.instance.currentUser!.uid ==
+                                            widget.userUid
+                                        ? ZoomTapAnimation(
+                                            onTap: () {
+                                              Get.to(() => EditProfileView());
+                                            },
+                                            child: Container(
+                                              height: 101.h,
+                                              width: 344.w,
+                                              decoration: BoxDecoration(
+                                                color: Color(0xFFD5F600),
+                                                borderRadius:
+                                                    BorderRadius.circular(
+                                                        120.w),
+                                              ),
+                                              child: Center(
+                                                child: Text(
+                                                  "Editar perfil",
+                                                  style: GoogleFonts.poppins(
+                                                      fontWeight:
+                                                          FontWeight.w500,
+                                                      color: Color(0xFF494949)),
+                                                ),
+                                              ),
                                             ),
-                                          ),
-                                        )
-                                      : ZoomTapAnimation(
-                                          onTap: () async {
-                                            if (isFollow2.value) {
-                                            } else {
-                                              isFollow2.value = true;
-                                              await Get.put(MainController())
-                                                      .isUserIdInFollowers(
-                                                widget.userUid,
-                                              )
-                                                  ? await Get.put(
-                                                          MainController())
-                                                      .removeUserIdFromFollowers(
-                                                          widget.userUid)
-                                                  : await Get.put(
-                                                          MainController())
-                                                      .addUserIdToFollowers(
-                                                          widget.userUid);
-                                              isFollow2.value = false;
-                                            }
-                                          },
-                                          child: Container(
-                                            height: 101.h,
-                                            width: 344.w,
-                                            decoration: BoxDecoration(
-                                              color: Color(0xFFD5F600),
-                                              borderRadius:
-                                                  BorderRadius.circular(120.w),
-                                            ),
-                                            child: Center(
-                                              child: StreamBuilder(
-                                                stream:
-                                                    Get.put(MainController())
+                                          )
+                                        : ZoomTapAnimation(
+                                            onTap: () async {
+                                              if (isFollow2.value) {
+                                              } else {
+                                                isFollow2.value = true;
+                                                await Get.put(MainController())
                                                         .isUserIdInFollowers(
+                                                  widget.userUid,
+                                                )
+                                                    ? await Get.put(
+                                                            MainController())
+                                                        .removeUserIdFromFollowers(
                                                             widget.userUid)
-                                                        .asStream(),
-                                                builder: (context, snapshot) {
-                                                  if (!snapshot.hasData) {
-                                                    return SizedBox(
-                                                        height: 40.h,
-                                                        width: 20.h,
-                                                        child:
-                                                            const CircularProgressIndicator());
-                                                  }
+                                                    : await Get.put(
+                                                            MainController())
+                                                        .addUserIdToFollowers(
+                                                            widget.userUid);
+                                                isFollow2.value = false;
+                                              }
+                                            },
+                                            child: Container(
+                                              height: 101.h,
+                                              width: 344.w,
+                                              decoration: BoxDecoration(
+                                                color: Color(0xFFD5F600),
+                                                borderRadius:
+                                                    BorderRadius.circular(
+                                                        120.w),
+                                              ),
+                                              child: Center(
+                                                child: StreamBuilder(
+                                                  stream:
+                                                      Get.put(MainController())
+                                                          .isUserIdInFollowers(
+                                                              widget.userUid)
+                                                          .asStream(),
+                                                  builder: (context, snapshot) {
+                                                    if (!snapshot.hasData) {
+                                                      return SizedBox(
+                                                          height: 40.h,
+                                                          width: 20.h,
+                                                          child:
+                                                              const CircularProgressIndicator());
+                                                    }
 
-                                                  if (snapshot.data!) {
-                                                    // return const Text("Unfollow",);
-                                                    return Text(
-                                                      "Unfollow",
-                                                      style:
-                                                          GoogleFonts.poppins(
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w500,
-                                                              color: Color(
-                                                                  0xFF494949)),
-                                                    );
-                                                  } else {
-                                                    // return const Text("Follow");
-                                                    return Text(
-                                                      "Follow",
-                                                      style:
-                                                          GoogleFonts.poppins(
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w500,
-                                                              color: Color(
-                                                                  0xFF494949)),
-                                                    );
-                                                  }
-                                                },
+                                                    if (snapshot.data!) {
+                                                      // return const Text("Unfollow",);
+                                                      return Text(
+                                                        "Unfollow",
+                                                        style:
+                                                            GoogleFonts.poppins(
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w500,
+                                                                color: Color(
+                                                                    0xFF494949)),
+                                                      );
+                                                    } else {
+                                                      // return const Text("Follow");
+                                                      return Text(
+                                                        "Follow",
+                                                        style:
+                                                            GoogleFonts.poppins(
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w500,
+                                                                color: Color(
+                                                                    0xFF494949)),
+                                                      );
+                                                    }
+                                                  },
+                                                ),
                                               ),
                                             ),
                                           ),
-                                        ),
-                                  SizedBox(
-                                    width: 50.w,
-                                  ),
-                                  Image.asset(
-                                    "assets/images/png/verified_user_icon.png",
-                                    height: 100.sp,
-                                    width: 100.sp,
-                                  ),
-                                  SizedBox(
-                                    width: 50.w,
-                                  ),
-                                  FirebaseAuth.instance.currentUser!.uid !=
-                                          widget.userUid
-                                      ? SizedBox()
-                                      : Stack(
-                                          alignment: Alignment.center,
-                                          children: [
-                                            Container(
-                                              height: 100.sp,
-                                              width: 100.sp,
-                                              decoration: BoxDecoration(
-                                                  color: Color(0xFF404040),
-                                                  shape: BoxShape.circle),
-                                            ),
-                                            Image.asset(
-                                              "assets/images/png/share_icon.png",
-                                              height: 76.sp,
-                                              width: 76.sp,
-                                            ),
-                                          ],
-                                        ),
-                                ],
+                                    SizedBox(
+                                      width: 20.w,
+                                    ),
+                                    isUserVerified.value
+                                        ? Image.asset(
+                                            "assets/images/png/verified_user_icon.png",
+                                            height: 100.sp,
+                                            width: 100.sp,
+                                          )
+                                        : SizedBox(),
+                                    SizedBox(
+                                      width: 20.w,
+                                    ),
+                                    isUserVip.value
+                                        ? Image.asset(
+                                            "assets/images/png/vip_user_icon.png",
+                                            height: 100.sp,
+                                            width: 100.sp,
+                                          )
+                                        : SizedBox(),
+                                    SizedBox(
+                                      width: 20.w,
+                                    ),
+                                    FirebaseAuth.instance.currentUser!.uid !=
+                                            widget.userUid
+                                        ? SizedBox()
+                                        : Stack(
+                                            alignment: Alignment.center,
+                                            children: [
+                                              Container(
+                                                height: 100.sp,
+                                                width: 100.sp,
+                                                decoration: BoxDecoration(
+                                                    color: Color(0xFF404040),
+                                                    shape: BoxShape.circle),
+                                              ),
+                                              Image.asset(
+                                                "assets/images/png/share_icon.png",
+                                                height: 76.sp,
+                                                width: 76.sp,
+                                              ),
+                                            ],
+                                          ),
+                                  ],
+                                ),
                               ),
                             ],
                           ),
@@ -545,7 +632,22 @@ class _ProfileViewState extends State<ProfileView> {
                                                   snapshot.data!.docs;
                                               final totalPosts =
                                                   documents2.length;
+//COME HERE
 
+                                              for (int x = 0;
+                                                  x < documents2.length - 1;
+                                                  x++) {
+                                                if ((documents2[x].id) !=
+                                                    'init') {
+                                                  khePosts.contains(
+                                                          documents2[x]
+                                                              ['post_photo'])
+                                                      ? null
+                                                      : khePosts.add(
+                                                          documents2[x]
+                                                              ['post_photo']);
+                                                }
+                                              }
                                               return Stack(
                                                 children: [
                                                   Center(
@@ -854,19 +956,27 @@ class _ProfileViewState extends State<ProfileView> {
                               widget.userUid ==
                                   FirebaseAuth.instance.currentUser!.uid
                           ? Center(
-                              child: Container(
-                                height: 101.h,
-                                width: 560.w,
-                                decoration: BoxDecoration(
-                                  color: Color(0xFFD5F600),
-                                  borderRadius: BorderRadius.circular(120.w),
-                                ),
-                                child: Center(
-                                  child: Text(
-                                    "Comparte tu Khé diario",
-                                    style: GoogleFonts.poppins(
-                                        fontWeight: FontWeight.w500,
-                                        color: Color(0xFF494949)),
+                              child: ZoomTapAnimation(
+                                onTap: () async {
+                                  final joinedLinks = khePosts.join(
+                                      '\n'); // Join links with newlines for better formatting
+                                  await Share.share(joinedLinks,
+                                      subject: 'Share Links');
+                                },
+                                child: Container(
+                                  height: 101.h,
+                                  width: 560.w,
+                                  decoration: BoxDecoration(
+                                    color: Color(0xFFD5F600),
+                                    borderRadius: BorderRadius.circular(120.w),
+                                  ),
+                                  child: Center(
+                                    child: Text(
+                                      "Comparte tu Khé diario",
+                                      style: GoogleFonts.poppins(
+                                          fontWeight: FontWeight.w500,
+                                          color: Color(0xFF494949)),
+                                    ),
                                   ),
                                 ),
                               ),

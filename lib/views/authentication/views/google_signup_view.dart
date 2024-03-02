@@ -142,7 +142,21 @@ class GoogleSignUpView extends StatelessWidget {
                   print(authController.nameController);
                   if (await AuthService().doesUsernameExist(
                       authController.userNameController.text)) {
-                    Get.defaultDialog(title: "Username already exists");
+                    Get.defaultDialog(
+                      backgroundColor: Color(0xFF353535),
+                      titlePadding: EdgeInsets.only(
+                          top: 14, bottom: 8, left: 10, right: 10),
+                      titleStyle: GoogleFonts.poppins(
+                          fontSize: 54.sp,
+                          fontWeight: FontWeight.w500,
+                          color: Color(0xFFC6C6C6)),
+                      middleTextStyle: GoogleFonts.poppins(
+                          fontSize: 40.sp, color: Color(0xFFC6C6C6)),
+                      title: "Username already exists",
+                      middleText:
+                          "The username is already in use, please select another one",
+                      contentPadding: EdgeInsets.all(20),
+                    );
                     controller.isGoogleSignupLoading.value = false;
                   } else {
                     await AuthService().addUserToFirestore(

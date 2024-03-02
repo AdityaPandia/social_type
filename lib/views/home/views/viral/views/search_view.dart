@@ -1,9 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:get/get_connect/http/src/_http/utils/body_decoder.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:social_type/common/custom_colors.dart';
 import 'package:social_type/views/home/views/profile/views/profile_view.dart';
@@ -67,7 +65,7 @@ class _SearchViewState extends State<SearchView> {
                           _searchQuery = value.trim();
                         });
                       },
-                      decoration: InputDecoration(
+                      decoration: const InputDecoration(
                           border: InputBorder.none, hintText: "Search User..."),
                     ),
                   ),
@@ -94,7 +92,7 @@ class _SearchViewState extends State<SearchView> {
                             .snapshots(),
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
-                        return Center(
+                        return const Center(
                           child: CircularProgressIndicator(),
                         );
                       }
@@ -106,7 +104,7 @@ class _SearchViewState extends State<SearchView> {
                       }
 
                       if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                        return Center(
+                        return const Center(
                           child: Text('No users found'),
                         );
                       }
@@ -125,14 +123,16 @@ class _SearchViewState extends State<SearchView> {
                             itemBuilder: (context, index) {
                               var user = snapshot.data!.docs[index];
                               return ListTile(
-                                title: ZoomTapAnimation(
-                                  onTap: () {
-                                    Get.to(() => ProfileView(userUid: user.id));
-                                  },
-                                  child: Text(
-                                    user['username'],
-                                    style: GoogleFonts.poppins(
-                                        color: Colors.white),
+                                title: Container(
+                                  child: ZoomTapAnimation(
+                                    onTap: () {
+                                      Get.to(() => ProfileView(userUid: user.id));
+                                    },
+                                    child: Text(
+                                      user['username'],
+                                      style: GoogleFonts.poppins(
+                                          color: Colors.white),
+                                    ),
                                   ),
                                 ),
                                 // You can add more details or actions here
@@ -143,7 +143,7 @@ class _SearchViewState extends State<SearchView> {
                       );
                     },
                   )
-                : SizedBox(),
+                : const SizedBox(),
           ],
         ),
       ),

@@ -2,9 +2,13 @@ import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:oktoast/oktoast.dart';
 
 class MainController extends GetxController {
 
@@ -55,24 +59,36 @@ Future<String?>getUserNameByUid(String uid)async{
       DocumentSnapshot uidSnapshot = await uidReferene.get();
       Map<String, dynamic> uidData =
           uidSnapshot.data() as Map<String, dynamic>? ?? {};
-      List<dynamic> followers = uidData['followers'] ?? [];
-      if (!followers.contains(currentUserId)) {
-        followers.add(currentUserId);
-        await uidReferene.update({'followers': followers});
-      } else {
-        //already follower
-      }
-      DocumentReference currentUserReference =
-          FirebaseFirestore.instance.collection('Users').doc(currentUserId);
-      DocumentSnapshot currentUserSnapshot = await currentUserReference.get();
-      Map<String, dynamic> currentUserData =
-          currentUserSnapshot.data() as Map<String, dynamic>? ?? {};
-      List<dynamic> following = currentUserData['following'] ?? [];
-      following.add(userId);
-      await currentUserReference.update({'following': following});
-    } catch (e) {
-     //error ading
-    }
+//
+List<dynamic> requests=uidData['requests']??[];
+if(!requests.contains(currentUserId)){
+  requests.add(currentUserId);
+  await uidReferene.update({'requests':requests});
+}else{
+
+}
+    }catch(e){}
+
+
+//everything after this wont happen
+    //   List<dynamic> followers = uidData['followers'] ?? [];
+    //   if (!followers.contains(currentUserId)) {
+    //     followers.add(currentUserId);
+    //     await uidReferene.update({'followers': followers});
+    //   } else {
+    //     //already follower
+    //   }
+    //   DocumentReference currentUserReference =
+    //       FirebaseFirestore.instance.collection('Users').doc(currentUserId);
+    //   DocumentSnapshot currentUserSnapshot = await currentUserReference.get();
+    //   Map<String, dynamic> currentUserData =
+    //       currentUserSnapshot.data() as Map<String, dynamic>? ?? {};
+    //   List<dynamic> following = currentUserData['following'] ?? [];
+    //   following.add(userId);
+    //   await currentUserReference.update({'following': following});
+    // } catch (e) {
+    //  //error ading
+    // }
   }
 
   Future<void> removeUserIdFromFollowers(String ?userId) async {
@@ -106,6 +122,8 @@ Future<String?>getUserNameByUid(String uid)async{
      //error adding
     }
   }
+
+  
 
   Future<bool> isUserIdInFollowers(String ?userId) async {
     try {
@@ -174,7 +192,7 @@ Future<String?>getUserNameByUid(String uid)async{
 
   //post updated
     } on PlatformException catch (e) {
-      Get.defaultDialog(title: "Error: ${e.code}");
+showToast("$e",position: ToastPosition(align: Alignment.bottomCenter));
  //error
     }
   }

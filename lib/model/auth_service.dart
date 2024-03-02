@@ -1,8 +1,14 @@
+import 'dart:ui';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:oktoast/oktoast.dart';
 import 'package:social_type/views/authentication/controllers/authentication_controller.dart';
 import 'package:social_type/views/authentication/views/google_signup_view.dart';
 import 'package:social_type/views/home/views/home_view.dart';
@@ -25,8 +31,8 @@ class AuthService {
     final authController = Get.put(AuthenticationController());
 
     if (await doesUsernameExist(authController.userNameController.text)) {
-      return Get.defaultDialog(
-          title: "Username already exists", middleText: "");
+      showToast("Username Already Exists",
+          position: ToastPosition(align: Alignment.bottomCenter));
     }
     try {
       authController.isActiveButtonLoading.value = true;
@@ -51,17 +57,17 @@ class AuthService {
     } on FirebaseAuthException catch (e) {
       authController.isActiveButtonLoading.value = false;
       if (e.code == 'weak-password') {
-        Get.defaultDialog(
-            title: "The password provided is too weak", middleText: "");
+        showToast("The password provided is too weak",
+            position: ToastPosition(align: Alignment.bottomCenter));
       } else if (e.code == 'email-already-in-use') {
-        Get.defaultDialog(
-            title: "The account already exists for that email", middleText: "");
+        showToast("The account already exists for that email",
+            position: ToastPosition(align: Alignment.bottomCenter));
       } else {
-        Get.defaultDialog(title: "$e", middleText: "");
+        showToast("$e", position: ToastPosition(align: Alignment.bottomCenter));
       }
     } catch (e) {
       authController.isActiveButtonLoading.value = false;
-      Get.defaultDialog(title: "$e", middleText: "");
+      showToast("$e", position: ToastPosition(align: Alignment.bottomCenter));
     }
   }
 
@@ -86,11 +92,13 @@ class AuthService {
     } on FirebaseAuthException catch (e) {
       authController.isActiveButtonLoading.value = false;
       if (e.code == 'user-not-found') {
-        Get.defaultDialog(title: "User Not Found", middleText: "");
+        showToast("User Not Found",
+            position: ToastPosition(align: Alignment.bottomCenter));
       } else if (e.code == 'wrong-password') {
-        Get.defaultDialog(title: "Wrong Password", middleText: "");
+        showToast("Wrong Password",
+            position: ToastPosition(align: Alignment.bottomCenter));
       } else {
-        Get.defaultDialog(title: "$e", middleText: "");
+        showToast("$e", position: ToastPosition(align: Alignment.bottomCenter));
       }
     }
   }
@@ -99,7 +107,19 @@ class AuthService {
     FirebaseAuth auth = FirebaseAuth.instance;
     final GoogleSignInAccount? gUser = await GoogleSignIn().signIn();
     if (gUser == null) {
-      Get.defaultDialog(title: "Sign In Cancelled", middleText: "");
+      showToast("Google Signin Cancelled");
+      // Get.defaultDialog(   backgroundColor: Color(0xFF353535),
+      //   titlePadding: EdgeInsets.only(top: 14, bottom: 8, left: 10, right: 10),
+      //   titleStyle: GoogleFonts.poppins(
+      //       fontSize: 54.sp,
+      //       fontWeight: FontWeight.w500,
+      //       color: Color(0xFFC6C6C6)),
+      //   middleTextStyle:
+      //       GoogleFonts.poppins(fontSize: 40.sp, color: Color(0xFFC6C6C6)),
+      //   title: "Error",
+      //   middleText: "User cancelled sign in",
+
+      //   contentPadding: EdgeInsets.all(20),);
       throw Exception("User denied sign in");
     }
     final GoogleSignInAuthentication gAuth = await gUser.authentication;
@@ -130,7 +150,10 @@ class AuthService {
       });
     } catch (e) {
       authController.isGoogleLoading.value = false;
-      Get.defaultDialog(title: "Something Wrong", middleText: "$e");
+      showToast("Something's Wrong",
+          position: ToastPosition(
+            align: Alignment.bottomCenter,
+          ));
     }
   }
 

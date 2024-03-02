@@ -7,7 +7,6 @@ import 'package:get_storage/get_storage.dart';
 import 'package:persistent_bottom_nav_bar/persistent_tab_view.dart';
 import 'package:social_type/common/floating_navbar.dart';
 import 'package:social_type/common/floating_navbar_item.dart';
-import 'package:social_type/controllers/app_controller.dart';
 import 'package:social_type/views/home/controllers/home_controller.dart';
 import 'package:social_type/views/home/views/main/views/main_view.dart';
 import 'package:social_type/views/home/views/notification/views/notification_view.dart';
@@ -35,16 +34,7 @@ class _HomeViewState extends State<HomeView> {
 
   final controller = Get.put(HomeController());
 
-  // List<Widget> _buildScreens() {
-  //   return [
-  //     MainView(),
-  //     ViralView(),
-  //     const NotificationView(),
-  //     ProfileView(
-  //       userUid: FirebaseAuth.instance.currentUser!.uid,
-  //     ),
-  //   ];
-  // }
+
   List<Widget> buildScreens = [
     MainView(),
     ViralView(),
@@ -86,7 +76,6 @@ class _HomeViewState extends State<HomeView> {
         activeColorPrimary: const Color(0xFFb6fa43),
         inactiveColorPrimary: const Color(0xfffcfcfc),
       ),
-      //efffc0
       PersistentBottomNavBarItem(
         icon: Image.asset(
           "assets/images/png/bottom_nav_profile.png",
@@ -169,34 +158,5 @@ class _HomeViewState extends State<HomeView> {
         ),
       ),
     );
-
-    // return PersistentTabView(
-    //   context,
-    //   controller: controller.bottomNavController,
-    //   screens: _buildScreens(),
-    //   items: _navBarsItems(),
-    //   confineInSafeArea: true,
-    //   backgroundColor: const Color(0xFF807e7c),
-    //   handleAndroidBackButtonPress: true,
-    //   resizeToAvoidBottomInset: true,
-    //   stateManagement: true,
-    //   hideNavigationBarWhenKeyboardShows: true,
-    //   decoration: NavBarDecoration(
-    //     borderRadius: BorderRadius.circular(10.0),
-    //     colorBehindNavBar: Colors.white,
-    //   ),
-    //   popAllScreensOnTapOfSelectedTab: true,
-    //   popActionScreens: PopActionScreensType.all,
-    //   itemAnimationProperties: const ItemAnimationProperties(
-    //     duration: Duration(milliseconds: 200),
-    //     curve: Curves.ease,
-    //   ),
-    //   screenTransitionAnimation: const ScreenTransitionAnimation(
-    //     animateTabTransition: true,
-    //     curve: Curves.ease,
-    //     duration: Duration(milliseconds: 200),
-    //   ),
-    //   navBarStyle: NavBarStyle.style5,
-    // );
   }
 }
