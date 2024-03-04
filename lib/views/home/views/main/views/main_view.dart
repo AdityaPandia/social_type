@@ -197,100 +197,106 @@ class MainViewState extends State<MainView> {
             return ListView.builder(
               itemCount: comments.length,
               itemBuilder: (context, index) {
-                return Container(
-                  height: 172.h,
-                  margin: EdgeInsets.symmetric(vertical: 30.h),
-                  decoration: BoxDecoration(
-                      color: Color(0xFFFBFBFB),
-                      borderRadius: BorderRadius.only(
-                          topRight: Radius.circular(80.w),
-                          bottomRight: Radius.circular(80.w),
-                          bottomLeft: Radius.circular(80.w))),
-                  child: Padding(
-                    padding:
-                        EdgeInsets.symmetric(horizontal: 60.w, vertical: 30.h),
-                    child: Center(
-                        child: Row(
-                      children: [
-                        FutureBuilder(
-                            future: Get.put(AppController())
-                                .getUserProfilePhoto(
-                                    comments[index]['commenterUid']),
-                            builder: (context, snapshot) {
-                              if (snapshot.connectionState ==
-                                  ConnectionState.done) {
-                                return ClipRRect(
-                                  borderRadius: BorderRadius.circular(2000),
-                                  child: SizedBox(
-                                    width: 100.sp,
-                                    height: 100.sp,
-                                    child: CachedNetworkImage(
-                                      placeholder: (context, val) {
-                                        return Container(
-                                          child: Center(
-                                            child: Text(
-                                              "Loading",
-                                              style: TextStyle(
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 15.sp,
+                return ZoomTapAnimation(
+                  onTap: () {
+                    Get.to(
+                        ProfileView(userUid: comments[index]['commenterUid']));
+                  },
+                  child: Container(
+                    height: 172.h,
+                    margin: EdgeInsets.symmetric(vertical: 30.h),
+                    decoration: BoxDecoration(
+                        color: Color(0xFFFBFBFB),
+                        borderRadius: BorderRadius.only(
+                            topRight: Radius.circular(80.w),
+                            bottomRight: Radius.circular(80.w),
+                            bottomLeft: Radius.circular(80.w))),
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(
+                          horizontal: 60.w, vertical: 30.h),
+                      child: Center(
+                          child: Row(
+                        children: [
+                          FutureBuilder(
+                              future: Get.put(AppController())
+                                  .getUserProfilePhoto(
+                                      comments[index]['commenterUid']),
+                              builder: (context, snapshot) {
+                                if (snapshot.connectionState ==
+                                    ConnectionState.done) {
+                                  return ClipRRect(
+                                    borderRadius: BorderRadius.circular(2000),
+                                    child: SizedBox(
+                                      width: 100.sp,
+                                      height: 100.sp,
+                                      child: CachedNetworkImage(
+                                        placeholder: (context, val) {
+                                          return Container(
+                                            child: Center(
+                                              child: Text(
+                                                "Loading",
+                                                style: TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 15.sp,
+                                                ),
                                               ),
                                             ),
-                                          ),
-                                        );
-                                      },
-                                      imageUrl: "${snapshot.data}",
-                                      fit: BoxFit.fill,
-                                    ),
-                                  ),
-                                );
-                              } else {
-                                return SizedBox(
-                                  width: 12.sp,
-                                  height: 12.sp,
-                                  child: CircularProgressIndicator(
-                                    color: CustomColors.textColor2,
-                                  ),
-                                );
-                              }
-                            }),
-                        SizedBox(
-                          width: 27.w,
-                        ),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            FutureBuilder(
-                                future: controller.getUserNameByUid(
-                                    comments[index]['commenterUid']),
-                                builder: (context, snapshot) {
-                                  if (snapshot.connectionState ==
-                                      ConnectionState.done) {
-                                    return Text("${snapshot.data}",
-                                        style: GoogleFonts.poppins(
-                                            fontWeight: FontWeight.w500,
-                                            fontSize: 40.sp,
-                                            color: Colors.black));
-                                  } else {
-                                    return SizedBox(
-                                      width: 12.sp,
-                                      height: 12.sp,
-                                      child: CircularProgressIndicator(
-                                        color: CustomColors.textColor2,
+                                          );
+                                        },
+                                        imageUrl: "${snapshot.data}",
+                                        fit: BoxFit.fill,
                                       ),
-                                    );
-                                  }
-                                }),
-                            Text(
-                              comments[index]['comment'],
-                              style: GoogleFonts.poppins(
-                                  fontSize: 34.sp,
-                                  fontWeight: FontWeight.w400,
-                                  color: Colors.black),
-                            ),
-                          ],
-                        ),
-                      ],
-                    )),
+                                    ),
+                                  );
+                                } else {
+                                  return SizedBox(
+                                    width: 12.sp,
+                                    height: 12.sp,
+                                    child: CircularProgressIndicator(
+                                      color: CustomColors.textColor2,
+                                    ),
+                                  );
+                                }
+                              }),
+                          SizedBox(
+                            width: 27.w,
+                          ),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              FutureBuilder(
+                                  future: controller.getUserNameByUid(
+                                      comments[index]['commenterUid']),
+                                  builder: (context, snapshot) {
+                                    if (snapshot.connectionState ==
+                                        ConnectionState.done) {
+                                      return Text("${snapshot.data}",
+                                          style: GoogleFonts.poppins(
+                                              fontWeight: FontWeight.w500,
+                                              fontSize: 40.sp,
+                                              color: Colors.black));
+                                    } else {
+                                      return SizedBox(
+                                        width: 12.sp,
+                                        height: 12.sp,
+                                        child: CircularProgressIndicator(
+                                          color: CustomColors.textColor2,
+                                        ),
+                                      );
+                                    }
+                                  }),
+                              Text(
+                                comments[index]['comment'],
+                                style: GoogleFonts.poppins(
+                                    fontSize: 34.sp,
+                                    fontWeight: FontWeight.w400,
+                                    color: Colors.black),
+                              ),
+                            ],
+                          ),
+                        ],
+                      )),
+                    ),
                   ),
                 ); // Replace with your comment widget
               },
@@ -627,105 +633,106 @@ class MainViewState extends State<MainView> {
                                               )),
                                         ),
                                       )
-                                    : ZoomTapAnimation(
-                                        onTap: () async {
-                                          isFollowButtonLoading.value = true;
-                                          await controller.isUserIdInFollowers(
-                                            userId,
-                                          )
-                                              ? await controller
-                                                  .removeUserIdFromFollowers(
-                                                      userId)
-                                              : await controller
-                                                  .addUserIdToFollowers(userId);
-                                          isFollowButtonLoading.value = false;
-                                          tappedFolloIcons.contains(userId)
-                                              ? tappedFolloIcons.remove(userId)
-                                              : tappedFolloIcons.add(userId);
-                                        },
-                                        child: Obx(
-                                          () => Opacity(
-                                            opacity: 0.6,
-                                            child: Container(
-                                              height: 150.sp,
-                                              width: 150.sp,
-                                              decoration: const BoxDecoration(
-                                                shape: BoxShape.circle,
-                                                color: Color(0xFF9EA2A3),
-                                              ),
-                                              child: Center(
-                                                child: isFollowButtonLoading
-                                                        .value
-                                                    ? SizedBox(
-                                                        height: 40.h,
-                                                        width: 20.h,
-                                                        child:
-                                                            const CircularProgressIndicator())
-                                                    : StreamBuilder(
-                                                        stream: controller
-                                                            .isUserIdInFollowers(
-                                                                userId)
-                                                            .asStream(),
-                                                        builder: (context,
-                                                            snapshot) {
-                                                          if (!snapshot
-                                                              .hasData) {
-                                                            return SizedBox(
-                                                                height: 40.h,
-                                                                width: 20.h,
-                                                                child:
-                                                                    const CircularProgressIndicator());
-                                                          }
+                                    : SizedBox(),
+                                // : ZoomTapAnimation(
+                                //     onTap: () async {
+                                //       isFollowButtonLoading.value = true;
+                                //       await controller.isUserIdInFollowers(
+                                //         userId,
+                                //       )
+                                //           ? await controller
+                                //               .removeUserIdFromFollowers(
+                                //                   userId)
+                                //           : await controller
+                                //               .addUserIdToFollowers(userId);
+                                //       isFollowButtonLoading.value = false;
+                                //       tappedFolloIcons.contains(userId)
+                                //           ? tappedFolloIcons.remove(userId)
+                                //           : tappedFolloIcons.add(userId);
+                                //     },
+                                //     child: Obx(
+                                //       () => Opacity(
+                                //         opacity: 0.6,
+                                //         child: Container(
+                                //           height: 150.sp,
+                                //           width: 150.sp,
+                                //           decoration: const BoxDecoration(
+                                //             shape: BoxShape.circle,
+                                //             color: Color(0xFF9EA2A3),
+                                //           ),
+                                //           child: Center(
+                                //             child: isFollowButtonLoading
+                                //                     .value
+                                //                 ? SizedBox(
+                                //                     height: 40.h,
+                                //                     width: 20.h,
+                                //                     child:
+                                //                         const CircularProgressIndicator())
+                                //                 : StreamBuilder(
+                                //                     stream: controller
+                                //                         .isUserIdInFollowers(
+                                //                             userId)
+                                //                         .asStream(),
+                                //                     builder: (context,
+                                //                         snapshot) {
+                                //                       if (!snapshot
+                                //                           .hasData) {
+                                //                         return SizedBox(
+                                //                             height: 40.h,
+                                //                             width: 20.h,
+                                //                             child:
+                                //                                 const CircularProgressIndicator());
+                                //                       }
 
-                                                          if (snapshot.data!) {
-                                                            // return const Text("Unfollow",);
-                                                            return Text(
-                                                              "Unfollow",
-                                                              style: GoogleFonts.poppins(
-                                                                  color: const Color
-                                                                      .fromRGBO(
-                                                                      255,
-                                                                      255,
-                                                                      255,
-                                                                      1),
-                                                                  fontSize:
-                                                                      20.sp),
-                                                            );
-                                                          } else {
-                                                            // return const Text("Follow");
-                                                            return Obx(
-                                                              () => tappedFolloIcons
-                                                                      .contains(
-                                                                          userId)
-                                                                  ? Center(
-                                                                      child:
-                                                                          Text(
-                                                                        "Pending",
-                                                                        style: TextStyle(
-                                                                            color:
-                                                                                Colors.white,
-                                                                            fontSize: 20.sp),
-                                                                      ),
-                                                                    )
-                                                                  : Center(
-                                                                      child: Image
-                                                                          .asset(
-                                                                        "assets/images/png/follow_icon.png",
-                                                                        height:
-                                                                            70.sp,
-                                                                        width: 70
-                                                                            .sp,
-                                                                      ),
-                                                                    ),
-                                                            );
-                                                          }
-                                                        },
-                                                      ),
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ),
+                                //                       if (snapshot.data!) {
+                                //                         // return const Text("Unfollow",);
+                                //                         return Text(
+                                //                           "Unfollow",
+                                //                           style: GoogleFonts.poppins(
+                                //                               color: const Color
+                                //                                   .fromRGBO(
+                                //                                   255,
+                                //                                   255,
+                                //                                   255,
+                                //                                   1),
+                                //                               fontSize:
+                                //                                   20.sp),
+                                //                         );
+                                //                       } else {
+                                //                         // return const Text("Follow");
+                                //                         return Obx(
+                                //                           () => tappedFolloIcons
+                                //                                   .contains(
+                                //                                       userId)
+                                //                               ? Center(
+                                //                                   child:
+                                //                                       Text(
+                                //                                     "Pending",
+                                //                                     style: TextStyle(
+                                //                                         color:
+                                //                                             Colors.white,
+                                //                                         fontSize: 20.sp),
+                                //                                   ),
+                                //                                 )
+                                //                               : Center(
+                                //                                   child: Image
+                                //                                       .asset(
+                                //                                     "assets/images/png/follow_icon.png",
+                                //                                     height:
+                                //                                         70.sp,
+                                //                                     width: 70
+                                //                                         .sp,
+                                //                                   ),
+                                //                                 ),
+                                //                         );
+                                //                       }
+                                //                     },
+                                //                   ),
+                                //           ),
+                                //         ),
+                                //       ),
+                                //     ),
+                                //   ),
                                 SizedBox(
                                   height: 66.h,
                                 ),
@@ -847,6 +854,8 @@ class MainViewState extends State<MainView> {
         _imageFile = pickedFile;
       });
       showModalBottomSheet(
+        constraints: BoxConstraints(maxHeight: 1937.h),
+        isScrollControlled: true,
         backgroundColor: Colors.grey[400],
         context: context,
         builder: (context) {
@@ -886,7 +895,7 @@ class MainViewState extends State<MainView> {
                         opacity: 0.4,
                         child: Container(
                           width: 903.w,
-                          height: 600.h,
+                          height: 700.h,
                           decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(120.w),
                               color: Color(0xFFEEEEEE)),
@@ -905,7 +914,8 @@ class MainViewState extends State<MainView> {
                             height: 64.h,
                           ),
                           Text(
-                            "Introduce the title of your Khé",
+                            // "Introduce the title of your Khé",
+                            "¿Khé titulo pondrás?",
                             style: GoogleFonts.poppins(
                                 fontWeight: FontWeight.w500,
                                 color: Colors.white,
@@ -929,18 +939,19 @@ class MainViewState extends State<MainView> {
                               ),
                               Padding(
                                 padding:
-                                    EdgeInsets.only(right: 30.w, top: 60.w),
+                                    EdgeInsets.only(right: 30.w, top: 130.w),
                                 child: SizedBox(
                                   width: 500.w,
                                   child: TextField(
                                     style: GoogleFonts.poppins(
-                                        fontSize: 24.sp,
+                                        fontSize: 48.sp,
                                         fontWeight: FontWeight.w600,
                                         color: Color(0xFFD5F600)),
                                     maxLength: 20,
                                     controller: descriptionController,
                                     maxLines: 2,
                                     decoration: InputDecoration(
+                                        border: InputBorder.none,
                                         hintText: "Enter Description",
                                         hintStyle: GoogleFonts.poppins(
                                             fontSize: 48.sp,
@@ -1147,13 +1158,9 @@ class MainViewState extends State<MainView> {
                                           FirebaseAuth
                                               .instance.currentUser!.uid)))
                               ? SizedBox(
-                                  height: 1000.h,
+                                  height: 1100.h,
                                   child: Stack(
                                     children: [
-                                      //align was here
-
-                                      //it was center photo
-
                                       SizedBox(
                                         height: 1000.h,
                                         child: StreamBuilder(
@@ -1166,13 +1173,6 @@ class MainViewState extends State<MainView> {
                                               if (!snapshot.hasData) {
                                                 return CircularProgressIndicator();
                                               }
-                                              //                                          final snapshot1 = FirebaseFirestore.instance
-                                              //     .collection('Users')
-                                              //     .doc(documents1[i].id)
-                                              //     .collection('Posts')
-                                              //     .get();
-                                              // final totalPosts = snapshot1.length - 1;
-
                                               final documents2 =
                                                   snapshot.data!.docs;
                                               final totalPosts =
@@ -1453,9 +1453,9 @@ class MainViewState extends State<MainView> {
                                   ),
                                 )
                               : SizedBox(),
-                          SizedBox(
-                            height: 30.h,
-                          ),
+                          // SizedBox(
+                          //   height: 100.h,
+                          // ),
                           documents1[i]['has_posted'] &&
                                   documents1[i].id !=
                                       FirebaseAuth.instance.currentUser!.uid &&
@@ -1500,7 +1500,8 @@ class MainViewState extends State<MainView> {
                                       height: 58.h,
                                     ),
                                     Text(
-                                      "Let's start!",
+                                      // "Let's start!",
+                                      "¿Comenzamos?",
                                       textAlign: TextAlign.center,
                                       style: GoogleFonts.poppins(
                                         fontWeight: FontWeight.w500,
@@ -1512,7 +1513,8 @@ class MainViewState extends State<MainView> {
                                       height: 68.h,
                                     ),
                                     Text(
-                                      "Connect with your friends to see your feed",
+                                      // "Connect with your friends to see your feed",
+                                      "Conecta con tus contactos para ver contenido en tu feed",
                                       textAlign: TextAlign.center,
                                       style: GoogleFonts.poppins(
                                           fontSize: 60.sp,

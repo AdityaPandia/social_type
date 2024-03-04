@@ -9,6 +9,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:social_type/common/custom_colors.dart';
 import 'package:social_type/controllers/app_controller.dart';
 import 'package:social_type/views/home/views/main/controllers/main_controller.dart';
+import 'package:social_type/views/home/views/profile/views/profile_view.dart';
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
 
 class FollowingView extends StatefulWidget {
@@ -66,7 +67,7 @@ class _FollowingViewState extends State<FollowingView> {
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.done) {
                     return Text(
-                      "${snapshot.data!}",
+                      "Seguidos de ${snapshot.data!}",
                       style: GoogleFonts.poppins(
                         fontSize: 48.sp,
                         fontWeight: FontWeight.w600,
@@ -123,155 +124,184 @@ class _FollowingViewState extends State<FollowingView> {
                           String photoURL =
                               userSnapshot.data!.get('profile_photo');
 
-                        
-                          return Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          return Column(
                             children: [
-                              Row(
-                                children: [
-                                  photoURL == ""
-                                      ? SizedBox(
-                                          width: 100.w,
-                                          child: Icon(
-                                            Icons.person,
-                                            color: Colors.white,
-                                          ),
-                                        )
-                                      : ClipRRect(
-                                          borderRadius:
-                                              BorderRadius.circular(1000.w),
-                                          child: CachedNetworkImage(
-                                            height: 110.sp,
-                                            width: 110.sp,
-                                            placeholder: (context, val) {
-                                              return Center(
-                                                child: Text(
-                                                  "Loading",
-                                                  style: TextStyle(
-                                                    fontWeight: FontWeight.bold,
-                                                    fontSize: 15.sp,
-                                                  ),
-                                                ),
-                                              );
-                                            },
-                                            imageUrl: photoURL,
-                                            fit: BoxFit.fill,
-                                          ),
-                                        ),
-                                  SizedBox(
-                                    width: 25.w,
-                                  ),
-                                  Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        name,
-                                        style: GoogleFonts.poppins(
-                                            fontWeight: FontWeight.w500,
-                                            fontSize: 48.sp,
-                                            color: Colors.white),
-                                      ),
-                                      SizedBox(
-                                        height: 15.h,
-                                      ),
-                                      Text("@$username",
-                                          style: GoogleFonts.poppins(
-                                              fontWeight: FontWeight.w500,
-                                              fontSize: 36.sp,
-                                              color: Colors.white))
-                                    ],
-                                  ),
-                                ],
+                              Container(
+                                decoration: BoxDecoration(color: Colors.white),
+                                height: 5.h,
                               ),
-                              FirebaseAuth.instance.currentUser!.uid ==
-                                      following[index]
-                                  ? SizedBox()
-                                  : ZoomTapAnimation(
-                                      onTap: () async {
-                                        if(isLoading.value){
-
-                                        }else{                                        
-                                        isLoading.value = true;
-                                        await Get.put(MainController())
-                                                .isUserIdInFollowers(
-                                          following[index],
-                                        )
-                                            ? await Get.put(MainController())
-                                                .removeUserIdFromFollowers(
-                                                    following[index])
-                                            : await Get.put(MainController())
-                                                .addUserIdToFollowers(
-                                                    following[index]);
-                                        isLoading.value = false;
-                                        setState(() {});
-                                        }
-                                      },
-                                      child: Container(
-                                        decoration: BoxDecoration(),
-                                        child: StreamBuilder(
-                                          stream: Get.put(MainController())
-                                              .isUserIdInFollowers(
-                                                  following[index])
-                                              .asStream(),
-                                          builder: (context, snapshot) {
-                                            if (!snapshot.hasData) {
-                                              return SizedBox(
-                                                  height: 40.h,
-                                                  width: 20.h,
-                                                  child:
-                                                      const CircularProgressIndicator());
-                                            }
-
-                                            if (snapshot.data!) {
-                                              // return const Text("Unfollow",);
-                                              return Container(
-                                                decoration: BoxDecoration(
-                                                    color:
-                                                        //  Color(0xFFC5D6A1),
-                                                        isLoading.value
-                                                            ? Color(0xFF817BCA)
-                                                            : Color(0xFF817BCA),
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            100.w)),
-                                                child: Padding(
-                                                  padding: EdgeInsets.symmetric(
-                                                      horizontal: 30.w,
-                                                      vertical: 20.h),
-                                                  child: Text(
-                                                    "Unfollow",
-                                                    style: GoogleFonts.poppins(
-                                                        color: Colors.white),
-                                                  ),
+                              SizedBox(
+                                height: 20.h,
+                              ),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  ZoomTapAnimation(
+                                    onTap: () {
+                                      Get.to(ProfileView(
+                                          userUid: following[index]));
+                                    },
+                                    child: Row(
+                                      children: [
+                                        photoURL == ""
+                                            ? SizedBox(
+                                                width: 100.w,
+                                                child: Icon(
+                                                  Icons.person,
+                                                  color: Colors.white,
                                                 ),
-                                              );
+                                              )
+                                            : ClipRRect(
+                                                borderRadius:
+                                                    BorderRadius.circular(
+                                                        1000.w),
+                                                child: CachedNetworkImage(
+                                                  height: 110.sp,
+                                                  width: 110.sp,
+                                                  placeholder: (context, val) {
+                                                    return Center(
+                                                      child: Text(
+                                                        "Loading",
+                                                        style: TextStyle(
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                          fontSize: 15.sp,
+                                                        ),
+                                                      ),
+                                                    );
+                                                  },
+                                                  imageUrl: photoURL,
+                                                  fit: BoxFit.fill,
+                                                ),
+                                              ),
+                                        SizedBox(
+                                          width: 25.w,
+                                        ),
+                                        Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              name,
+                                              style: GoogleFonts.poppins(
+                                                  fontWeight: FontWeight.w500,
+                                                  fontSize: 48.sp,
+                                                  color: Colors.white),
+                                            ),
+                                            SizedBox(
+                                              height: 15.h,
+                                            ),
+                                            Text("@$username",
+                                                style: GoogleFonts.poppins(
+                                                    fontWeight: FontWeight.w500,
+                                                    fontSize: 36.sp,
+                                                    color: Colors.white))
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  FirebaseAuth.instance.currentUser!.uid ==
+                                          following[index]
+                                      ? SizedBox()
+                                      : ZoomTapAnimation(
+                                          onTap: () async {
+                                            if (isLoading.value) {
                                             } else {
-                                              // return const Text("Follow");
-                                              return Container(
-                                                decoration: BoxDecoration(
-                                                    color: Color(0xFFC5D6A1),
-                                                    // Color(0xFF817BCA),
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            100.w)),
-                                                child: Padding(
-                                                  padding: EdgeInsets.symmetric(
-                                                      horizontal: 30.w,
-                                                      vertical: 20.h),
-                                                  child: Text(
-                                                    "Follow",
-                                                    style: GoogleFonts.poppins(
-                                                        color: Colors.white),
-                                                  ),
-                                                ),
-                                              );
+                                              isLoading.value = true;
+                                              await Get.put(MainController())
+                                                      .isUserIdInFollowers(
+                                                following[index],
+                                              )
+                                                  ? await Get.put(
+                                                          MainController())
+                                                      .removeUserIdFromFollowers(
+                                                          following[index])
+                                                  : await Get.put(
+                                                          MainController())
+                                                      .addUserIdToFollowers(
+                                                          following[index]);
+                                              isLoading.value = false;
+                                              setState(() {});
                                             }
                                           },
+                                          child: Container(
+                                            decoration: BoxDecoration(),
+                                            child: StreamBuilder(
+                                              stream: Get.put(MainController())
+                                                  .isUserIdInFollowers(
+                                                      following[index])
+                                                  .asStream(),
+                                              builder: (context, snapshot) {
+                                                if (!snapshot.hasData) {
+                                                  return SizedBox(
+                                                      height: 40.h,
+                                                      width: 20.h,
+                                                      child:
+                                                          const CircularProgressIndicator());
+                                                }
+
+                                                if (snapshot.data!) {
+                                                  // return const Text("Unfollow",);
+                                                  return Container(
+                                                    height: 110.h,
+                                                    width: 279.w,
+                                                    decoration: BoxDecoration(
+                                                        color:
+                                                            //  Color(0xFFC5D6A1),
+                                                            isLoading.value
+                                                                ? Color(
+                                                                    0xFF817BCA)
+                                                                : Color(
+                                                                    0xFF817BCA),
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(
+                                                                    100.w)),
+                                                    child: Center(
+                                                      child: Text(
+                                                        "Unfollow",
+                                                        style:
+                                                            GoogleFonts.poppins(
+                                                                color: Colors
+                                                                    .white),
+                                                      ),
+                                                    ),
+                                                  );
+                                                } else {
+                                                  // return const Text("Follow");
+                                                  return Container(
+                                                    height: 110.h,
+                                                    width: 279.w,
+                                                    decoration: BoxDecoration(
+                                                        color:
+                                                            Color(0xFFC5D6A1),
+                                                        // Color(0xFF817BCA),
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(
+                                                                    100.w)),
+                                                    child: Center(
+                                                      child: Text(
+                                                        "Follow",
+                                                        style:
+                                                            GoogleFonts.poppins(
+                                                                color: Colors
+                                                                    .white),
+                                                      ),
+                                                    ),
+                                                  );
+                                                }
+                                              },
+                                            ),
+                                          ),
                                         ),
-                                      ),
-                                    ),
-                           
+                                ],
+                              ),
+                              SizedBox(
+                                height: 20.h,
+                              ),
                             ],
                           );
                         },

@@ -10,6 +10,7 @@ import 'package:social_type/common/custom_texts.dart';
 import 'package:social_type/model/auth_service.dart';
 import 'package:social_type/views/authentication/controllers/authentication_controller.dart';
 import 'package:social_type/views/authentication/views/login_view.dart';
+import 'package:social_type/views/authentication/views/profile_photo_view.dart';
 import 'package:social_type/views/home/views/home_view.dart';
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
 
@@ -167,7 +168,8 @@ class GoogleSignUpView extends StatelessWidget {
                     await storage.write("uid", uid);
                     await storage.write('isSignInDone', true).then((value) {
                       controller.isGoogleSignupLoading.value = false;
-                      Get.offAll(() => HomeView());
+                      // Get.offAll(() => HomeView());
+                      Get.off(()=>ProfilePhotoView());
                     });
                   }
                   ;
@@ -205,66 +207,7 @@ class GoogleSignUpView extends StatelessWidget {
               ),
             ),
           ),
-          // ZoomTapAnimation(
-          //   onTap: () async {
-          //     if (controller.isGoogleSignupLoading.value) {
-          //     } else {
-          //       // controller.isGoogleRegisterActive()
-          //       //     ? await AuthService().addGoogleUser()
-          //       //     : null;
-          //       if (controller.isGoogleSignupNext.value) {
-          //         controller.isGoogleSignupLoading.value = true;
-          //         final storage = GetStorage();
-          //         FirebaseAuth auth = FirebaseAuth.instance;
-          //         final authController = Get.put(AuthenticationController());
-          //         String uid = auth.currentUser!.uid;
-
-          //         print(authController.nameController);
-          //         await AuthService().addUserToFirestore(
-          //             uid,
-          //             auth.currentUser!.email,
-          //             controller.googleNameController.text);
-          //         await storage.write("uid", uid);
-          //         await storage.write('isSignInDone', true);
-          //         controller.isGoogleSignupLoading.value = false;
-          //         Get.offAll(() => HomeView());
-          //       } else {}
-          //     }
-          //   },
-          //   child: Obx(
-          //     () => Container(
-          //       width: double.infinity,
-          //       decoration: BoxDecoration(
-          //         borderRadius: BorderRadius.circular(4.w),
-          //         color: controller.isGoogleSignupNext.value
-          //             ? CustomColors.activeColor
-          //             : CustomColors.inactiveColor,
-          //       ),
-          //       child: Padding(
-          //         padding: EdgeInsets.symmetric(vertical: 12.5.h),
-          //         child: Center(
-          //           child: controller.isGoogleSignupLoading.value
-          //               ? SizedBox(
-          //                   height: 18.sp,
-          //                   width: 18.sp,
-          //                   child:
-          //                       CircularProgressIndicator(color: Colors.white),
-          //                 )
-          //               : Text(
-          //                   "Register with Google",
-          //                   style: controller.isGoogleSignupNext.value
-          //                       ? CustomTexts.font14.copyWith(
-          //                           fontWeight: FontWeight.w500,
-          //                           color: Colors.white)
-          //                       : CustomTexts.font14.copyWith(
-          //                           fontWeight: FontWeight.w500,
-          //                           color: CustomColors.textColor),
-          //                 ),
-          //         ),
-          //       ),
-          //     ),
-          //   ),
-          // ),
+       
         ],
       ),
     );

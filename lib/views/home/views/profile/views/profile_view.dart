@@ -122,6 +122,9 @@ class _ProfileViewState extends State<ProfileView> {
                   padding: EdgeInsets.symmetric(horizontal: 70.w),
                   child: Column(
                     children: [
+                      SizedBox(
+                        height: 35.h,
+                      ),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -132,7 +135,7 @@ class _ProfileViewState extends State<ProfileView> {
                             "assets/images/png/onboarding_khe.png",
                             color: Colors.white,
                             width: 219.w,
-                            height: 91.h,
+                            height: 90.h,
                           ),
                           SizedBox(
                             width: 300.w,
@@ -202,6 +205,7 @@ class _ProfileViewState extends State<ProfileView> {
                                         if (controller.isLoading.value) {
                                         } else {
                                           await controller.uploadProfilePhoto();
+                                          controller.isLoading.value = false;
                                         }
                                       },
                                       child: controller.isLoading.value
@@ -232,6 +236,7 @@ class _ProfileViewState extends State<ProfileView> {
                                         if (controller.isLoading.value) {
                                         } else {
                                           await controller.uploadProfilePhoto();
+                                          controller.isLoading.value = false;
                                         }
                                       },
                                       child: controller.isLoading.value
@@ -291,7 +296,6 @@ class _ProfileViewState extends State<ProfileView> {
                               }
                             },
                           ),
-
                           SizedBox(
                             width: 20.w,
                           ),
@@ -478,24 +482,6 @@ class _ProfileViewState extends State<ProfileView> {
                               ),
                             ],
                           ),
-
-                          // FirebaseAuth.instance.currentUser!.uid !=
-                          //         widget.userUid
-                          //     ? SizedBox()
-                          //     : ZoomTapAnimation(
-                          //         onTap: () async {},
-                          //         child: Text(
-                          //           "Sign Out",
-                          //           style: GoogleFonts.poppins(
-                          //               fontSize: 24.sp, color: Colors.white),
-                          //         ),
-                          //       ),
-                          // SizedBox(width: 5.w),
-                          // Icon(
-                          //   Icons.logout_outlined,
-                          //   color: Colors.white,
-                          //   size: 34.sp,
-                          // ),
                         ],
                       ),
                       SizedBox(height: 117.h),
@@ -574,13 +560,13 @@ class _ProfileViewState extends State<ProfileView> {
                         height: 8.sp,
                       ),
                       SizedBox(
-                        height: 95.h,
+                        height: 105.h,
                       ),
                     ],
                   ),
                 ),
                 SizedBox(
-                  height: 42.h,
+                  height: 100.h,
                 ),
                 StreamBuilder<QuerySnapshot>(
                   stream: FirebaseFirestore.instance
@@ -594,21 +580,11 @@ class _ProfileViewState extends State<ProfileView> {
                     return Column(
                       children: [
                         for (int i = 0; i < documents1.length; i++) ...[
-                          // (documents1[i].id !=
-                          //             FirebaseAuth.instance.currentUser!.uid) &&
-                          //         (documents1[i]['has_posted'] &&
-                          //             (documents1[i]['followers'].contains(
-                          //                 FirebaseAuth
-                          //                     .instance.currentUser!.uid)))
                           documents1[i].id == widget.userUid
                               ? SizedBox(
                                   height: 1000.h,
                                   child: Stack(
                                     children: [
-                                      //align was here
-
-                                      //it was center photo
-
                                       SizedBox(
                                         height: 1000.h,
                                         child: StreamBuilder(
@@ -621,18 +597,11 @@ class _ProfileViewState extends State<ProfileView> {
                                               if (!snapshot.hasData) {
                                                 return CircularProgressIndicator();
                                               }
-                                              //                                          final snapshot1 = FirebaseFirestore.instance
-                                              //     .collection('Users')
-                                              //     .doc(documents1[i].id)
-                                              //     .collection('Posts')
-                                              //     .get();
-                                              // final totalPosts = snapshot1.length - 1;
 
                                               final documents2 =
                                                   snapshot.data!.docs;
                                               final totalPosts =
                                                   documents2.length;
-//COME HERE
 
                                               for (int x = 0;
                                                   x < documents2.length - 1;

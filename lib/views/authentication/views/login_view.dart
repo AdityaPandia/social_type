@@ -324,8 +324,7 @@ class _LoginViewState extends State<LoginView> {
                                     TextSpan(
                                         recognizer: TapGestureRecognizer()
                                           ..onTap = () {
-                                            // // Get.delete<AuthenticationController>();
-                                            // Get.offAll(() => SignupView());
+                                  
                                             controller.isLoginPage.value =
                                                 false;
                                           },
@@ -351,8 +350,7 @@ class _LoginViewState extends State<LoginView> {
                                       TextSpan(
                                           recognizer: TapGestureRecognizer()
                                             ..onTap = () {
-                                              // // Get.delete<AuthenticationController>();
-                                              // Get.offAll(() => SignupView());
+                                     
                                               Get.to(() => TermsView());
                                             },
                                           // text: "Register now",
@@ -371,8 +369,7 @@ class _LoginViewState extends State<LoginView> {
                                       TextSpan(
                                           recognizer: TapGestureRecognizer()
                                             ..onTap = () {
-                                              // // Get.delete<AuthenticationController>();
-                                              // Get.offAll(() => SignupView());
+                                        
                                               Get.to(() => PrivacyView());
                                             },
                                           // text: "Register now",

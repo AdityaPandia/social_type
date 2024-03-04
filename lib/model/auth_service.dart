@@ -11,6 +11,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:oktoast/oktoast.dart';
 import 'package:social_type/views/authentication/controllers/authentication_controller.dart';
 import 'package:social_type/views/authentication/views/google_signup_view.dart';
+import 'package:social_type/views/authentication/views/profile_photo_view.dart';
 import 'package:social_type/views/home/views/home_view.dart';
 
 class AuthService {
@@ -52,7 +53,8 @@ class AuthService {
         await storage.write('isSignInDone', true);
         authController.isActiveButtonLoading.value = false;
 
-        Get.offAll(() => const HomeView());
+        // Get.offAll(() => const HomeView());
+        Get.offAll(() => ProfilePhotoView());
       });
     } on FirebaseAuthException catch (e) {
       authController.isActiveButtonLoading.value = false;
@@ -172,7 +174,8 @@ class AuthService {
     await storage.write("uid", uid);
     await storage.write('isSignInDone', true);
     authController.isActiveButtonLoading.value = false;
-    Get.offAll(() => const HomeView());
+    // Get.offAll(() => const HomeView());
+    Get.offAll(() => ProfilePhotoView());
   }
 
   Future<int> doesUserExist(String uid) async {
@@ -206,7 +209,8 @@ class AuthService {
         'has_posted': false,
         'followers': [],
         'following': [],
-        'verified_user': false,
+        'requests':[],
+            'verified_user': false,
         'vip_user': false,
       });
     } catch (error) {

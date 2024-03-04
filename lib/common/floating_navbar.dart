@@ -70,35 +70,31 @@ class _FloatingNavbarState extends State<FloatingNavbar> {
 
   @override
   Widget build(BuildContext context) {
-    return BottomAppBar(
-      color: Color(0xFF101010),
-      elevation: widget.elevation,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          Padding(
-            padding: widget.margin!,
-            child: Container(
-              padding: widget.padding,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(widget.borderRadius!),
-                color: widget.backgroundColor,
-              ),
-              width: widget.width,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  mainAxisSize: MainAxisSize.max,
-                  children: items.map((f) {
-                    return widget.itemBuilder!(context, f);
-                  }).toList(),
-                ),
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>[
+        Padding(
+          padding: widget.margin!,
+          child: Container(
+            padding: widget.padding,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(widget.borderRadius!),
+              color: widget.backgroundColor,
+            ),
+            width: widget.width,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                mainAxisSize: MainAxisSize.max,
+                children: items.map((f) {
+                  return widget.itemBuilder!(context, f);
+                }).toList(),
               ),
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

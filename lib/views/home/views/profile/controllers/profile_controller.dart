@@ -69,7 +69,10 @@ class ProfileController extends GetxController {
       final uploadTask = storageRef.putFile(File(pickedFile.path));
       return await uploadTask; // Await the completion of the upload task
     } else {
+          isLoading.value=false;
+          print(isLoading.value);
     showToast("Something's Wrong");
+
     }
   }
 }

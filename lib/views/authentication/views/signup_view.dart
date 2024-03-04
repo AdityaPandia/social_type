@@ -68,6 +68,33 @@ class SignUpView extends StatelessWidget {
           SizedBox(
             height: 60.h,
           ),
+          Container(
+            decoration: BoxDecoration(
+              border: Border.all(width: 6.sp, color: Colors.white),
+              borderRadius: BorderRadius.circular(30.w),
+            ),
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 48.w),
+              child: TextField(
+                controller: controller.userNameController,
+                style: GoogleFonts.archivo(
+                    fontSize: 40.sp,
+                    fontWeight: FontWeight.w400,
+                    color: Colors.white),
+                decoration: InputDecoration(
+                    border: InputBorder.none,
+                    // hintText: "Username",
+                    hintText: "¿Khé @usuario usarás?",
+                    hintStyle: GoogleFonts.archivo(
+                        fontSize: 40.sp,
+                        fontWeight: FontWeight.w400,
+                        color: Colors.white)),
+              ),
+            ),
+          ),
+          SizedBox(
+            height: 60.h,
+          ),
           Obx(
             () => Container(
               decoration: BoxDecoration(
@@ -113,33 +140,6 @@ class SignUpView extends StatelessWidget {
             child: Padding(
               padding: EdgeInsets.symmetric(horizontal: 48.w),
               child: TextField(
-                controller: controller.userNameController,
-                style: GoogleFonts.archivo(
-                    fontSize: 40.sp,
-                    fontWeight: FontWeight.w400,
-                    color: Colors.white),
-                decoration: InputDecoration(
-                    border: InputBorder.none,
-                    // hintText: "Username",
-                    hintText: "¿Khé @usuario usarás?",
-                    hintStyle: GoogleFonts.archivo(
-                        fontSize: 40.sp,
-                        fontWeight: FontWeight.w400,
-                        color: Colors.white)),
-              ),
-            ),
-          ),
-          SizedBox(
-            height: 60.h,
-          ),
-          Container(
-            decoration: BoxDecoration(
-              border: Border.all(width: 6.sp, color: Colors.white),
-              borderRadius: BorderRadius.circular(30.w),
-            ),
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 48.w),
-              child: TextField(
                 controller: controller.passController,
                 obscureText: true,
                 style: GoogleFonts.archivo(
@@ -157,7 +157,6 @@ class SignUpView extends StatelessWidget {
               ),
             ),
           ),
-
           SizedBox(
             height: 60.h,
           ),
@@ -289,7 +288,8 @@ class SignUpView extends StatelessWidget {
           Center(
             child: Text.rich(TextSpan(children: [
               TextSpan(
-                  text: "Already have an account? ",
+                  // text: "Already have an account? ",
+                  text: "¿Ya eres miembro de Khé?",
                   style: GoogleFonts.archivo(
                       fontSize: 36.sp,
                       fontWeight: FontWeight.w400,
@@ -297,11 +297,11 @@ class SignUpView extends StatelessWidget {
               TextSpan(
                   recognizer: TapGestureRecognizer()
                     ..onTap = () {
-                      // // Get.delete<AuthenticationController>();
-                      // Get.offAll(() => SignupView());
+                 
                       controller.isLoginPage.value = true;
                     },
-                  text: "Login now",
+                  // text: "Login now",
+                  text: "Inicia Sesión",
                   style: GoogleFonts.archivo(
                       fontSize: 36.sp,
                       fontWeight: FontWeight.w400,

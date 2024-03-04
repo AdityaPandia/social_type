@@ -34,7 +34,6 @@ class _HomeViewState extends State<HomeView> {
 
   final controller = Get.put(HomeController());
 
-
   List<Widget> buildScreens = [
     MainView(),
     ViralView(),
@@ -111,47 +110,59 @@ class _HomeViewState extends State<HomeView> {
               FloatingNavbarItem(
                   icon: Icons.home,
                   title: 'Home',
-                  customWidget: Image.asset(
-                    'assets/images/png/bottom_nav_home.png',
-                    color: controller.index.value == 0
-                        ? Color(0xFFEFFFC0)
-                        : Colors.white,
-                    height: 72.h,
-                    width: 62.w,
+                  customWidget: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 50.w),
+                    child: Image.asset(
+                      'assets/images/png/bottom_nav_home.png',
+                      color: controller.index.value == 0
+                          ? Color(0xFFEFFFC0)
+                          : Colors.white,
+                      height: 72.h,
+                      width: 62.w,
+                    ),
                   )),
               FloatingNavbarItem(
                 icon: Icons.explore,
                 title: 'Explore',
-                customWidget: Image.asset(
-                  'assets/images/png/bottom_nav_viral.png',
-                  color: controller.index.value == 1
-                      ? Color(0xFFEFFFC0)
-                      : Colors.white,
-                  height: 69.h,
-                  width: 69.w,
+                customWidget: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 50.w),
+                  child: Image.asset(
+                    'assets/images/png/bottom_nav_viral.png',
+                    color: controller.index.value == 1
+                        ? Color(0xFFEFFFC0)
+                        : Colors.white,
+                    height: 69.h,
+                    width: 69.w,
+                  ),
                 ),
               ),
               FloatingNavbarItem(
                   icon: Icons.chat_bubble_outline,
                   title: 'Chats',
-                  customWidget: Image.asset(
-                    'assets/images/png/bottom_nav_notification.png',
-                    color: controller.index.value == 2
-                        ? Color(0xFFEFFFC0)
-                        : Colors.white,
-                    height: 68.h,
-                    width: 68.w,
+                  customWidget: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 50.w),
+                    child: Image.asset(
+                      'assets/images/png/bottom_nav_notification.png',
+                      color: controller.index.value == 2
+                          ? Color(0xFFEFFFC0)
+                          : Colors.white,
+                      height: 68.h,
+                      width: 68.w,
+                    ),
                   )),
               FloatingNavbarItem(
                   icon: Icons.settings,
                   title: 'Settings',
-                  customWidget: Image.asset(
-                    'assets/images/png/bottom_nav_profile.png',
-                    color: controller.index.value == 3
-                        ? Color(0xFFEFFFC0)
-                        : Colors.white,
-                    height: 99.h,
-                    width: 99.w,
+                  customWidget: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 50.w),
+                    child: Image.asset(
+                      'assets/images/png/bottom_nav_profile.png',
+                      color: controller.index.value == 3
+                          ? Color(0xFFEFFFC0)
+                          : Colors.white,
+                      height: 99.h,
+                      width: 99.w,
+                    ),
                   )),
             ],
           ),
