@@ -2,12 +2,15 @@
 
 import 'dart:ffi';
 import 'dart:io';
+import 'dart:typed_data';
+import 'dart:ui';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
@@ -15,6 +18,8 @@ import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:screenshot/screenshot.dart';
 
 import 'package:share_plus/share_plus.dart';
 import 'package:social_type/common/custom_colors.dart';
@@ -25,6 +30,7 @@ import 'package:social_type/views/home/views/home_view.dart';
 import 'package:social_type/views/home/views/main/controllers/main_controller.dart';
 
 import 'package:social_type/views/home/views/profile/views/profile_view.dart';
+import 'package:social_type/views/home/views/share/views/post_share_view.dart';
 import 'package:social_type/views/home/views/viral/controllers/viral_controller.dart';
 import 'package:social_type/views/home/views/viral/views/search_view.dart';
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
@@ -43,6 +49,8 @@ class MainViewState extends State<MainView> {
 
     super.initState();
   }
+
+  
 
   RxBool isFollowButtonLoading = false.obs;
   RxBool isLiked = false.obs;
@@ -607,11 +615,15 @@ class MainViewState extends State<MainView> {
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.end,
                               children: [
-                                FirebaseAuth.instance.currentUser!.uid == userId
+                                FirebaseAuth.instance.currentUser!.uid ==
+                                        userId
                                     ? ZoomTapAnimation(
-                                        onTap: () {
-                                          Share.share(
-                                              'Check out my post ${documents[postIndex]['post_photo']}');
+                                        onTap: ()  {
+                                    Get.to(PostShareView(imageUrl: documents[postIndex]['post_photo'],description:  documents[postIndex]['description']));
+                                          // await _shareScreenshot();
+                                     
+          
+                                          print('this');
                                         },
                                         child: Opacity(
                                           opacity: 0.6,
@@ -683,7 +695,7 @@ class MainViewState extends State<MainView> {
                                 //                             child:
                                 //                                 const CircularProgressIndicator());
                                 //                       }
-
+          
                                 //                       if (snapshot.data!) {
                                 //                         // return const Text("Unfollow",);
                                 //                         return Text(
@@ -763,8 +775,8 @@ class MainViewState extends State<MainView> {
                                         color: Color(0xFF9EA2A3),
                                       ),
                                       child: StreamBuilder(
-                                        stream: isUserIdInPostLikes(
-                                                userId, documents[postIndex].id)
+                                        stream: isUserIdInPostLikes(userId,
+                                                documents[postIndex].id)
                                             .asStream(),
                                         builder: (context, snapshot) {
                                           if (!snapshot.hasData) {

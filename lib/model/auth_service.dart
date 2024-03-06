@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'dart:ui';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -195,6 +196,17 @@ class AuthService {
     }
   }
 
+  String generateRandomString(int length) {
+    final random = Random();
+    final chars =
+        'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890';
+    String code = '';
+    for (var i = 0; i < length; i++) {
+      code += chars[random.nextInt(chars.length)];
+    }
+    return code;
+  }
+
   addUserToFirestore(
       String uid, String? email, String name, String userName) async {
     try {
@@ -209,9 +221,25 @@ class AuthService {
         'has_posted': false,
         'followers': [],
         'following': [],
-        'requests':[],
-            'verified_user': false,
+        'requests': [],
+        'verified_user': false,
         'vip_user': false,
+        'invitations': [
+          // Add multiple invitations with random codes and false 'used' values
+          {
+            'code': generateRandomString(10), // Adjust code length as needed
+            'used': false,
+          },
+          {
+            'code': generateRandomString(10),
+            'used': false,
+          },
+          {
+            'code': generateRandomString(10),
+            'used': false,
+          },
+          // ... Add more invitations as required
+        ],
       });
     } catch (error) {
       //to show popup

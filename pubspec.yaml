@@ -61,6 +61,11 @@ dependencies:
   firebase_messaging: ^14.7.15
   oktoast: ^3.4.0
   share_plus: ^7.2.2
+  firebase_dynamic_links: ^5.4.16
+  image: ^4.1.7
+  network_image: ^0.1.1
+  screenshot: ^2.1.0
+  path_provider: ^2.1.2
 
 dev_dependencies:
   flutter_test:

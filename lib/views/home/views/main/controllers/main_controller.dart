@@ -9,8 +9,10 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:oktoast/oktoast.dart';
+import 'package:screenshot/screenshot.dart';
 
 class MainController extends GetxController {
+   final screenshotController = ScreenshotController();
 
   Future<String?> getUsernameByUid(String userUid)async{
     final userDoc =

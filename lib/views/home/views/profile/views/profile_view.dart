@@ -10,6 +10,7 @@ import 'package:get_storage/get_storage.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:social_type/common/custom_colors.dart';
 import 'package:social_type/controllers/app_controller.dart';
+import 'package:social_type/model/referral_system.dart';
 import 'package:social_type/views/authentication/views/login_view.dart';
 import 'package:social_type/views/home/controllers/home_controller.dart';
 import 'package:social_type/views/home/views/main/controllers/main_controller.dart';
@@ -18,6 +19,8 @@ import 'package:social_type/views/home/views/profile/controllers/profile_control
 import 'package:social_type/views/home/views/profile/views/edit_profile_view.dart';
 import 'package:social_type/views/home/views/profile/views/follower_view.dart';
 import 'package:social_type/views/home/views/profile/views/following_view.dart';
+import 'package:social_type/views/home/views/profile/views/invitation/views/invitations_view.dart';
+import 'package:social_type/views/home/views/share/views/khe_share_view.dart';
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
 
 class ProfileView extends StatefulWidget {
@@ -25,10 +28,10 @@ class ProfileView extends StatefulWidget {
 
   final String userUid;
   @override
-  State<ProfileView> createState() => _ProfileViewState();
+  State<ProfileView> createState() => ProfileViewState();
 }
 
-class _ProfileViewState extends State<ProfileView> {
+class ProfileViewState extends State<ProfileView> {
   final controller = Get.put(ProfileController());
 
   RxBool isFollow2 = false.obs;
@@ -460,22 +463,27 @@ class _ProfileViewState extends State<ProfileView> {
                                     FirebaseAuth.instance.currentUser!.uid !=
                                             widget.userUid
                                         ? SizedBox()
-                                        : Stack(
-                                            alignment: Alignment.center,
-                                            children: [
-                                              Container(
-                                                height: 100.sp,
-                                                width: 100.sp,
-                                                decoration: BoxDecoration(
-                                                    color: Color(0xFF404040),
-                                                    shape: BoxShape.circle),
-                                              ),
-                                              Image.asset(
-                                                "assets/images/png/share_icon.png",
-                                                height: 76.sp,
-                                                width: 76.sp,
-                                              ),
-                                            ],
+                                        : ZoomTapAnimation(
+                                            onTap: () {
+                                              Get.to(InvitationsView());
+                                            },
+                                            child: Stack(
+                                              alignment: Alignment.center,
+                                              children: [
+                                                Container(
+                                                  height: 100.sp,
+                                                  width: 100.sp,
+                                                  decoration: BoxDecoration(
+                                                      color: Color(0xFF404040),
+                                                      shape: BoxShape.circle),
+                                                ),
+                                                Image.asset(
+                                                  "assets/images/png/share_icon.png",
+                                                  height: 76.sp,
+                                                  width: 76.sp,
+                                                ),
+                                              ],
+                                            ),
                                           ),
                                   ],
                                 ),
@@ -927,10 +935,13 @@ class _ProfileViewState extends State<ProfileView> {
                           ? Center(
                               child: ZoomTapAnimation(
                                 onTap: () async {
-                                  final joinedLinks = khePosts.join(
-                                      '\n'); // Join links with newlines for better formatting
-                                  await Share.share(joinedLinks,
-                                      subject: 'Share Links');
+                                  // final joinedLinks = khePosts.join(
+                                  //     '\n'); // Join links with newlines for better formatting
+                                  // await Share.share(joinedLinks,
+                                  //     subject: 'Share Links');
+                                  Get.to(() => KheShareView(
+                                        document: documents2,
+                                      ));
                                 },
                                 child: Container(
                                   height: 101.h,
@@ -950,7 +961,24 @@ class _ProfileViewState extends State<ProfileView> {
                                 ),
                               ),
                             )
-                          : SizedBox();
+                          : Center(
+                              child: Container(
+                                height: 101.h,
+                                width: 560.w,
+                                decoration: BoxDecoration(
+                                  color: Color(0xFF696969),
+                                  borderRadius: BorderRadius.circular(120.w),
+                                ),
+                                child: Center(
+                                  child: Text(
+                                    "Comparte tu Khé diario",
+                                    style: GoogleFonts.poppins(
+                                        fontWeight: FontWeight.w500,
+                                        color: Color(0xFF494949)),
+                                  ),
+                                ),
+                              ),
+                            );
                     })
 
                 // StreamBuilder(

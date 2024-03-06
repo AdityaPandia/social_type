@@ -323,7 +323,6 @@ class _ViralViewState extends State<ViralView> {
                           SizedBox(
                             height: 40.h,
                           ),
-
                           SizedBox(
                             height: 20.h,
                           ),
@@ -413,8 +412,6 @@ class _ViralViewState extends State<ViralView> {
                                   }),
                                 );
                               })
-
-                 
                         ],
                       ),
                     )),
@@ -501,12 +498,8 @@ class _ViralViewState extends State<ViralView> {
                                 );
                               }),
                             );
-
-                        
                           },
                         ),
-
-                    
                       ],
                     ),
                   ),

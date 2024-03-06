@@ -45,5 +45,10 @@
     <true/>
     <key>UIApplicationSupportsIndirectInputEvents</key>
     <true/>
+    <key>FirebaseDynamicLinksCustomDomains</key>
+    <array>
+        <string>https://custom.domain.io/path1</string>
+        <string>https://custom.domain.io/path2</string>
+    </array>
   </dict>
 </plist>
