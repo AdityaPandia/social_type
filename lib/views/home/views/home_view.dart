@@ -10,6 +10,7 @@ import 'package:social_type/common/floating_navbar_item.dart';
 import 'package:social_type/views/home/controllers/home_controller.dart';
 import 'package:social_type/views/home/views/main/views/main_view.dart';
 import 'package:social_type/views/home/views/notification/views/notification_view.dart';
+import 'package:social_type/views/home/views/profile/views/edit_profile_view.dart';
 import 'package:social_type/views/home/views/profile/views/profile_view.dart';
 import 'package:social_type/views/home/views/viral/controllers/viral_controller.dart';
 import 'package:social_type/views/home/views/viral/views/viral_view.dart';
@@ -39,6 +40,7 @@ class _HomeViewState extends State<HomeView> {
     ViralView(),
     NotificationView(),
     ProfileView(userUid: FirebaseAuth.instance.currentUser!.uid),
+    EditProfileView(),
   ];
 
   List<PersistentBottomNavBarItem> _navBarsItems() {

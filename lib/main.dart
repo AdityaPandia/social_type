@@ -83,6 +83,7 @@ class _MyAppState extends State<MyApp> {
             child: GetMaterialApp(
               title: 'Flutter Demo',
               theme: ThemeData(
+
                 scaffoldBackgroundColor: Color(0xFF101010),
               ),
               home: AnimatedSplashScreen(

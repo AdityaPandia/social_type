@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -19,11 +20,30 @@ class InvitationsView extends StatelessWidget {
         padding: EdgeInsets.symmetric(horizontal: 87.w),
         child: Column(
           children: [
-            Image.asset(
-              "assets/images/png/onboarding_khe.png",
-              color: Colors.white,
-              width: 219.w,
-              height: 90.h,
+            SizedBox(
+              height: 50.h,
+            ),
+            Row(
+              children: [
+                ZoomTapAnimation(
+                    onTap: () => Navigator.pop(context),
+                    child: Icon(
+                      CupertinoIcons.back,
+                      color: Colors.white,
+                    )),
+                SizedBox(
+                  width: 300.w,
+                ),
+                Align(
+                  alignment: Alignment.center,
+                  child: Image.asset(
+                    "assets/images/png/onboarding_khe.png",
+                    color: Colors.white,
+                    height: 90.h,
+                    width: 219.w,
+                  ),
+                ),
+              ],
             ),
             SizedBox(
               height: 56.h,

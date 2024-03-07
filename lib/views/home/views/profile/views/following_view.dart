@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -22,7 +23,7 @@ class FollowingView extends StatefulWidget {
 
 class _FollowingViewState extends State<FollowingView> {
   final appController = Get.put(AppController());
-
+  var tappedFollow = [].obs;
   Future<String?> getUidByUsername(String username) async {
     final usersRef = FirebaseFirestore.instance.collection('Users');
 
@@ -53,11 +54,30 @@ class _FollowingViewState extends State<FollowingView> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Image.asset(
-              "assets/images/png/onboarding_khe.png",
-              color: Colors.white,
-              height: 90.h,
-              width: 219.w,
+            SizedBox(
+              height: 50.h,
+            ),
+            Row(
+              children: [
+                ZoomTapAnimation(
+                    onTap: () => Navigator.pop(context),
+                    child: Icon(
+                      CupertinoIcons.back,
+                      color: Colors.white,
+                    )),
+                SizedBox(
+                  width: 300.w,
+                ),
+                Align(
+                  alignment: Alignment.center,
+                  child: Image.asset(
+                    "assets/images/png/onboarding_khe.png",
+                    color: Colors.white,
+                    height: 90.h,
+                    width: 219.w,
+                  ),
+                ),
+              ],
             ),
             SizedBox(
               height: 50.h,
@@ -210,18 +230,25 @@ class _FollowingViewState extends State<FollowingView> {
                                             if (isLoading.value) {
                                             } else {
                                               isLoading.value = true;
-                                              await Get.put(MainController())
-                                                      .isUserIdInFollowers(
+                                              if (await Get.put(
+                                                      MainController())
+                                                  .isUserIdInFollowers(
                                                 following[index],
-                                              )
-                                                  ? await Get.put(
-                                                          MainController())
-                                                      .removeUserIdFromFollowers(
-                                                          following[index])
-                                                  : await Get.put(
-                                                          MainController())
-                                                      .addUserIdToFollowers(
-                                                          following[index]);
+                                              )) {
+                                                await Get.put(MainController())
+                                                    .removeUserIdFromFollowers(
+                                                        following[index]);
+                                              } else {
+                                                tappedFollow.contains(
+                                                        following[index])
+                                                    ? tappedFollow.remove(
+                                                        following[index])
+                                                    : tappedFollow
+                                                        .add(following[index]);
+                                                await Get.put(MainController())
+                                                    .addUserIdToFollowers(
+                                                        following[index]);
+                                              }
                                               isLoading.value = false;
                                               setState(() {});
                                             }
@@ -271,25 +298,50 @@ class _FollowingViewState extends State<FollowingView> {
                                                   );
                                                 } else {
                                                   // return const Text("Follow");
-                                                  return Container(
-                                                    height: 110.h,
-                                                    width: 279.w,
-                                                    decoration: BoxDecoration(
-                                                        color:
-                                                            Color(0xFFC5D6A1),
-                                                        // Color(0xFF817BCA),
-                                                        borderRadius:
-                                                            BorderRadius
-                                                                .circular(
-                                                                    100.w)),
-                                                    child: Center(
-                                                      child: Text(
-                                                        "Follow",
-                                                        style:
-                                                            GoogleFonts.poppins(
-                                                                color: Colors
-                                                                    .white),
-                                                      ),
+                                                  return Obx(
+                                                    () => SizedBox(
+                                                      child:
+                                                          tappedFollow.contains(
+                                                                  following[
+                                                                      index])
+                                                              ? Container(
+                                                                  height: 110.h,
+                                                                  width: 279.w,
+                                                                  decoration:
+                                                                      BoxDecoration(
+                                                                          color: Color(
+                                                                              0xFFFFB37C),
+                                                                          // Color(0xFF817BCA),
+                                                                          borderRadius:
+                                                                              BorderRadius.circular(100.w)),
+                                                                  child: Center(
+                                                                    child: Text(
+                                                                      "Pending",
+                                                                      style: GoogleFonts.poppins(
+                                                                          color:
+                                                                              Colors.white),
+                                                                    ),
+                                                                  ),
+                                                                )
+                                                              : Container(
+                                                                  height: 110.h,
+                                                                  width: 279.w,
+                                                                  decoration:
+                                                                      BoxDecoration(
+                                                                          color: Color(
+                                                                              0xFFC5D6A1),
+                                                                          // Color(0xFF817BCA),
+                                                                          borderRadius:
+                                                                              BorderRadius.circular(100.w)),
+                                                                  child: Center(
+                                                                    child: Text(
+                                                                      "Follow",
+                                                                      style: GoogleFonts.poppins(
+                                                                          color:
+                                                                              Colors.white),
+                                                                    ),
+                                                                  ),
+                                                                ),
                                                     ),
                                                   );
                                                 }

@@ -50,8 +50,6 @@ class MainViewState extends State<MainView> {
     super.initState();
   }
 
-  
-
   RxBool isFollowButtonLoading = false.obs;
   RxBool isLiked = false.obs;
   RxBool isAddCommentLoading = false.obs;
@@ -615,14 +613,16 @@ class MainViewState extends State<MainView> {
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.end,
                               children: [
-                                FirebaseAuth.instance.currentUser!.uid ==
-                                        userId
+                                FirebaseAuth.instance.currentUser!.uid == userId
                                     ? ZoomTapAnimation(
-                                        onTap: ()  {
-                                    Get.to(PostShareView(imageUrl: documents[postIndex]['post_photo'],description:  documents[postIndex]['description']));
+                                        onTap: () {
+                                          Get.to(PostShareView(
+                                              imageUrl: documents[postIndex]
+                                                  ['post_photo'],
+                                              description: documents[postIndex]
+                                                  ['description']));
                                           // await _shareScreenshot();
-                                     
-          
+
                                           print('this');
                                         },
                                         child: Opacity(
@@ -695,7 +695,7 @@ class MainViewState extends State<MainView> {
                                 //                             child:
                                 //                                 const CircularProgressIndicator());
                                 //                       }
-          
+
                                 //                       if (snapshot.data!) {
                                 //                         // return const Text("Unfollow",);
                                 //                         return Text(
@@ -775,8 +775,8 @@ class MainViewState extends State<MainView> {
                                         color: Color(0xFF9EA2A3),
                                       ),
                                       child: StreamBuilder(
-                                        stream: isUserIdInPostLikes(userId,
-                                                documents[postIndex].id)
+                                        stream: isUserIdInPostLikes(
+                                                userId, documents[postIndex].id)
                                             .asStream(),
                                         builder: (context, snapshot) {
                                           if (!snapshot.hasData) {
@@ -1041,7 +1041,7 @@ class MainViewState extends State<MainView> {
 
   final usersRef = FirebaseFirestore.instance.collection('Users');
   // List<double> leftPosition = [65.0, 420.0, 800.0, 600.0, 242.0];
-  List<double> leftPosition = [30.0, 420.0, 770.0, 600.0, 242.0];
+  List<double> leftPosition = [30.0, 400.0, 770.0, 600.0, 200.0];
   List<double> bottomPosition = [444.0, 720.0, 444.0, 20.0, 20.0];
   @override
   Widget build(BuildContext context) {

@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -52,11 +53,30 @@ class _FollowerViewState extends State<FollowerView> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Image.asset(
-              "assets/images/png/onboarding_khe.png",
-              color: Colors.white,
-              height: 90.h,
-              width: 219.w,
+            SizedBox(
+              height: 50.h,
+            ),
+            Row(
+              children: [
+                ZoomTapAnimation(
+                    onTap: () => Navigator.pop(context),
+                    child: Icon(
+                      CupertinoIcons.back,
+                      color: Colors.white,
+                    )),
+                SizedBox(
+                  width: 300.w,
+                ),
+                Align(
+                  alignment: Alignment.center,
+                  child: Image.asset(
+                    "assets/images/png/onboarding_khe.png",
+                    color: Colors.white,
+                    height: 90.h,
+                    width: 219.w,
+                  ),
+                ),
+              ],
             ),
             SizedBox(
               height: 50.h,

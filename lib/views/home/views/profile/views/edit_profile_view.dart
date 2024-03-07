@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -95,8 +96,6 @@ class _EditProfileViewState extends State<EditProfileView> {
             GoogleFonts.poppins(fontSize: 40.sp, color: Color(0xFFC6C6C6)),
         title: "Username already exists",
         middleText: "The username is already in use, please select another one",
-        
-
         contentPadding: EdgeInsets.all(20),
       );
       return;
@@ -106,6 +105,18 @@ class _EditProfileViewState extends State<EditProfileView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+          backgroundColor: Color(0xFF101010),
+          elevation: 0,
+          leading: ZoomTapAnimation(
+            onTap: () {
+              Navigator.pop(context);
+            },
+            child: Icon(
+              CupertinoIcons.back,
+              color: Colors.white,
+            ),
+          )),
       body: Padding(
         padding: EdgeInsets.symmetric(horizontal: 131.w),
         child: Column(
