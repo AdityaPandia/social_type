@@ -66,6 +66,8 @@ dependencies:
   network_image: ^0.1.1
   screenshot: ^2.1.0
   path_provider: ^2.1.2
+  google_mobile_ads: ^4.0.0   
+  cloud_functions: ^4.6.8
 
 dev_dependencies:
   flutter_test:

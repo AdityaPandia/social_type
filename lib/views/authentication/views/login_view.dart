@@ -383,7 +383,7 @@ class _LoginViewState extends State<LoginView> {
                                 ],
                               ),
                             )
-                          : SignUpView()),
+                          : SignUpView(invitationCode: '',)),
             ),
           ),
         ],

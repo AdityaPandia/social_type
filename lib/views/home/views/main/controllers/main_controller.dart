@@ -7,14 +7,43 @@ import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:oktoast/oktoast.dart';
 import 'package:screenshot/screenshot.dart';
 
 class MainController extends GetxController {
-   final screenshotController = ScreenshotController();
+  NativeAd? nativeAd;
+  RxBool isAdLoaded = false.obs;
+  final String adUnitId = "ca-app-pub-3940256099942544/2247696110";
 
-  Future<String?> getUsernameByUid(String userUid)async{
+  loadAd() {
+    nativeAd = NativeAd(
+        adUnitId: adUnitId,
+        listener: NativeAdListener(
+          onAdLoaded: (ad) {
+            isAdLoaded.value = true;
+            print("Ad Loaded");
+          },
+          onAdFailedToLoad: (ad, error) {
+            isAdLoaded.value = false;
+          },
+        ),
+        request: const AdRequest(),
+        nativeTemplateStyle:
+            NativeTemplateStyle(templateType: TemplateType.small));
+    nativeAd!.load();
+  }
+
+  @override
+  void dispose() {
+    nativeAd?.dispose();
+    super.dispose();
+  }
+
+  final screenshotController = ScreenshotController();
+
+  Future<String?> getUsernameByUid(String userUid) async {
     final userDoc =
         await FirebaseFirestore.instance.collection('Users').doc(userUid).get();
 
@@ -23,18 +52,17 @@ class MainController extends GetxController {
     }
 
     final username = userDoc.data()!['username'];
-    if (username== null) {
+    if (username == null) {
       return null; // username field not found or empty
     }
 
     return username; // Return the username
   }
 
- 
-Future<String?>getUserNameByUid(String uid)async{
-  final userDoc =
+  Future<String?> getUserNameByUid(String uid) async {
+    final userDoc =
         await FirebaseFirestore.instance.collection('Users').doc(uid).get();
-          if (!userDoc.exists) {
+    if (!userDoc.exists) {
       return null; // User document not found
     }
 
@@ -44,7 +72,7 @@ Future<String?>getUserNameByUid(String uid)async{
     }
 
     return name; // Return the email address
-}
+  }
 
   getCapturedPost(XFile pickedFile) async {
     final storageRef =
@@ -53,7 +81,7 @@ Future<String?>getUserNameByUid(String uid)async{
     return await uploadTask;
   }
 
-  Future<void> addUserIdToFollowers(String ?userId) async {
+  Future<void> addUserIdToFollowers(String? userId) async {
     try {
       String currentUserId = FirebaseAuth.instance.currentUser!.uid;
       DocumentReference uidReferene =
@@ -62,15 +90,12 @@ Future<String?>getUserNameByUid(String uid)async{
       Map<String, dynamic> uidData =
           uidSnapshot.data() as Map<String, dynamic>? ?? {};
 //
-List<dynamic> requests=uidData['requests']??[];
-if(!requests.contains(currentUserId)){
-  requests.add(currentUserId);
-  await uidReferene.update({'requests':requests});
-}else{
-
-}
-    }catch(e){}
-
+      List<dynamic> requests = uidData['requests'] ?? [];
+      if (!requests.contains(currentUserId)) {
+        requests.add(currentUserId);
+        await uidReferene.update({'requests': requests});
+      } else {}
+    } catch (e) {}
 
 //everything after this wont happen
     //   List<dynamic> followers = uidData['followers'] ?? [];
@@ -93,7 +118,7 @@ if(!requests.contains(currentUserId)){
     // }
   }
 
-  Future<void> removeUserIdFromFollowers(String ?userId) async {
+  Future<void> removeUserIdFromFollowers(String? userId) async {
     try {
       String currentUserId = FirebaseAuth.instance.currentUser!.uid;
       DocumentReference uidReference =
@@ -109,8 +134,7 @@ if(!requests.contains(currentUserId)){
         followers.remove(currentUserId);
 
         await uidReference.update({'followers': followers});
-      } else {
-      }
+      } else {}
 
       DocumentReference currentUserReference =
           FirebaseFirestore.instance.collection('Users').doc(currentUserId);
@@ -121,15 +145,13 @@ if(!requests.contains(currentUserId)){
       following.remove(userId);
       await currentUserReference.update({'following': following});
     } catch (e) {
-     //error adding
+      //error adding
     }
   }
 
-  
-
-  Future<bool> isUserIdInFollowers(String ?userId) async {
+  Future<bool> isUserIdInFollowers(String? userId) async {
     try {
-      String currentUserId =  FirebaseAuth.instance.currentUser!.uid;
+      String currentUserId = FirebaseAuth.instance.currentUser!.uid;
       DocumentReference uidReference =
           FirebaseFirestore.instance.collection('Users').doc(userId);
 
@@ -141,7 +163,7 @@ if(!requests.contains(currentUserId)){
 
       return followers.contains(currentUserId);
     } catch (e) {
- //error checking
+      //error checking
       return false;
     }
   }
@@ -186,16 +208,14 @@ if(!requests.contains(currentUserId)){
         'comments': [],
       });
 
-   
-
       await usersCollection.doc(FirebaseAuth.instance.currentUser!.uid).update({
         'has_posted': true,
       });
 
-  //post updated
+      //post updated
     } on PlatformException catch (e) {
-showToast("$e",position: ToastPosition(align: Alignment.bottomCenter));
- //error
+      showToast("$e", position: ToastPosition(align: Alignment.bottomCenter));
+      //error
     }
   }
 }

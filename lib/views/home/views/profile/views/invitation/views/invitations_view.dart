@@ -138,7 +138,7 @@ class InvitationsView extends StatelessWidget {
                                                   {'invitations': invitations});
                                             }
                                             await DynamicLinkProvider()
-                                                .createLink("ABCDEFGHI")
+                                                .createLink(code)
                                                 .then((value) =>
                                                     Share.share(value));
                                             isLoadingIndex.value = 99;

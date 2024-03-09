@@ -14,11 +14,14 @@ import 'package:zoom_tap_animation/zoom_tap_animation.dart';
 class SignUpView extends StatelessWidget {
   const SignUpView({
     super.key,
+    required this.invitationCode,
   });
+  final String invitationCode;
 
   @override
   Widget build(BuildContext context) {
     final controller = Get.put(AuthenticationController());
+    controller.invitationCodeController.text = invitationCode;
     return PopScope(
       canPop: false,
       onPopInvoked: (didPop) {
@@ -28,7 +31,7 @@ class SignUpView extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(
-            height: 350.h,
+            height: 290.h,
           ),
           Center(
             child: Image.asset(
@@ -160,6 +163,34 @@ class SignUpView extends StatelessWidget {
           SizedBox(
             height: 60.h,
           ),
+          Container(
+            decoration: BoxDecoration(
+              border: Border.all(width: 6.sp, color: Colors.white),
+              borderRadius: BorderRadius.circular(30.w),
+            ),
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 48.w),
+              child: TextField(
+                // controller: controller.passController,
+                controller: controller.invitationCodeController,
+                style: GoogleFonts.archivo(
+                    fontSize: 40.sp,
+                    fontWeight: FontWeight.w400,
+                    color: Colors.white),
+                decoration: InputDecoration(
+                    border: InputBorder.none,
+                    // hintText:"Invitation Code",
+                    hintText: "Invitación Código",
+                    hintStyle: GoogleFonts.archivo(
+                        fontSize: 40.sp,
+                        fontWeight: FontWeight.w400,
+                        color: Colors.white)),
+              ),
+            ),
+          ),
+          SizedBox(
+            height: 60.h,
+          ),
           Align(
               alignment: Alignment.centerRight,
               child: Text(
@@ -247,9 +278,12 @@ class SignUpView extends StatelessWidget {
             onTap: () async {
               if (controller.isActiveButtonLoading.value) {
               } else {
-                controller.isEmailSignUpActive()
-                    ? await AuthService().emailSignUp()
-                    : null;
+                if (controller.isEmailSignUpActive()) {
+                  if (await controller.checkInvitationCode(
+                      controller.invitationCodeController.text)) {
+                    await AuthService().emailSignUp();
+                  } else {}
+                } else {}
               }
             },
             child: Obx(
@@ -297,7 +331,6 @@ class SignUpView extends StatelessWidget {
               TextSpan(
                   recognizer: TapGestureRecognizer()
                     ..onTap = () {
-                 
                       controller.isLoginPage.value = true;
                     },
                   // text: "Login now",

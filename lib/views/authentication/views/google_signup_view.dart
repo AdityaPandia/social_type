@@ -91,7 +91,8 @@ class GoogleSignUpView extends StatelessWidget {
                     color: Colors.white),
                 decoration: InputDecoration(
                     border: InputBorder.none,
-                    hintText: "Full Name",
+                    // hintText: "Full Name",
+                    hintText: "Nombre completo",
                     hintStyle: GoogleFonts.archivo(
                         fontSize: 40.sp,
                         fontWeight: FontWeight.w400,
@@ -117,7 +118,35 @@ class GoogleSignUpView extends StatelessWidget {
                     color: Colors.white),
                 decoration: InputDecoration(
                     border: InputBorder.none,
-                    hintText: "Username",
+                    // hintText: "Username",
+                    hintText: "Nombre de usuario",
+                    hintStyle: GoogleFonts.archivo(
+                        fontSize: 40.sp,
+                        fontWeight: FontWeight.w400,
+                        color: Colors.white)),
+              ),
+            ),
+          ),
+          SizedBox(
+            height: 60.h,
+          ),
+          Container(
+            decoration: BoxDecoration(
+              border: Border.all(width: 6.sp, color: Colors.white),
+              borderRadius: BorderRadius.circular(30.w),
+            ),
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 48.w),
+              child: TextField(
+                controller: controller.invitationCodeController,
+                style: GoogleFonts.archivo(
+                    fontSize: 40.sp,
+                    fontWeight: FontWeight.w400,
+                    color: Colors.white),
+                decoration: InputDecoration(
+                    border: InputBorder.none,
+                    // hintText: "Full Name",
+                    hintText: "Invitación Código",
                     hintStyle: GoogleFonts.archivo(
                         fontSize: 40.sp,
                         fontWeight: FontWeight.w400,
@@ -133,7 +162,10 @@ class GoogleSignUpView extends StatelessWidget {
               if (controller.isGoogleSignupLoading.value) {
               } else {
                 if (controller.isGoogleSignupNext.value &&
-                    controller.isUserNameDone.value) {
+                    controller.isUserNameDone.value && await controller.checkInvitationCode(
+                      controller.invitationCodeController.text) )  {
+
+                      
                   controller.isGoogleSignupLoading.value = true;
                   final storage = GetStorage();
                   FirebaseAuth auth = FirebaseAuth.instance;
@@ -169,7 +201,7 @@ class GoogleSignUpView extends StatelessWidget {
                     await storage.write('isSignInDone', true).then((value) {
                       controller.isGoogleSignupLoading.value = false;
                       // Get.offAll(() => HomeView());
-                      Get.off(()=>ProfilePhotoView());
+                      Get.off(() => ProfilePhotoView());
                     });
                   }
                   ;
@@ -207,7 +239,6 @@ class GoogleSignUpView extends StatelessWidget {
               ),
             ),
           ),
-       
         ],
       ),
     );

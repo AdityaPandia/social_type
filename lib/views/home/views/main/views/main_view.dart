@@ -17,6 +17,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:screenshot/screenshot.dart';
@@ -43,11 +44,30 @@ class MainView extends StatefulWidget {
 }
 
 class MainViewState extends State<MainView> {
+  // RxBool isNativeLoaded = false.obs;
+  // late NativeAd nativeAd;
+
+  // void initializeNativeAd() async {
+  //   nativeAd = NativeAd(
+  //     adUnitId: 'ca-app-pub-2267033917603352/3348843130',
+  //     listener: NativeAdListener(onAdLoaded: (ad) {
+  //       isNativeLoaded.value = true;
+  //     }, onAdFailedToLoad: (ad, error) {
+  //       isNativeLoaded.value = false;
+  //       nativeAd.dispose();
+  //       print(error);
+  //     }),
+  //     request: const AdManagerAdRequest(),
+  //   );
+  //   nativeAd.load();
+  // }
+
   @override
   void initState() {
     // TODO: implement initState
 
     super.initState();
+    controller.loadAd();
   }
 
   RxBool isFollowButtonLoading = false.obs;
@@ -1474,11 +1494,30 @@ class MainViewState extends State<MainView> {
                                   (documents1[i]['followers'].contains(
                                       FirebaseAuth.instance.currentUser!.uid))
                               ? Center(
-                                  child: Container(
-                                    decoration:
-                                        BoxDecoration(color: Color(0xFFD9D9D9)),
-                                    height: 2.sp,
-                                    width: 350.w,
+                                  child: Column(
+                                    children: [
+                                      Container(
+                                        decoration: BoxDecoration(
+                                            color: Color(0xFFD9D9D9)),
+                                        height: 2.sp,
+                                        width: 350.w,
+                                      ),
+                                      SizedBox(
+                                        height: 130.h,
+                                      ),
+                                      Obx(()=>
+                                         Padding(
+                                          padding: EdgeInsets.symmetric(
+                                              horizontal: 200.w),
+                                          child: SizedBox(
+                                            height: 560.h,
+                                            child: controller.isAdLoaded.value? AdWidget(
+                                                    ad: controller.nativeAd!):SizedBox(),
+                                               
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 )
                               : SizedBox(),
