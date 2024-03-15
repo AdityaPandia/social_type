@@ -13,9 +13,20 @@ import 'package:oktoast/oktoast.dart';
 import 'package:screenshot/screenshot.dart';
 
 class MainController extends GetxController {
+
   NativeAd? nativeAd;
   RxBool isAdLoaded = false.obs;
-  final String adUnitId = "ca-app-pub-3940256099942544/2247696110";
+  final String adUnitId =
+      "ca-app-pub-3940256099942544/2247696110"; //REPLACE AD UNIT HERE
+  Widget bannerAdWidget() {
+    return StatefulBuilder(
+      builder: (context, setState) => Container(
+        child: AdWidget(ad: nativeAd!),
+        height: 350.h,
+        alignment: Alignment.center,
+      ),
+    );
+  }
 
   loadAd() {
     nativeAd = NativeAd(
@@ -206,6 +217,7 @@ class MainController extends GetxController {
         'description': description,
         'likes': [],
         'comments': [],
+        'uid': user.uid,
       });
 
       await usersCollection.doc(FirebaseAuth.instance.currentUser!.uid).update({

@@ -666,116 +666,11 @@ class MainViewState extends State<MainView> {
                                         ),
                                       )
                                     : SizedBox(),
-                                // : ZoomTapAnimation(
-                                //     onTap: () async {
-                                //       isFollowButtonLoading.value = true;
-                                //       await controller.isUserIdInFollowers(
-                                //         userId,
-                                //       )
-                                //           ? await controller
-                                //               .removeUserIdFromFollowers(
-                                //                   userId)
-                                //           : await controller
-                                //               .addUserIdToFollowers(userId);
-                                //       isFollowButtonLoading.value = false;
-                                //       tappedFolloIcons.contains(userId)
-                                //           ? tappedFolloIcons.remove(userId)
-                                //           : tappedFolloIcons.add(userId);
-                                //     },
-                                //     child: Obx(
-                                //       () => Opacity(
-                                //         opacity: 0.6,
-                                //         child: Container(
-                                //           height: 150.sp,
-                                //           width: 150.sp,
-                                //           decoration: const BoxDecoration(
-                                //             shape: BoxShape.circle,
-                                //             color: Color(0xFF9EA2A3),
-                                //           ),
-                                //           child: Center(
-                                //             child: isFollowButtonLoading
-                                //                     .value
-                                //                 ? SizedBox(
-                                //                     height: 40.h,
-                                //                     width: 20.h,
-                                //                     child:
-                                //                         const CircularProgressIndicator())
-                                //                 : StreamBuilder(
-                                //                     stream: controller
-                                //                         .isUserIdInFollowers(
-                                //                             userId)
-                                //                         .asStream(),
-                                //                     builder: (context,
-                                //                         snapshot) {
-                                //                       if (!snapshot
-                                //                           .hasData) {
-                                //                         return SizedBox(
-                                //                             height: 40.h,
-                                //                             width: 20.h,
-                                //                             child:
-                                //                                 const CircularProgressIndicator());
-                                //                       }
-
-                                //                       if (snapshot.data!) {
-                                //                         // return const Text("Unfollow",);
-                                //                         return Text(
-                                //                           "Unfollow",
-                                //                           style: GoogleFonts.poppins(
-                                //                               color: const Color
-                                //                                   .fromRGBO(
-                                //                                   255,
-                                //                                   255,
-                                //                                   255,
-                                //                                   1),
-                                //                               fontSize:
-                                //                                   20.sp),
-                                //                         );
-                                //                       } else {
-                                //                         // return const Text("Follow");
-                                //                         return Obx(
-                                //                           () => tappedFolloIcons
-                                //                                   .contains(
-                                //                                       userId)
-                                //                               ? Center(
-                                //                                   child:
-                                //                                       Text(
-                                //                                     "Pending",
-                                //                                     style: TextStyle(
-                                //                                         color:
-                                //                                             Colors.white,
-                                //                                         fontSize: 20.sp),
-                                //                                   ),
-                                //                                 )
-                                //                               : Center(
-                                //                                   child: Image
-                                //                                       .asset(
-                                //                                     "assets/images/png/follow_icon.png",
-                                //                                     height:
-                                //                                         70.sp,
-                                //                                     width: 70
-                                //                                         .sp,
-                                //                                   ),
-                                //                                 ),
-                                //                         );
-                                //                       }
-                                //                     },
-                                //                   ),
-                                //           ),
-                                //         ),
-                                //       ),
-                                //     ),
-                                //   ),
                                 SizedBox(
                                   height: 66.h,
                                 ),
                                 ZoomTapAnimation(
                                   onTap: () async {
-                                    // await isUserIdInPostLikes(
-                                    //         userId, documents[postIndex].id)
-                                    //     ? await removeUserIdFromPostLikes(
-                                    //         userId, documents[postIndex].id)
-                                    //     : await addUserIdToPostLikes(
-                                    //         userId, documents[postIndex].id);
                                     if (await isUserIdInPostLikes(
                                         userId, documents[postIndex].id)) {
                                       await removeUserIdFromPostLikes(
@@ -1174,359 +1069,362 @@ class MainViewState extends State<MainView> {
                   height: 74.h,
                 ),
                 StreamBuilder<QuerySnapshot>(
-                  stream: userCollection.snapshots(),
+                  stream: FirebaseFirestore.instance
+                      .collection('Users')
+                      .snapshots(),
                   builder: (context, snapshot) {
                     if (!snapshot.hasData) {
                       return CircularProgressIndicator();
                     }
                     final documents1 = snapshot.data!.docs;
-                    return Column(
-                      children: [
-                        for (int i = 0; i < documents1.length; i++) ...[
-                          (documents1[i].id !=
-                                      FirebaseAuth.instance.currentUser!.uid) &&
-                                  (documents1[i]['has_posted'] &&
-                                      (documents1[i]['followers'].contains(
-                                          FirebaseAuth
-                                              .instance.currentUser!.uid)))
-                              ? SizedBox(
-                                  height: 1100.h,
-                                  child: Stack(
-                                    children: [
-                                      SizedBox(
-                                        height: 1000.h,
-                                        child: StreamBuilder(
-                                            stream: FirebaseFirestore.instance
-                                                .collection('Users')
-                                                .doc(documents1[i].id)
-                                                .collection('Posts')
-                                                .snapshots(),
-                                            builder: (context, snapshot) {
-                                              if (!snapshot.hasData) {
-                                                return CircularProgressIndicator();
-                                              }
-                                              final documents2 =
-                                                  snapshot.data!.docs;
-                                              final totalPosts =
-                                                  documents2.length;
-                                              return Stack(
-                                                children: [
-                                                  Center(
-                                                    child: totalPosts - 1 != 5
-                                                        ? Image.asset(
-                                                            "assets/images/png/post_photo_border.png",
-                                                            height: 803.sp,
-                                                            width: 803.sp,
-                                                          )
-                                                        : Image.asset(
-                                                            height: 803.sp,
-                                                            width: 803.sp,
-                                                            "assets/images/png/post_completed_border.png"),
-                                                  ),
-                                                  Stack(
-                                                    children: [
-                                                      for (int j = 0;
-                                                          j <
-                                                              documents2
-                                                                      .length -
-                                                                  1;
-                                                          j++) ...[
-                                                        // documents2[j].id != 'init'
-                                                        //     ?
-                                                        Positioned(
-                                                          left:
-                                                              leftPosition[j].w,
-                                                          bottom:
-                                                              bottomPosition[j]
-                                                                  .h,
-                                                          child: documents2[j]
-                                                                      .id ==
-                                                                  'init'
-                                                              ? SizedBox()
-                                                              : ZoomTapAnimation(
-                                                                  onTap:
-                                                                      () async {
-                                                                    await viewPost(
-                                                                        documents1[i]
-                                                                            .id,
-                                                                        j,
-                                                                        context);
-                                                                  },
-                                                                  child:
-                                                                      ClipRRect(
-                                                                    borderRadius:
-                                                                        BorderRadius.circular(
-                                                                            200.w),
+
+                    return ListView.builder(
+                      shrinkWrap: true,
+                      physics: NeverScrollableScrollPhysics(),
+                      itemCount: documents1.length,
+                      itemBuilder: (context, i) {
+                        return (documents1[i].id ==
+                                        FirebaseAuth
+                                            .instance.currentUser!.uid &&
+                                    documents1[i]['has_posted']) ||
+                                (documents1[i]['has_posted'] &&
+                                    (documents1[i]['followers'].contains(
+                                        FirebaseAuth
+                                            .instance.currentUser!.uid)))
+                            ? Column(
+                                children: [
+                                  SizedBox(
+                                    height: 1100.h,
+                                    child: Stack(
+                                      children: [
+                                        SizedBox(
+                                          height: 1000.h,
+                                          child: StreamBuilder(
+                                              stream: FirebaseFirestore.instance
+                                                  .collection('Users')
+                                                  .doc(documents1[i].id)
+                                                  .collection('Posts')
+                                                  .snapshots(),
+                                              builder: (context, snapshot) {
+                                                if (!snapshot.hasData) {
+                                                  return CircularProgressIndicator();
+                                                }
+                                                final documents2 =
+                                                    snapshot.data!.docs;
+                                                final totalPosts =
+                                                    documents2.length;
+
+                                                return Stack(
+                                                  children: [
+                                                    Center(
+                                                      child: totalPosts - 1 != 5
+                                                          ? Image.asset(
+                                                              "assets/images/png/post_photo_border.png",
+                                                              height: 803.sp,
+                                                              width: 803.sp,
+                                                            )
+                                                          : Image.asset(
+                                                              height: 803.sp,
+                                                              width: 803.sp,
+                                                              "assets/images/png/post_completed_border.png"),
+                                                    ),
+                                                    Stack(
+                                                      children: [
+                                                        for (int j = 0;
+                                                            j <
+                                                                documents2
+                                                                        .length -
+                                                                    1;
+                                                            j++) ...[
+                                                          // documents2[j].id != 'init'
+                                                          //     ?
+                                                          Positioned(
+                                                            left:
+                                                                leftPosition[j]
+                                                                    .w,
+                                                            bottom:
+                                                                bottomPosition[
+                                                                        j]
+                                                                    .h,
+                                                            child: documents2[j]
+                                                                        .id ==
+                                                                    'init'
+                                                                ? SizedBox()
+                                                                : ZoomTapAnimation(
+                                                                    onTap:
+                                                                        () async {
+                                                                      await viewPost(
+                                                                          documents1[i]
+                                                                              .id,
+                                                                          j,
+                                                                          context);
+                                                                    },
                                                                     child:
-                                                                        SizedBox(
-                                                                      height:
-                                                                          275.sp,
-                                                                      width: 275
-                                                                          .sp,
+                                                                        ClipRRect(
+                                                                      borderRadius:
+                                                                          BorderRadius.circular(
+                                                                              200.w),
                                                                       child:
-                                                                          CachedNetworkImage(
-                                                                        placeholder:
-                                                                            (context,
-                                                                                val) {
-                                                                          return SizedBox(
-                                                                            width:
-                                                                                31.w,
-                                                                            child:
-                                                                                Center(
-                                                                              child: Text(
-                                                                                "Loading",
-                                                                                style: TextStyle(
-                                                                                  fontWeight: FontWeight.bold,
-                                                                                  color: Colors.white,
-                                                                                  fontSize: 34.sp,
+                                                                          SizedBox(
+                                                                        height:
+                                                                            275.sp,
+                                                                        width: 275
+                                                                            .sp,
+                                                                        child:
+                                                                            CachedNetworkImage(
+                                                                          placeholder:
+                                                                              (context, val) {
+                                                                            return SizedBox(
+                                                                              width: 31.w,
+                                                                              child: Center(
+                                                                                child: Text(
+                                                                                  "Loading",
+                                                                                  style: TextStyle(
+                                                                                    fontWeight: FontWeight.bold,
+                                                                                    color: Colors.white,
+                                                                                    fontSize: 34.sp,
+                                                                                  ),
                                                                                 ),
                                                                               ),
-                                                                            ),
-                                                                          );
-                                                                        },
-                                                                        imageUrl:
-                                                                            documents2[j]['post_photo'],
-                                                                        fit: BoxFit
-                                                                            .fill,
+                                                                            );
+                                                                          },
+                                                                          imageUrl:
+                                                                              documents2[j]['post_photo'],
+                                                                          fit: BoxFit
+                                                                              .fill,
+                                                                        ),
                                                                       ),
                                                                     ),
                                                                   ),
-                                                                ),
-                                                        ),
-                                                      ]
-                                                      // for (int j = 0; j < 5; j++) ...[
-                                                      //   Positioned(
-                                                      //       left: leftPosition[j].w,
-                                                      //       bottom:
-                                                      //           bottomPosition[j].h,
-                                                      //       child: Container(
-                                                      //         height: 220.sp,
-                                                      //         width: 220.sp,
-                                                      //         color: Colors.red,
-                                                      //       )),
-                                                      // ]
-                                                    ],
-                                                  ),
-                                                  //got pasted here
-                                                  ZoomTapAnimation(
-                                                    onTap: () async {
-                                                      Get.to(() =>
-                                                          // UserProfileView(
-                                                          //   userUid:
-                                                          //       documents1[i]
-                                                          //           .id,
-                                                          // )
-                                                          ProfileView(
-                                                              userUid:
-                                                                  documents1[i]
-                                                                      .id));
-                                                    },
-                                                    child: Align(
-                                                      alignment:
-                                                          Alignment.center,
-                                                      child: Stack(
-                                                        children: [
-                                                          Center(
-                                                            child: ClipRRect(
-                                                              borderRadius:
-                                                                  BorderRadius
-                                                                      .circular(
-                                                                          200.w),
-                                                              child: SizedBox(
-                                                                height: 365.sp,
-                                                                width: 365.sp,
-                                                                child: documents1[i]
-                                                                            [
-                                                                            'profile_photo'] ==
-                                                                        ""
-                                                                    ? Stack(
-                                                                        children: [
-                                                                          Center(
-                                                                            child:
-                                                                                Container(
-                                                                              decoration: BoxDecoration(
-                                                                                color: CustomColors.backgroundColor,
-                                                                              ),
-                                                                              child: Icon(
-                                                                                Icons.person,
-                                                                                size: 64.sp,
-                                                                                color: CustomColors.textColor,
-                                                                              ),
-                                                                            ),
-                                                                          ),
-                                                                          Align(
-                                                                            alignment:
-                                                                                Alignment.bottomCenter,
-                                                                            child:
-                                                                                Padding(
-                                                                              padding: EdgeInsets.only(bottom: 77.h),
-                                                                              child: FutureBuilder(
-                                                                                  future: Get.put(AppController()).getUsername(documents1[i].id),
-                                                                                  builder: (context, snapshot) {
-                                                                                    if (snapshot.connectionState == ConnectionState.done) {
-                                                                                      return Opacity(
-                                                                                        opacity: 0.7,
-                                                                                        child: Container(
-                                                                                          decoration: BoxDecoration(color: Colors.grey, borderRadius: BorderRadius.circular(40.w)),
-
-                                                                                          // width: 350.w,
-                                                                                          child: Padding(
-                                                                                            padding: EdgeInsets.symmetric(horizontal: 30.w, vertical: 5.h),
-                                                                                            child: Text(
-                                                                                              "@${snapshot.data}",
-                                                                                              style: GoogleFonts.poppins(fontSize: 24.sp, fontWeight: FontWeight.w600, color: Colors.white),
-                                                                                            ),
-                                                                                          ),
-                                                                                        ),
-                                                                                      );
-                                                                                    } else {
-                                                                                      return SizedBox(
-                                                                                        width: 12.sp,
-                                                                                        height: 12.sp,
-                                                                                        child: CircularProgressIndicator(
-                                                                                          color: CustomColors.textColor2,
-                                                                                        ),
-                                                                                      );
-                                                                                    }
-                                                                                  }),
-                                                                            ),
-                                                                          ),
-                                                                        ],
-                                                                      )
-                                                                    : Stack(
-                                                                        // alignment:
-                                                                        //     Alignment.center,
-                                                                        children: [
-                                                                          Center(
-                                                                            child:
-                                                                                ClipRRect(
-                                                                              borderRadius: BorderRadius.circular(2000),
-                                                                              child: SizedBox(
-                                                                                height: 225.sp,
-                                                                                width: 225.sp,
-                                                                                child: CachedNetworkImage(
-                                                                                  placeholder: (context, val) {
-                                                                                    return SizedBox(
-                                                                                      width: 31.w,
-                                                                                      child: Center(
-                                                                                        child: Text(
-                                                                                          "Loading",
-                                                                                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 34.sp, color: Colors.white),
-                                                                                        ),
-                                                                                      ),
-                                                                                    );
-                                                                                  },
-                                                                                  imageUrl: documents1[i]['profile_photo'],
-                                                                                  fit: BoxFit.fill,
+                                                          ),
+                                                        ]
+                                                        // for (int j = 0; j < 5; j++) ...[
+                                                        //   Positioned(
+                                                        //       left: leftPosition[j].w,
+                                                        //       bottom:
+                                                        //           bottomPosition[j].h,
+                                                        //       child: Container(
+                                                        //         height: 220.sp,
+                                                        //         width: 220.sp,
+                                                        //         color: Colors.red,
+                                                        //       )),
+                                                        // ]
+                                                      ],
+                                                    ),
+                                                    //got pasted here
+                                                    ZoomTapAnimation(
+                                                      onTap: () async {
+                                                        Get.to(() =>
+                                                            // UserProfileView(
+                                                            //   userUid:
+                                                            //       documents1[i]
+                                                            //           .id,
+                                                            // )
+                                                            ProfileView(
+                                                                userUid:
+                                                                    documents1[
+                                                                            i]
+                                                                        .id));
+                                                      },
+                                                      child: Align(
+                                                        alignment:
+                                                            Alignment.center,
+                                                        child: Stack(
+                                                          children: [
+                                                            Center(
+                                                              child: ClipRRect(
+                                                                borderRadius:
+                                                                    BorderRadius
+                                                                        .circular(
+                                                                            200.w),
+                                                                child: SizedBox(
+                                                                  height:
+                                                                      365.sp,
+                                                                  width: 365.sp,
+                                                                  child: documents1[i]
+                                                                              [
+                                                                              'profile_photo'] ==
+                                                                          ""
+                                                                      ? Stack(
+                                                                          children: [
+                                                                            Center(
+                                                                              child: Container(
+                                                                                decoration: BoxDecoration(
+                                                                                  color: CustomColors.backgroundColor,
+                                                                                ),
+                                                                                child: Icon(
+                                                                                  Icons.person,
+                                                                                  size: 64.sp,
+                                                                                  color: CustomColors.textColor,
                                                                                 ),
                                                                               ),
                                                                             ),
-                                                                          ),
-                                                                          Align(
-                                                                            alignment:
-                                                                                Alignment.bottomCenter,
-                                                                            child:
-                                                                                Padding(
-                                                                              padding: EdgeInsets.only(bottom: 77.h),
-                                                                              child: FutureBuilder(
-                                                                                  future: Get.put(AppController()).getUsername(documents1[i].id),
-                                                                                  builder: (context, snapshot) {
-                                                                                    if (snapshot.connectionState == ConnectionState.done) {
-                                                                                      return Opacity(
-                                                                                        opacity: 0.7,
-                                                                                        child: Container(
-                                                                                          decoration: BoxDecoration(
-                                                                                            borderRadius: BorderRadius.circular(40.w),
-                                                                                            color: Colors.grey,
-                                                                                          ),
-                                                                                          // width: 350.w,
-                                                                                          child: Padding(
-                                                                                            padding: EdgeInsets.symmetric(horizontal: 30.w, vertical: 5.h),
-                                                                                            child: Text(
-                                                                                              "@${snapshot.data}",
-                                                                                              style: GoogleFonts.poppins(fontSize: 24.sp, fontWeight: FontWeight.w600, color: Colors.white),
+                                                                            Align(
+                                                                              alignment: Alignment.bottomCenter,
+                                                                              child: Padding(
+                                                                                padding: EdgeInsets.only(bottom: 77.h),
+                                                                                child: FutureBuilder(
+                                                                                    future: Get.put(AppController()).getUsername(documents1[i].id),
+                                                                                    builder: (context, snapshot) {
+                                                                                      if (snapshot.connectionState == ConnectionState.done) {
+                                                                                        return Opacity(
+                                                                                          opacity: 0.7,
+                                                                                          child: Container(
+                                                                                            decoration: BoxDecoration(color: Colors.grey, borderRadius: BorderRadius.circular(40.w)),
+
+                                                                                            // width: 350.w,
+                                                                                            child: Padding(
+                                                                                              padding: EdgeInsets.symmetric(horizontal: 30.w, vertical: 5.h),
+                                                                                              child: Text(
+                                                                                                "@${snapshot.data}",
+                                                                                                style: GoogleFonts.poppins(fontSize: 24.sp, fontWeight: FontWeight.w600, color: Colors.white),
+                                                                                              ),
                                                                                             ),
                                                                                           ),
-                                                                                        ),
-                                                                                      );
-                                                                                    } else {
-                                                                                      return SizedBox(
-                                                                                        width: 12.sp,
-                                                                                        height: 12.sp,
-                                                                                        child: CircularProgressIndicator(
-                                                                                          color: CustomColors.textColor2,
-                                                                                        ),
-                                                                                      );
-                                                                                    }
-                                                                                  }),
+                                                                                        );
+                                                                                      } else {
+                                                                                        return SizedBox(
+                                                                                          width: 12.sp,
+                                                                                          height: 12.sp,
+                                                                                          child: CircularProgressIndicator(
+                                                                                            color: CustomColors.textColor2,
+                                                                                          ),
+                                                                                        );
+                                                                                      }
+                                                                                    }),
+                                                                              ),
                                                                             ),
-                                                                          ),
-                                                                        ],
-                                                                      ),
+                                                                          ],
+                                                                        )
+                                                                      : Stack(
+                                                                          // alignment:
+                                                                          //     Alignment.center,
+                                                                          children: [
+                                                                            Center(
+                                                                              child: ClipRRect(
+                                                                                borderRadius: BorderRadius.circular(2000),
+                                                                                child: SizedBox(
+                                                                                  height: 225.sp,
+                                                                                  width: 225.sp,
+                                                                                  child: CachedNetworkImage(
+                                                                                    placeholder: (context, val) {
+                                                                                      return SizedBox(
+                                                                                        width: 31.w,
+                                                                                        child: Center(
+                                                                                          child: Text(
+                                                                                            "Loading",
+                                                                                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 34.sp, color: Colors.white),
+                                                                                          ),
+                                                                                        ),
+                                                                                      );
+                                                                                    },
+                                                                                    imageUrl: documents1[i]['profile_photo'],
+                                                                                    fit: BoxFit.fill,
+                                                                                  ),
+                                                                                ),
+                                                                              ),
+                                                                            ),
+                                                                            Align(
+                                                                              alignment: Alignment.bottomCenter,
+                                                                              child: Padding(
+                                                                                padding: EdgeInsets.only(bottom: 77.h),
+                                                                                child: FutureBuilder(
+                                                                                    future: Get.put(AppController()).getUsername(documents1[i].id),
+                                                                                    builder: (context, snapshot) {
+                                                                                      if (snapshot.connectionState == ConnectionState.done) {
+                                                                                        return Opacity(
+                                                                                          opacity: 0.7,
+                                                                                          child: Container(
+                                                                                            decoration: BoxDecoration(
+                                                                                              borderRadius: BorderRadius.circular(40.w),
+                                                                                              color: Colors.grey,
+                                                                                            ),
+                                                                                            // width: 350.w,
+                                                                                            child: Padding(
+                                                                                              padding: EdgeInsets.symmetric(horizontal: 30.w, vertical: 5.h),
+                                                                                              child: Text(
+                                                                                                "@${snapshot.data}",
+                                                                                                style: GoogleFonts.poppins(fontSize: 24.sp, fontWeight: FontWeight.w600, color: Colors.white),
+                                                                                              ),
+                                                                                            ),
+                                                                                          ),
+                                                                                        );
+                                                                                      } else {
+                                                                                        return SizedBox(
+                                                                                          width: 12.sp,
+                                                                                          height: 12.sp,
+                                                                                          child: CircularProgressIndicator(
+                                                                                            color: CustomColors.textColor2,
+                                                                                          ),
+                                                                                        );
+                                                                                      }
+                                                                                    }),
+                                                                              ),
+                                                                            ),
+                                                                          ],
+                                                                        ),
+                                                                ),
                                                               ),
                                                             ),
-                                                          ),
-                                                          Center(
-                                                            child: Image.asset(
-                                                              "assets/images/png/profile_photo_border.png",
-                                                              height: 325.sp,
-                                                              width: 325.sp,
+                                                            Center(
+                                                              child:
+                                                                  Image.asset(
+                                                                "assets/images/png/profile_photo_border.png",
+                                                                height: 325.sp,
+                                                                width: 325.sp,
+                                                              ),
                                                             ),
-                                                          ),
-                                                        ],
+                                                          ],
+                                                        ),
                                                       ),
                                                     ),
-                                                  ),
-                                                ],
-                                              );
-                                            }),
-                                      ),
-                                    ],
-                                  ),
-                                )
-                              : SizedBox(),
-                          // SizedBox(
-                          //   height: 100.h,
-                          // ),
-                          documents1[i]['has_posted'] &&
-                                  documents1[i].id !=
-                                      FirebaseAuth.instance.currentUser!.uid &&
-                                  (documents1[i]['followers'].contains(
-                                      FirebaseAuth.instance.currentUser!.uid))
-                              ? Center(
-                                  child: Column(
-                                    children: [
-                                      Container(
-                                        decoration: BoxDecoration(
-                                            color: Color(0xFFD9D9D9)),
-                                        height: 2.sp,
-                                        width: 350.w,
-                                      ),
-                                      SizedBox(
-                                        height: 130.h,
-                                      ),
-                                      Obx(()=>
-                                         Padding(
-                                          padding: EdgeInsets.symmetric(
-                                              horizontal: 200.w),
-                                          child: SizedBox(
-                                            height: 560.h,
-                                            child: controller.isAdLoaded.value? AdWidget(
-                                                    ad: controller.nativeAd!):SizedBox(),
-                                               
-                                          ),
+                                                  ],
+                                                );
+                                              }),
                                         ),
-                                      ),
-                                    ],
+                                      ],
+                                    ),
                                   ),
-                                )
-                              : SizedBox(),
-                          SizedBox(
-                            height: 30.h,
-                          ),
-                        ]
-                      ],
+                                  Container(
+                                    margin: EdgeInsets.only(bottom: 50.h),
+                                    decoration:
+                                        BoxDecoration(color: Color(0xFFD9D9D9)),
+                                    height: 2.sp,
+                                    width: 450.w,
+                                  ),
+                                  (i % 4 == 0 && i != 0)
+                                      ? Obx(
+                                          () => Padding(
+                                            padding: EdgeInsets.symmetric(
+                                                horizontal: 200.w),
+                                            child: SizedBox(
+                                              height: 300.h,
+                                              child: controller.isAdLoaded.value
+                                                  ? AdWidget(
+                                                      ad: controller.nativeAd!)
+                                                  : SizedBox(),
+                                            ),
+                                          ),
+                                        )
+                                      : SizedBox(),
+                                  SizedBox(
+                                    height: 50.h,
+                                  ),
+                                ],
+                              )
+                            : SizedBox();
+                        // SizedBox(
+                        //   height: 100.h,
+                        // ),
+                      },
                     );
+                    // return Column(
+                    //   children: [
+                    //     for (int i = 0; i < documents1.length; i++) ...[
+
+                    // ]
+                    //   ],
+                    // );
                   },
                 ),
                 //hello over here

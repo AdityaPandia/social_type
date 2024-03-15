@@ -279,7 +279,7 @@ class SignUpView extends StatelessWidget {
               if (controller.isActiveButtonLoading.value) {
               } else {
                 if (controller.isEmailSignUpActive()) {
-                  if (await controller.checkInvitationCode(
+                  if (await controller.checkInvitationCode(context,
                       controller.invitationCodeController.text)) {
                     await AuthService().emailSignUp();
                   } else {}

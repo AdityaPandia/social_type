@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class AuthenticationController extends GetxController {
-  Future<bool> checkInvitationCode(String code) async {
+  Future<bool> checkInvitationCode(BuildContext context, String code) async {
     final usersSnapshot =
         await FirebaseFirestore.instance.collection('Users').get();
 
@@ -18,11 +18,17 @@ class AuthenticationController extends GetxController {
             if (invitation['used'] == false) {
               // Invitation code is valid and not used
               print('Valid invitation code');
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                content: Text('Profile updated successfully'),
+              ));
               // Do whatever you want here
               return true;
             } else {
               // Invitation code is valid but already used
               print('Invitation code already used');
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                content: Text('Invitation code already used'),
+              ));
               // Handle accordingly
               return false;
             }
@@ -32,6 +38,9 @@ class AuthenticationController extends GetxController {
     }
 
     // Invitation code not found in any user document or user documents don't exist
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text('Invalid Invitation code'),
+    ));
     print('Invalid invitation code');
     return false;
     // Handle accordingly

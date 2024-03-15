@@ -7,6 +7,7 @@ import 'package:get/get_connect/http/src/utils/utils.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:social_type/common/custom_colors.dart';
 import 'package:social_type/views/home/controllers/home_controller.dart';
+import 'package:social_type/views/home/models/post_model.dart';
 import 'package:social_type/views/home/views/main/views/main_view.dart';
 import 'package:social_type/views/home/views/profile/views/profile_view.dart';
 import 'package:social_type/views/home/views/viral/controllers/viral_controller.dart';
@@ -30,6 +31,7 @@ class ViralView extends StatefulWidget {
 }
 
 class _ViralViewState extends State<ViralView> {
+  final homeController = Get.put(HomeController());
   final controller = Get.put(ViralController());
   List<ProfilePhotoData> profilePhotos = [];
 
@@ -52,6 +54,9 @@ class _ViralViewState extends State<ViralView> {
       allprofilePhotos2
           .sort((a, b) => a.profilePhoto.compareTo(b.profilePhoto));
 
+      print(allprofilePhotos2[0].uid);
+      print(allprofilePhotos2[1].uid);
+      print(allprofilePhotos2[2].uid);
       return allprofilePhotos2;
     } catch (e) {
       // Handle any errors that occur during the process
@@ -327,183 +332,348 @@ class _ViralViewState extends State<ViralView> {
                             height: 20.h,
                           ),
                           FutureBuilder(
-                              future: fetchProfilePhotos(),
-                              builder: (context,
-                                  AsyncSnapshot<List<ProfilePhotoData>>
-                                      snapshot) {
+                              future: homeController.fetchPostsSortedByLikes(),
+                              builder: ((context, snapshot) {
                                 if (snapshot.connectionState ==
                                     ConnectionState.waiting) {
-                                  return const Center(
+                                  return Center(
                                     child: CircularProgressIndicator(
                                       color: Colors.white,
                                     ),
                                   );
-                                }
-                                if (snapshot.hasError) {
-                                  return Center(
-                                    child: Text('Error: ${snapshot.error}'),
-                                  );
-                                }
-                                if (!snapshot.hasData ||
-                                    snapshot.data!.isEmpty) {
-                                  return Center(
-                                    child: Text('No data available'),
-                                  );
-                                }
-                                List<ProfilePhotoData> profilePhotos =
-                                    snapshot.data!;
+                                } else if (snapshot.hasError) {
+                                  ScaffoldMessenger.of(context)
+                                      .showSnackBar(SnackBar(
+                                    content: Text('Error fetching posts'),
+                                  ));
+                                  return SizedBox();
+                                } else {
+                                  return GridView.count(
+                                    shrinkWrap: true,
+                                    physics: BouncingScrollPhysics(),
+                                    childAspectRatio: 0.6,
+                                    crossAxisCount: 2,
+                                    mainAxisSpacing: 40.w,
+                                    crossAxisSpacing: 40.w,
+                                    children: List.generate(
+                                        snapshot.data!.length, (index) {
+                                      final post = snapshot.data![index];
+                                      return ZoomTapAnimation(
+                                        onTap: () async {
+                                          // ProfilePhotoData tappedPhoto =
+                                          //     profilePhotos2[index];
 
-                                return GridView.count(
-                                  shrinkWrap: true,
-                                  physics: BouncingScrollPhysics(),
-                                  childAspectRatio: 0.6,
-                                  crossAxisCount: 2,
-                                  mainAxisSpacing: 40.w,
-                                  crossAxisSpacing: 40.w,
-                                  children: List.generate(profilePhotos.length,
-                                      (index) {
-                                    return ZoomTapAnimation(
-                                      onTap: () async {
-                                        ProfilePhotoData tappedPhoto =
-                                            profilePhotos[index];
+                                          // print(
+                                          //     'UID of tapped photo: ${tappedPhoto.uid}');
+                                          int? postIndex =
+                                              await findProfilePhotoIndex(
+                                                  post.uid, post.postPhoto);
 
-                                        print(
-                                            'UID of tapped photo: ${tappedPhoto.uid}');
-
-                                        int? postIndex =
-                                            await findProfilePhotoIndex(
-                                                tappedPhoto.uid,
-                                                tappedPhoto.profilePhoto);
-
-                                        await MainViewState().viewPost(
-                                            tappedPhoto.uid,
-                                            postIndex!,
-                                            context);
-                                      },
-                                      child: ClipRRect(
-                                        borderRadius:
-                                            BorderRadius.circular(26.w),
-                                        child: SizedBox(
-                                          height: 120.h,
-                                          width: 120.w,
-                                          child: CachedNetworkImage(
-                                            placeholder: (context, val) {
-                                              return Container(
-                                                width: 31.w,
-                                                child: Center(
-                                                  child: Text(
-                                                    "Loading",
-                                                    style: TextStyle(
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      fontSize: 15.sp,
+                                          await MainViewState().viewPost(
+                                              post.uid, postIndex!, context);
+                                        },
+                                        child: ClipRRect(
+                                          borderRadius:
+                                              BorderRadius.circular(40.w),
+                                          child: SizedBox(
+                                            height: 120.h,
+                                            width: 120.w,
+                                            child: CachedNetworkImage(
+                                              placeholder: (context, val) {
+                                                return Container(
+                                                  width: 31.w,
+                                                  child: Center(
+                                                    child: Text(
+                                                      "Loading",
+                                                      style: TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        fontSize: 15.sp,
+                                                      ),
                                                     ),
                                                   ),
-                                                ),
-                                              );
-                                            },
-                                            imageUrl: profilePhotos[index]
-                                                .profilePhoto,
-                                            fit: BoxFit.fill,
+                                                );
+                                              },
+                                              imageUrl: post.postPhoto,
+                                              fit: BoxFit.fill,
+                                            ),
                                           ),
                                         ),
-                                      ),
-                                    );
-                                  }),
-                                );
-                              })
+                                      );
+                                    }),
+                                  );
+                                }
+                              }))
+                          // FutureBuilder(
+                          //     future: fetchProfilePhotos(),
+                          //     builder: (context,
+                          //         AsyncSnapshot<List<ProfilePhotoData>>
+                          //             snapshot) {
+                          //       if (snapshot.connectionState ==
+                          //           ConnectionState.waiting) {
+                          //         return const Center(
+                          //           child: CircularProgressIndicator(
+                          //             color: Colors.white,
+                          //           ),
+                          //         );
+                          //       }
+                          //       if (snapshot.hasError) {
+                          //         return Center(
+                          //           child: Text('Error: ${snapshot.error}'),
+                          //         );
+                          //       }
+                          //       if (!snapshot.hasData ||
+                          //           snapshot.data!.isEmpty) {
+                          //         return Center(
+                          //           child: Text('No data available'),
+                          //         );
+                          //       }
+                          //       List<ProfilePhotoData> profilePhotos =
+                          //           snapshot.data!;
+
+                          //       return GridView.count(
+                          //         shrinkWrap: true,
+                          //         physics: BouncingScrollPhysics(),
+                          //         childAspectRatio: 0.6,
+                          //         crossAxisCount: 2,
+                          //         mainAxisSpacing: 40.w,
+                          //         crossAxisSpacing: 40.w,
+                          //         children: List.generate(profilePhotos.length,
+                          //             (index) {
+                          //           return ZoomTapAnimation(
+                          //             onTap: () async {
+                          //               ProfilePhotoData tappedPhoto =
+                          //                   profilePhotos[index];
+
+                          //               print(
+                          //                   'UID of tapped photo: ${tappedPhoto.uid}');
+
+                          //               int? postIndex =
+                          //                   await findProfilePhotoIndex(
+                          //                       tappedPhoto.uid,
+                          //                       tappedPhoto.profilePhoto);
+
+                          //               await MainViewState().viewPost(
+                          //                   tappedPhoto.uid,
+                          //                   postIndex!,
+                          //                   context);
+                          //             },
+                          //             child: ClipRRect(
+                          //               borderRadius:
+                          //                   BorderRadius.circular(26.w),
+                          //               child: SizedBox(
+                          //                 height: 120.h,
+                          //                 width: 120.w,
+                          //                 child: CachedNetworkImage(
+                          //                   placeholder: (context, val) {
+                          //                     return Container(
+                          //                       width: 31.w,
+                          //                       child: Center(
+                          //                         child: Text(
+                          //                           "Loading",
+                          //                           style: TextStyle(
+                          //                             fontWeight:
+                          //                                 FontWeight.bold,
+                          //                             fontSize: 15.sp,
+                          //                           ),
+                          //                         ),
+                          //                       ),
+                          //                     );
+                          //                   },
+                          //                   imageUrl: profilePhotos[index]
+                          //                       .profilePhoto,
+                          //                   fit: BoxFit.fill,
+                          //                 ),
+                          //               ),
+                          //             ),
+                          //           );
+                          //         }),
+                          //       );
+                          //     })
                         ],
                       ),
                     )),
                   ),
                 ),
+
+                //RECENT
+                /*
+
+    SingleChildScrollView(
+                  child: RefreshIndicator(
+                    onRefresh: _refreshData,
+                    child: SafeArea(
+                        child: Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 16.w),
+                */
                 SingleChildScrollView(
                   child: RefreshIndicator(
                     onRefresh: _refreshData,
-                    child: Column(
-                      children: [
-                        SizedBox(
-                          height: 60.h,
-                        ),
+                    child: SafeArea(
+                      child: Padding(
+                        padding: EdgeInsets.all(16.w),
+                        child: Column(
+                          children: [
+                            SizedBox(
+                              height: 40.h,
+                            ),
+                            FutureBuilder<List<PostModel>>(
+                                future:
+                                    homeController.fetchPostsSortedByDateTime(),
+                                builder: (context, snapshot) {
+                                  if (snapshot.connectionState ==
+                                      ConnectionState.waiting) {
+                                    return Center(
+                                      child: CircularProgressIndicator(
+                                        color:
+                                            const Color.fromARGB(255, 14, 12, 12),
+                                      ),
+                                    );
+                                  } else if (snapshot.hasError) {
+                                    ScaffoldMessenger.of(context)
+                                        .showSnackBar(SnackBar(
+                                      content: Text('Error fetching posts'),
+                                    ));
+                                    return SizedBox();
+                                  } else {
+                                    return GridView.count(
+                                      shrinkWrap: true,
+                                      physics: BouncingScrollPhysics(),
+                                      childAspectRatio: 0.6,
+                                      crossAxisCount: 2,
+                                      mainAxisSpacing: 40.w,
+                                      crossAxisSpacing: 40.w,
+                                      children: List.generate(
+                                          snapshot.data!.length, (index) {
+                                        final post = snapshot.data![index];
+                                        return ZoomTapAnimation(
+                                          onTap: () async {
+                                            // ProfilePhotoData tappedPhoto =
+                                            //     profilePhotos2[index];
 
-                        //new Recent
-                        FutureBuilder<List<ProfilePhotoData>>(
-                          future: fetchAllprofilePhotos2SortedByDateTime(),
-                          builder: (context, snapshot) {
-                            if (snapshot.connectionState ==
-                                ConnectionState.waiting) {
-                              return Center(
-                                child: CircularProgressIndicator(
-                                  color: Colors.white,
-                                ),
-                              );
-                            }
-                            if (snapshot.hasError) {
-                              return Center(
-                                child: Text('Error: ${snapshot.error}'),
-                              );
-                            }
-                            List<ProfilePhotoData> profilePhotos2 =
-                                snapshot.data ?? [];
-                            return GridView.count(
-                              shrinkWrap: true,
-                              physics: BouncingScrollPhysics(),
-                              childAspectRatio: 0.6,
-                              crossAxisCount: 2,
-                              mainAxisSpacing: 40.w,
-                              crossAxisSpacing: 40.w,
-                              children:
-                                  List.generate(profilePhotos2.length, (index) {
-                                return ZoomTapAnimation(
-                                  onTap: () async {
-                                    ProfilePhotoData tappedPhoto =
-                                        profilePhotos2[index];
+                                            // print(
+                                            //     'UID of tapped photo: ${tappedPhoto.uid}');
+                                            int? postIndex =
+                                                await findProfilePhotoIndex(
+                                                    post.uid, post.postPhoto);
 
-                                    print(
-                                        'UID of tapped photo: ${tappedPhoto.uid}');
-                                    int? postIndex =
-                                        await findProfilePhotoIndex(
-                                            tappedPhoto.uid,
-                                            tappedPhoto.profilePhoto);
-
-                                    await MainViewState().viewPost(
-                                        tappedPhoto.uid, postIndex!, context);
-                                  },
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(40.w),
-                                    child: SizedBox(
-                                      height: 120.h,
-                                      width: 120.w,
-                                      child: CachedNetworkImage(
-                                        placeholder: (context, val) {
-                                          return Container(
-                                            width: 31.w,
-                                            child: Center(
-                                              child: Text(
-                                                "Loading",
-                                                style: TextStyle(
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: 15.sp,
-                                                ),
+                                            await MainViewState().viewPost(
+                                                post.uid, postIndex!, context);
+                                          },
+                                          child: ClipRRect(
+                                            borderRadius:
+                                                BorderRadius.circular(40.w),
+                                            child: SizedBox(
+                                              height: 120.h,
+                                              width: 120.w,
+                                              child: CachedNetworkImage(
+                                                placeholder: (context, val) {
+                                                  return Container(
+                                                    width: 31.w,
+                                                    child: Center(
+                                                      child: Text(
+                                                        "Loading",
+                                                        style: TextStyle(
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                          fontSize: 15.sp,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  );
+                                                },
+                                                imageUrl: post.postPhoto,
+                                                fit: BoxFit.fill,
                                               ),
                                             ),
-                                          );
-                                        },
-                                        imageUrl:
-                                            profilePhotos2[index].profilePhoto,
-                                        fit: BoxFit.fill,
-                                      ),
-                                    ),
-                                  ),
-                                );
-                              }),
-                            );
-                          },
+                                          ),
+                                        );
+                                      }),
+                                    );
+                                  }
+                                })
+                          ],
                         ),
-                      ],
+                      ),
                     ),
                   ),
                 ),
+                // SizedBox(
+                //   height: 60.h,
+                // ),
+
+                // //new Recent
+                // FutureBuilder<List<ProfilePhotoData>>(
+                //   future: fetchAllprofilePhotos2SortedByDateTime(),
+                //   builder: (context, snapshot) {
+                //     if (snapshot.connectionState ==
+                //         ConnectionState.waiting) {
+                //       return Center(
+                //         child: CircularProgressIndicator(
+                //           color: Colors.white,
+                //         ),
+                //       );
+                //     }
+                //     if (snapshot.hasError) {
+                //       return Center(
+                //         child: Text('Error: ${snapshot.error}'),
+                //       );
+                //     }
+                //     List<ProfilePhotoData> profilePhotos2 =
+                //         snapshot.data ?? [];
+                //     return GridView.count(
+                //       shrinkWrap: true,
+                //       physics: BouncingScrollPhysics(),
+                //       childAspectRatio: 0.6,
+                //       crossAxisCount: 2,
+                //       mainAxisSpacing: 40.w,
+                //       crossAxisSpacing: 40.w,
+                //       children:
+                //           List.generate(profilePhotos2.length, (index) {
+                //         return ZoomTapAnimation(
+                //           onTap: () async {
+                //             ProfilePhotoData tappedPhoto =
+                //                 profilePhotos2[index];
+
+                //             print(
+                //                 'UID of tapped photo: ${tappedPhoto.uid}');
+                //             int? postIndex = await findProfilePhotoIndex(
+                //                 tappedPhoto.uid, tappedPhoto.profilePhoto);
+
+                //             await MainViewState().viewPost(
+                //                 tappedPhoto.uid, postIndex!, context);
+                //           },
+                //           child: ClipRRect(
+                //             borderRadius: BorderRadius.circular(40.w),
+                //             child: SizedBox(
+                //               height: 120.h,
+                //               width: 120.w,
+                //               child: CachedNetworkImage(
+                //                 placeholder: (context, val) {
+                //                   return Container(
+                //                     width: 31.w,
+                //                     child: Center(
+                //                       child: Text(
+                //                         "Loading",
+                //                         style: TextStyle(
+                //                           fontWeight: FontWeight.bold,
+                //                           fontSize: 15.sp,
+                //                         ),
+                //                       ),
+                //                     ),
+                //                   );
+                //                 },
+                //                 imageUrl:
+                //                     profilePhotos2[index].profilePhoto,
+                //                 fit: BoxFit.fill,
+                //               ),
+                //             ),
+                //           ),
+                //         );
+                //       }),
+                //     );
+                //   },
+                // ),
               ]),
             )),
       ),

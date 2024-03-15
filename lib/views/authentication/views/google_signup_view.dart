@@ -162,10 +162,10 @@ class GoogleSignUpView extends StatelessWidget {
               if (controller.isGoogleSignupLoading.value) {
               } else {
                 if (controller.isGoogleSignupNext.value &&
-                    controller.isUserNameDone.value && await controller.checkInvitationCode(
-                      controller.invitationCodeController.text) )  {
-
-                      
+                        controller.isUserNameDone.value
+                    && await controller.checkInvitationCode(context,
+                      controller.invitationCodeController.text)
+                    ) {
                   controller.isGoogleSignupLoading.value = true;
                   final storage = GetStorage();
                   FirebaseAuth auth = FirebaseAuth.instance;
