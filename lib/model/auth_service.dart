@@ -214,6 +214,8 @@ class AuthService {
           FirebaseFirestore.instance.collection('Users');
 
       await usersCollection.doc(uid).set({
+        //add this: 
+        'blocked_users':[],
         'email': email,
         'name': name,
         'username': userName,
